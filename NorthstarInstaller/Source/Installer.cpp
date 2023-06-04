@@ -1,17 +1,17 @@
 #include <Application.h>
-#include <UI/UIButton.h>
-#include <UI/UIText.h>
 #include <UI/UIBackground.h>
-#include <sstream>
+#include <Rendering/Texture.h>
+
 #include "Game.h"
 #include "Log.h"
 #include "LogPanel.h"
-#include <Rendering/Texture.h>
 #include "Installer.h"
 #include "UIDef.h"
+#include "Networking.h"
+
 #include "Tabs/LaunchTab.h"
 #include "Tabs/SettingsTab.h"
-#include "Networking.h"
+#include "Tabs/ModsTab.h"
 
 namespace Installer
 {
@@ -110,6 +110,7 @@ namespace Installer
 		Log::Print("No update required");
 		ThreadProgress = 1;
 	}
+	
 }
 
 float BackgroundFade = 0;
@@ -144,7 +145,8 @@ int main(int argc, char** argv)
 	Installer::Tabs =
 	{
 		new LaunchTab(),
-		new SettingsTab()
+		new ModsTab(),
+		new SettingsTab(),
 	};
 
 	Installer::TabBackground = new UIBackground(true, Vector2f(-1, 0.85), 0, Vector2f(1.4, 0.15));

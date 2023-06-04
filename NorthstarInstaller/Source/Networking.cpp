@@ -7,6 +7,7 @@
 
 #include <fstream>
 #include <filesystem>
+#include <zip.h>
 
 namespace Networking
 {
@@ -34,24 +35,22 @@ namespace Networking
 	}
 
 
-	void Download(std::string url, std::string target, bool SendUsrAgent)
+	void Download(std::string url, std::string target, std::string Header)
 	{
-		Log::Print("Downloading url " + url + " -> " + target);
+		Log::Print("Requesting url " + url);
 
 		std::string target_cp = target;
 
 		CURL* curl_handle;
 		FILE* pagefile;
 
-		curl_global_init(CURL_GLOBAL_ALL);
-
 		/* init the curl session */
 		curl_handle = curl_easy_init();
 
-		if (SendUsrAgent)
+		if (!Header.empty())
 		{
 			struct curl_slist* headers = NULL; // init to NULL is important 
-			headers = curl_slist_append(headers, "User-Agent: None");
+			headers = curl_slist_append(headers, Header.c_str());
 
 			curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, headers);
 		}
@@ -60,7 +59,7 @@ namespace Networking
 		curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str());
 
 		/* Switch on full protocol/debug output while testing */
-		curl_easy_setopt(curl_handle, CURLOPT_VERBOSE, 1L);
+		// curl_easy_setopt(curl_handle, CURLOPT_VERBOSE, 1L);
 
 		/* disable progress meter, set to 0L to enable and disable debug output */
 		curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1L);
@@ -104,7 +103,7 @@ namespace Networking
 
 		CheckNetTempFolder();
 
-		Download("https://api.github.com/repos/" + RepoName + "/releases/latest", NetTempFolder + "version.temp", true);
+		Download("https://api.github.com/repos/" + RepoName + "/releases/latest", NetTempFolder + "version.temp", "User-Agent: None");
 
 		try
 		{
@@ -131,14 +130,12 @@ namespace Networking
 		return "";
 	}
 
-
 	std::string DownloadLatestReleaseOf(std::string RepoName)
 	{
 		using namespace nlohmann;
 		CheckNetTempFolder();
-		//Download("https://github.com/R2Northstar/Northstar/releases/download/v1.14.2/Northstar.release.v1.14.2.zip", "test.txt", false);
 
-		Download("https://api.github.com/repos/" + RepoName + "/releases/latest", NetTempFolder + "version.temp", true);
+		Download("https://api.github.com/repos/" + RepoName + "/releases/latest", NetTempFolder + "version.temp", "User-Agent: None");
 
 		try
 		{
@@ -154,7 +151,7 @@ namespace Networking
 
 				Log::Print("Found latest release -> " + url);
 				//Log::Print("Downloading new release of " + url + "...");
-				Download(url, NetTempFolder + "latest.zip", false);
+				Download(url, NetTempFolder + "latest.zip", "");
 				return NetTempFolder + "latest.zip";
 			}
 		}
@@ -179,5 +176,44 @@ namespace Networking
 	{
 		curl_global_cleanup();
 
+	}
+	void ExtractZip(std::string File, std::string TargetFolder)
+	{
+		int err = 0;
+		zip* z = zip_open(File.c_str(), 0, &err);
+		std::string TargetDir = TargetFolder + "/";
+
+		struct zip_stat* finfo = NULL;
+		finfo = (struct zip_stat*)calloc(256, sizeof(int));
+		zip_stat_init(finfo);
+		zip_file_t* fd = NULL;
+		char* txt = NULL;
+		int count = 0;
+		while ((zip_stat_index(z, count, 0, finfo)) == 0) {
+
+			// allocate room for the entire file contents
+			txt = (char*)calloc(finfo->size + 1, sizeof(char));
+			fd = zip_fopen_index(
+				z, count, 0); // opens file at count index
+			// reads from fd finfo->size
+			// bytes into txt buffer
+			zip_fread(fd, txt, finfo->size);
+
+			size_t slash = std::string(finfo->name).find_last_of("/\\");
+			if (slash != std::string::npos)
+			{
+				std::filesystem::create_directories(TargetDir + std::string(finfo->name).substr(0, slash));
+			}
+			std::ofstream(TargetDir + std::string(finfo->name), std::ios::out | std::ios::binary).write(txt, finfo->size);
+
+			// frees allocated buffer, will
+			// reallocate on next iteration of loop
+			free(txt);
+			zip_fclose(fd);
+			// increase index by 1 and the loop will
+			// stop when files are not found
+			count++;
+		}
+		zip_close(z);
 	}
 }

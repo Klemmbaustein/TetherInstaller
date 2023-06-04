@@ -11,8 +11,11 @@ namespace Networking
 	// RepoName = Owner/Name. Example: "R2Northstar/Northstar"
 	std::string DownloadLatestReleaseOf(std::string RepoName);
 
+	void Download(std::string url, std::string target, std::string Header);
 
 	void Init();
 
 	void Cleanup();
+
+	void ExtractZip(std::string File, std::string TargetFolder);
 }

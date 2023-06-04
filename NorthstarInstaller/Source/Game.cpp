@@ -6,7 +6,6 @@
 #include <sstream>
 #include "Installer.h"
 #include "Networking.h"
-#include <zip.h>
 
 std::string Game::GamePath;
 bool Game::RequiresUpdate = false;
@@ -101,48 +100,6 @@ void Game::SetCurrentVersion(std::string ver)
 	out.close();
 }
 
-void ExtractZip(std::string Zip, std::string Target)
-{
-	int err = 0;
-	zip* z = zip_open(Zip.c_str(), 0, &err);
-	std::string TargetDir = Target + "/";
-
-	struct zip_stat* finfo = NULL;
-	finfo = (struct zip_stat*)calloc(256, sizeof(int));
-	zip_stat_init(finfo);
-	zip_file_t* fd = NULL;
-	char* txt = NULL;
-	int count = 0;
-	while ((zip_stat_index(z, count, 0, finfo)) == 0) {
-
-		// allocate room for the entire file contents
-		txt = (char*)calloc(finfo->size + 1, sizeof(char));
-		fd = zip_fopen_index(
-			z, count, 0); // opens file at count index
-		// reads from fd finfo->size
-		// bytes into txt buffer
-		zip_fread(fd, txt, finfo->size);
-
-		size_t slash = std::string(finfo->name).find_last_of("/\\");
-		if (slash != std::string::npos)
-		{
-			std::filesystem::create_directories(TargetDir + std::string(finfo->name).substr(0, slash));
-		}
-		std::ofstream(TargetDir + std::string(finfo->name), std::ios::out | std::ios::binary).write(txt, finfo->size);
-
-		// frees allocated buffer, will
-		// reallocate on next iteration of loop
-		free(txt);
-		zip_fclose(fd);
-		// increase index by 1 and the loop will
-		// stop when files are not found
-		count++;
-	}
-	zip_close(z);
-}
-
-
-
 void Game::UpdateGame()
 {
 	try
@@ -154,7 +111,7 @@ void Game::UpdateGame()
 		Installer::ThreadProgress = 0.7;
 		Installer::BackgroundTask = "Installing Northstar from " + result;
 		Log::Print("Extracting zip: " + result);
-		ExtractZip(result, Game::GamePath);
+		Networking::ExtractZip(result, Game::GamePath);
 		Installer::BackgroundTask = "Removing temporary files";
 		Installer::ThreadProgress = 0.9;
 		std::filesystem::remove_all("temp/net");
