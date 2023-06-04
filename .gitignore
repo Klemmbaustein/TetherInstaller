@@ -39,6 +39,9 @@
 /.vs
 x64
 
+# nlohman JSON
+json
+
 # launcher files
 temp
 var
