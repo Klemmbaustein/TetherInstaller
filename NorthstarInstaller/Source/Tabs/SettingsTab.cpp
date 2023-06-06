@@ -99,6 +99,26 @@ SettingsTab::SettingsTab()
 	GenerateSettings();
 }
 
+void DeleteAllMods()
+{
+	// Do not uninstall the core mods, that's a very bad idea.
+	std::set<std::string> CoreModNames =
+	{
+		"Northstar.CustomServers",
+		"Northstar.Custom",
+		"Northstar.Client"
+	};
+
+	for (const auto& m : std::filesystem::directory_iterator(Game::GamePath + "/R2Northstar/mods/"))
+	{
+		if (CoreModNames.find(m.path().filename().string()) == CoreModNames.end() && std::filesystem::is_directory(m))
+		{
+			std::filesystem::remove_all(m);
+			Log::Print("Removing mod: " + m.path().filename().string(), Log::General, Log::Warning);
+		}
+	}
+	std::filesystem::remove_all("Data/var/modinfo");
+}
 
 void LocateTitanfall()
 {
@@ -126,9 +146,6 @@ void SettingsTab::GenerateSettings()
 	SettingsBox->AddChild((new UIButton(true, 0, 1, LocateTitanfall))
 		->AddChild(new UIText(0.4, 0, Game::GamePath.empty() ? "Locate Titanfall 2 (No path!)" : "Locate Titanfall (" + ShortGamePath + ")", UI::Text)));
 
-	SettingsBox->AddChild((new UIButton(true, 0, 1, Game::UpdateGameAsync))
-		->AddChild(new UIText(0.4, 0, "Force reinstall Northstar", UI::Text)));
-
 	SettingsBox->AddChild((new UIButton(true, 0, 1, []() {
 		if (!Installer::CurrentBackgroundThread)
 		{
@@ -136,5 +153,22 @@ void SettingsTab::GenerateSettings()
 		}
 		}))
 		->AddChild(new UIText(0.4, 0, "Re-check for updates", UI::Text)));
-	
+
+	SettingsBox->AddChild((new UIButton(true, 0, 1, Game::UpdateGameAsync))
+		->AddChild(new UIText(0.4, 0, "Force reinstall Northstar", UI::Text)));
+
+	SettingsBox->AddChild((new UIButton(true, 0, 1, DeleteAllMods))
+		->AddChild(new UIText(0.4, 0, "Delete all mods", UI::Text)));
+
+	SettingsBox->AddChild((new UIButton(true, 0, 1, []() {
+		if (!Installer::CurrentBackgroundThread)
+		{
+			Log::Print("Un-fucking installation...", Log::General, Log::Warning);
+			std::filesystem::remove_all("temp");
+			Log::Print("Deleted ./temp/", Log::General, Log::Warning);
+			DeleteAllMods();
+			Game::UpdateGameAsync();
+		}
+		}))
+		->AddChild(new UIText(0.4, 0, "Try to unfuck installation", UI::Text)));
 }

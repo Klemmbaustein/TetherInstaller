@@ -700,7 +700,7 @@ ModsTab::ModsTab()
 
 void ModsTab::Tick()
 {
-	if (!LoadedModList && Background->IsVisible && !Thunderstore::IsDownloading)
+	if (!LoadedModList && Background->IsVisible && !Thunderstore::IsDownloading && !Installer::CurrentBackgroundThread)
 	{
 		Installer::CurrentBackgroundThread = new std::thread(Thunderstore::DownloadThunderstoreInfo, Thunderstore::SelectedOrdering, SelectedPage, Filter);
 		DownloadingPage = true;
