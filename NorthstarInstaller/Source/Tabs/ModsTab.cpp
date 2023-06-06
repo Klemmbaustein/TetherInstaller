@@ -115,10 +115,12 @@ namespace Thunderstore
 		// As a failsafe also check for mod files that could've been installed using another method.
 		// This way we hopefully won't install a mod twice. (Oh no)
 		// This won't always work.
-		return std::filesystem::exists("Data/var/modinfo/" + m.Namespace + "." + m.Name + ".txt")
+		return std::filesystem::exists("Data/var/modinfo/" + m.Namespace + "." + m.Name + ".json")
 			|| std::filesystem::exists(Game::GamePath + "/R2Northstar/mods/" + m.Namespace + "." + m.Name);
 	}
 
+	// Gets the thunderstore mod page with the given ordering, filter and page index.
+	// The result will be put into 'FoundMods' because this function is meant to be run as a new thread.
 	void DownloadThunderstoreInfo(Ordering ModOrdering, size_t Page, std::string Filter)
 	{
 		using namespace nlohmann;
@@ -147,7 +149,7 @@ namespace Thunderstore
 		{
 			if (std::filesystem::exists("temp/net/ts"))
 			{
-				// Get size of already loaded image folders
+				// Get size of already loaded image folders.
 				size_t size = 0;
 				for (std::filesystem::recursive_directory_iterator it("temp/net/ts");
 					it != std::filesystem::recursive_directory_iterator();
@@ -157,7 +159,7 @@ namespace Thunderstore
 						size += std::filesystem::file_size(*it);
 				}
 
-				// If the already loaded images are larger than 10mb, delete them
+				// If the already loaded images are larger than 10mb, delete them.
 				if (size >= 20 * 1000 * 1000)
 				{
 					std::filesystem::remove_all("temp/net/ts");
@@ -240,6 +242,7 @@ namespace Thunderstore
 	std::atomic<bool> LoadedSelectedMod = false;
 	Package SelectedMod;
 
+	// Sets the Thunderstore::SelectedMod variable to a more detailed version of the given package.
 	void GetModInfo(Package m)
 	{
 		using namespace nlohmann;
@@ -272,6 +275,12 @@ namespace Thunderstore
 		Installer::ThreadProgress = 1;
 	}
 
+	// Downloads the given package into "temp/net/{m.Author}.{m.Name}.zip,
+	// extracts it's contents into "temp/mod",
+	// then extracts the content of the extracted zip file's "mods" Folder into the Titanfall 2
+	// mods folder.
+	// TODO: Extract other elements of the mod. (I've seen some mods have different Folders that
+	// need to be extracted somewhere else)
 	void InstallMod(Package m)
 	{
 		using namespace nlohmann;
@@ -281,7 +290,7 @@ namespace Thunderstore
 		{
 			if (Thunderstore::IsModInstalled(m))
 			{
-				auto InfoFile = "Data/var/modinfo/" + m.Namespace + "." + m.Name + ".txt";
+				auto InfoFile = "Data/var/modinfo/" + m.Namespace + "." + m.Name + ".json";
 				std::ifstream in = std::ifstream(InfoFile);
 				std::stringstream str; str << in.rdbuf();
 				auto modinfo = json::parse(str.str());
@@ -335,7 +344,7 @@ namespace Thunderstore
 			}
 
 			std::filesystem::create_directories("Data/var/modinfo/");
-			std::ofstream out = std::ofstream("Data/var/modinfo/" + m.Namespace + "." + m.Name + ".txt");
+			std::ofstream out = std::ofstream("Data/var/modinfo/" + m.Namespace + "." + m.Name + ".json");
 			
 			std::string Image;
 			if (std::filesystem::exists(m.Img))
@@ -374,9 +383,7 @@ void ModsTab::GenerateModInfo()
 
 	ModsScrollBox->GetScrollObject()->Percentage = 0;
 	ModButtons.clear();
-
 	ModsScrollBox->SetMaxScroll(50);
-
 	ModsScrollBox->DeleteChildren();
 
 	ModsScrollBox->AddChild((new UIButton(true, 0, 1, []() {CurrentModsTab->GenerateModPage(); }))
@@ -424,6 +431,8 @@ void ModsTab::GenerateModInfo()
 	ModsScrollBox->AddChild((new UIBackground(true, 0, 1, Vector2f(1.15, 0.005)))
 		->SetPadding(0, 0.05, 0, 0));
 
+	// Somewhat fucky markdown parser. TODO: Unfuck.
+
 	UIBox* MarkdownBackground = new UIBox(false, 0);
 	MarkdownBackground->SetPadding(0);
 	MarkdownBackground->Align = UIBox::E_REVERSE;
@@ -436,7 +445,7 @@ void ModsTab::GenerateModInfo()
 	Markdown = std::regex_replace(Markdown, std::regex("\\\\r\\\\n"), "\n");
 	Markdown = std::regex_replace(Markdown, std::regex("\\\\n"), "\n");
 
-	// No
+	// No.
 	Markdown = std::regex_replace(Markdown, std::regex("\\*"), "");
 	Markdown = std::regex_replace(Markdown, std::regex("\\_"), "");
 
@@ -470,12 +479,12 @@ void ModsTab::GenerateModInfo()
 			size = 0.4;
 			i = i.substr(3);
 		}
-		if (i.substr(0, 4) == "####")
+		else if (i.substr(0, 4) == "####")
 		{
 			size = 0.4;
 			i = i.substr(3);
 		}
-		if (i.substr(0, 3) == "###")
+		else if (i.substr(0, 3) == "###")
 		{
 			size = 0.4;
 			i = i.substr(3);

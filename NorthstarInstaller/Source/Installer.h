@@ -7,6 +7,7 @@ namespace Installer
 {
 	extern size_t SelectedTab;
 	extern std::vector<UITab*> Tabs;
+	extern const std::string InstallerVersion;
 	void GenerateTabs();
 	void CheckForUpdates();
 

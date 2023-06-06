@@ -87,7 +87,7 @@ SettingsTab::SettingsTab()
 
 	SettingsBackground = new UIBackground(false, 0, 0, Vector2f(0.8, 1.85));
 	Background->AddChild(SettingsBackground
-		->SetOpacity(0.3)
+		->SetOpacity(0.5)
 		->AddChild((new UIBackground(true, 0, 1, Vector2f(0.8, 0.005)))
 			->SetPadding(0))
 		->SetPadding(0));
@@ -101,12 +101,14 @@ SettingsTab::SettingsTab()
 
 void DeleteAllMods()
 {
-	// Do not uninstall the core mods, that's a very bad idea.
+	// Do not uninstall the core mods. That's a very bad idea.
 	std::set<std::string> CoreModNames =
 	{
 		"Northstar.CustomServers",
 		"Northstar.Custom",
-		"Northstar.Client"
+		"Northstar.Client",
+		"Northstar.Coop", // soooooon™
+
 	};
 
 	for (const auto& m : std::filesystem::directory_iterator(Game::GamePath + "/R2Northstar/mods/"))
@@ -133,6 +135,14 @@ void LocateTitanfall()
 
 constexpr uint16_t MAX_GAMEPATH_SIZE = 30;
 
+void AddCategoryHeader(std::string Text, UIBox* Parent)
+{
+	Parent->AddChild((new UIText(0.5, 1, Text, UI::Text))
+		->SetPadding(0.05, 0.01, 0.01, 0.01));
+	Parent->AddChild((new UIBackground(true, 0, 1, Vector2f(0.76, 0.005)))
+		->SetPadding(0.0, 0.02, 0, 0));
+}
+
 void SettingsTab::GenerateSettings()
 {
 	SettingsBox->DeleteChildren();
@@ -143,6 +153,7 @@ void SettingsTab::GenerateSettings()
 		ShortGamePath = ShortGamePath.substr(0, MAX_GAMEPATH_SIZE - 3) + "...";
 	}
 
+	AddCategoryHeader("General", SettingsBox);
 	SettingsBox->AddChild((new UIButton(true, 0, 1, LocateTitanfall))
 		->AddChild(new UIText(0.4, 0, Game::GamePath.empty() ? "Locate Titanfall 2 (No path!)" : "Locate Titanfall (" + ShortGamePath + ")", UI::Text)));
 
@@ -157,6 +168,8 @@ void SettingsTab::GenerateSettings()
 	SettingsBox->AddChild((new UIButton(true, 0, 1, Game::UpdateGameAsync))
 		->AddChild(new UIText(0.4, 0, "Force reinstall Northstar", UI::Text)));
 
+
+	AddCategoryHeader("Danger zone", SettingsBox);
 	SettingsBox->AddChild((new UIButton(true, 0, 1, DeleteAllMods))
 		->AddChild(new UIText(0.4, 0, "Delete all mods", UI::Text)));
 
@@ -171,4 +184,7 @@ void SettingsTab::GenerateSettings()
 		}
 		}))
 		->AddChild(new UIText(0.4, 0, "Try to unfuck installation", UI::Text)));
+	AddCategoryHeader("About", SettingsBox);
+	SettingsBox->AddChild(new UIText(0.35, 1, "Installed Northstar version: " + Game::GetCurrentVersion(), UI::Text));
+	SettingsBox->AddChild(new UIText(0.35, 1, "Installer version: " + Installer::InstallerVersion, UI::Text));
 }

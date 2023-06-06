@@ -92,7 +92,6 @@ namespace Networking
 		/* cleanup curl stuff */
 		curl_easy_cleanup(curl_handle);
 
-
 		return;
 	}
 
@@ -150,7 +149,6 @@ namespace Networking
 				url = url.substr(1, url.size() - 2);
 
 				Log::Print("Found latest release -> " + url);
-				//Log::Print("Downloading new release of " + url + "...");
 				Download(url, NetTempFolder + "latest.zip", "");
 				return NetTempFolder + "latest.zip";
 			}
@@ -191,14 +189,15 @@ namespace Networking
 		int count = 0;
 		while ((zip_stat_index(z, count, 0, finfo)) == 0) {
 
-			// allocate room for the entire file contents
+			// allocate room for the entire file contents.
 			txt = (char*)calloc(finfo->size + 1, sizeof(char));
 			fd = zip_fopen_index(
 				z, count, 0); // opens file at count index
 			// reads from fd finfo->size
-			// bytes into txt buffer
+			// bytes into txt buffer.
 			zip_fread(fd, txt, finfo->size);
 
+			// Let's hope i'll never have to compile this on linux.
 			size_t slash = std::string(finfo->name).find_last_of("/\\");
 			if (slash != std::string::npos)
 			{
@@ -207,11 +206,11 @@ namespace Networking
 			std::ofstream(TargetDir + std::string(finfo->name), std::ios::out | std::ios::binary).write(txt, finfo->size);
 
 			// frees allocated buffer, will
-			// reallocate on next iteration of loop
+			// reallocate on next iteration of loop.
 			free(txt);
 			zip_fclose(fd);
 			// increase index by 1 and the loop will
-			// stop when files are not found
+			// stop when files are not found.
 			count++;
 		}
 		zip_close(z);

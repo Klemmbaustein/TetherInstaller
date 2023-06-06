@@ -13,6 +13,16 @@
 #include "Tabs/SettingsTab.h"
 #include "Tabs/ModsTab.h"
 
+/*
+* 
+* TODO:
+* Unfuck markdown parser.
+* Auto update mods.
+* Auto update installer.
+* Make background thread system good.
+* 
+*/
+
 namespace Installer
 {
 	size_t SelectedTab = 0;
@@ -27,6 +37,7 @@ namespace Installer
 	std::thread* CurrentBackgroundThread = nullptr;
 	std::string BackgroundTask;
 	std::string BackgroundName;
+	const std::string InstallerVersion = "0.1.1";
 	float ThreadProgress = 0;
 
 
