@@ -16,7 +16,7 @@
 /*
 * 
 * TODO:
-* Unfuck markdown parser.
+* Unfuck markdown parser. (The fucky markdown parser is now part of the UISystem library)
 * Auto update mods.
 * Auto update installer.
 * Make background thread system good.
