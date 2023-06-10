@@ -9,6 +9,8 @@
 #include <filesystem>
 #include <zip.h>
 
+#define DEV_NET_DEBUGGING 0
+
 namespace Networking
 {
 	const std::string NorthstarVersionFile = "Data/";
@@ -37,7 +39,9 @@ namespace Networking
 
 	void Download(std::string url, std::string target, std::string Header)
 	{
+#if DEV_NET_DEBUGGING
 		Log::Print("Requesting url " + url);
+#endif
 
 		std::string target_cp = target;
 
@@ -85,7 +89,7 @@ namespace Networking
 		}
 		else
 		{
-			Log::Print("pagefile could not be created: " + std::string(target_cp), Log::Install, Log::Error);
+			Log::Print("pagefile could not be created: " + std::string(target_cp), Log::Error);
 			return;
 		}
 
@@ -120,10 +124,10 @@ namespace Networking
 		}
 		catch (std::exception& e)
 		{
-			Log::Print("Github response has an invalid layout.", Log::Install, Log::Error);
-			Log::Print(e.what(), Log::Install, Log::Error);
+			Log::Print("Github response has an invalid layout.", Log::Error);
+			Log::Print(e.what(), Log::Error);
 
-			Log::Print("Writing response to temp/invalidresponse.txt", Log::Install, Log::Error);
+			Log::Print("Writing response to temp/invalidresponse.txt", Log::Error);
 			std::filesystem::copy(NetTempFolder + "version.temp", "temp/invalidresponse.txt");
 		}
 		return "";
@@ -155,10 +159,10 @@ namespace Networking
 		}
 		catch (std::exception& e)
 		{
-			Log::Print("Github response has an invalid layout.", Log::Install, Log::Error);
-			Log::Print(e.what(), Log::Install, Log::Error);
+			Log::Print("Github response has an invalid layout.", Log::Error);
+			Log::Print(e.what(), Log::Error);
 
-			Log::Print("Writing response to temp/invalidresponse.txt", Log::Install, Log::Error);
+			Log::Print("Writing response to temp/invalidresponse.txt", Log::Error);
 			std::filesystem::copy(NetTempFolder + "version.temp", "temp/invalidresponse.txt");
 		}
 		return "";

@@ -33,7 +33,7 @@ std::string Game::GetTitanfallLocation()
 			Log::Print("Found game dir from '" + GameDirTxtPath + "': " + str);
 			return str;
 		}
-		Log::Print("'" + GameDirTxtPath + "' does not contain a valid Titanfall 2 install location!", Log::General, Log::Warning);
+		Log::Print("'" + GameDirTxtPath + "' does not contain a valid Titanfall 2 install location!",  Log::Warning);
 	}
 	Log::Print("Could not find game dir from '" + GameDirTxtPath + "'");
 
@@ -47,7 +47,7 @@ std::string Game::GetTitanfallLocation()
 		}
 	}
 
-	Log::Print("Could not find game dir", Log::General, Log::Warning);
+	Log::Print("Could not find game dir",  Log::Warning);
 
 	return "";
 }
@@ -69,7 +69,7 @@ void Game::SaveGameDir(std::string FoundGameDir)
 	}
 	catch (std::exception& e)
 	{
-		Log::Print("Could not save path '" + FoundGameDir + "' to '" + GameDirTxtPath + "': " + std::string(e.what()), Log::General, Log::Error);
+		Log::Print("Could not save path '" + FoundGameDir + "' to '" + GameDirTxtPath + "': " + std::string(e.what()),  Log::Error);
 	}
 }
 
@@ -124,7 +124,7 @@ void Game::UpdateGame()
 	{
 		Installer::BackgroundTask = e.what();
 		Installer::ThreadProgress = 1;
-		Log::Print(e.what(), Log::Install, Log::Error);
+		Log::Print(e.what(), Log::Error);
 	}
 }
 

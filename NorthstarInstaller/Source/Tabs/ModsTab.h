@@ -27,6 +27,9 @@ public:
 	void GenerateModPage();
 	void ShowLoadingText();
 	void UpdateClickedCategoryButton();
+
+	static void CheckForModUpdates();
+
 	ModsTab();
 	void Tick() override;
 	virtual ~ModsTab();

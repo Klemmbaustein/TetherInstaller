@@ -3,11 +3,6 @@
 
 namespace Log
 {
-	enum PrintType
-	{
-		General,
-		Install
-	};
 
 	enum Severity
 	{
@@ -19,6 +14,6 @@ namespace Log
 	extern std::string TypeStrings[2];
 	extern std::string SeverityStrings[3];
 
-	void RegisterOnPrintCallback(void (*OnPrint)(std::string Msg, PrintType Type, Severity MsgSeverity));
-	void Print(std::string Msg, PrintType Type = General, Severity MsgSeverity = Info);
+	void RegisterOnPrintCallback(void (*OnPrint)(std::string Msg, Severity MsgSeverity));
+	void Print(std::string Msg, Severity MsgSeverity = Info);
 }

@@ -105,6 +105,7 @@ namespace Thunderstore
 			p.Name = modinfo.at("name");
 			p.Description = modinfo.at("description");
 			p.Img = modinfo.at("image");
+			p.Version = modinfo.at("version");
 
 			InstalledMods.push_back(p);
 		}
@@ -139,7 +140,7 @@ namespace Thunderstore
 			catch (std::exception& e)
 			{
 				FoundMods.clear();
-				Log::Print("Error parsing installed mods: " + std::string(e.what()), Log::General, Log::Error);
+				Log::Print("Error parsing installed mods: " + std::string(e.what()),  Log::Error);
 			}
 			Installer::ThreadProgress = 1;
 			IsDownloading = false;
@@ -169,7 +170,7 @@ namespace Thunderstore
 		}
 		catch (std::exception& e)
 		{
-			Log::Print(e.what(), Log::General, Log::Info);
+			Log::Print(e.what(),  Log::Info);
 			throw e;
 		}
 
@@ -229,10 +230,10 @@ namespace Thunderstore
 		}
 		catch (std::exception& e)
 		{
-			Log::Print("Thunderstore response has an invalid layout.", Log::Install, Log::Error);
-			Log::Print(e.what(), Log::Install, Log::Error);
+			Log::Print("Thunderstore response has an invalid layout.", Log::Error);
+			Log::Print(e.what(), Log::Error);
 
-			Log::Print("Writing response to temp/invalidresponse.txt", Log::Install, Log::Error);
+			Log::Print("Writing response to temp/invalidresponse.txt", Log::Error);
 			std::filesystem::copy("temp/net/tspage.txt", "temp/invalidresponse.txt");
 		}
 		Installer::ThreadProgress = 1;
@@ -265,10 +266,10 @@ namespace Thunderstore
 		}
 		catch (std::exception& e)
 		{
-			Log::Print("Thunderstore response has an invalid layout.", Log::Install, Log::Error);
-			Log::Print(e.what(), Log::Install, Log::Error);
+			Log::Print("Thunderstore response has an invalid layout.", Log::Error);
+			Log::Print(e.what(), Log::Error);
 
-			Log::Print("Writing response to temp/invalidresponse.txt", Log::Install, Log::Error);
+			Log::Print("Writing response to temp/invalidresponse.txt", Log::Error);
 			std::filesystem::copy("temp/net/mod.txt", "temp/invalidresponse.txt");
 		}
 		SelectedMod = m;
@@ -282,11 +283,13 @@ namespace Thunderstore
 	// mods folder.
 	// TODO: Extract other elements of the mod. (I've seen some mods have different Folders that
 	// need to be extracted somewhere else)
-	void InstallMod(Package m)
+	void InstallMod(Package m, bool Async = true)
 	{
 		using namespace nlohmann;
-		Installer::ThreadProgress = 0;
-
+		if (Async)
+		{
+			Installer::ThreadProgress = 0;
+		}
 		try
 		{
 			if (Thunderstore::IsModInstalled(m))
@@ -320,9 +323,12 @@ namespace Thunderstore
 				catch (std::exception& e)
 				{
 					FoundMods.clear();
-					Log::Print("Error parsing installed mods: " + std::string(e.what()), Log::General, Log::Error);
+					Log::Print("Error parsing installed mods: " + std::string(e.what()), Log::Error);
 				}
-				Installer::ThreadProgress = 1;
+				if (Async)
+				{
+					Installer::ThreadProgress = 1;
+				}
 				return;
 			}
 			Installer::BackgroundName = "Downloading mod";
@@ -372,7 +378,10 @@ namespace Thunderstore
 			Log::Print(e.what());
 		}
 		Thunderstore::LoadedSelectedMod = true;
-		Installer::ThreadProgress = 1;
+		if (Async)
+		{
+			Installer::ThreadProgress = 1;
+		}
 	}
 }
 
@@ -403,7 +412,7 @@ void ModsTab::GenerateModInfo()
 				->AddChild((new UIButton(true, 0, 1, []() {
 						if (!Installer::CurrentBackgroundThread)
 						{
-							Installer::CurrentBackgroundThread = new std::thread(Thunderstore::InstallMod, Thunderstore::SelectedMod);
+							Installer::CurrentBackgroundThread = new std::thread(Thunderstore::InstallMod, Thunderstore::SelectedMod, true);
 						}}))
 					->SetPadding(0.01, 0.07, 0.01, 0.01)
 					->AddChild(new UIText(0.4, 0, IsInstalled ? "Uninstall" : "Install", UI::Text)))
@@ -432,14 +441,12 @@ void ModsTab::GenerateModInfo()
 	ModsScrollBox->AddChild((new UIBackground(true, 0, 1, Vector2f(1.15, 0.005)))
 		->SetPadding(0, 0.05, 0, 0));
 
-	// Somewhat fucky markdown parser. TODO: Unfuck.
-
 	UIBox* MarkdownBackground = new UIBox(false, 0);
 	MarkdownBackground->SetPadding(0);
 	MarkdownBackground->Align = UIBox::E_REVERSE;
 	ModsScrollBox->AddChild(MarkdownBackground);
 
-	Markdown::RenderMarkdown(Thunderstore::SelectedMod.Description, MarkdownBackground, 1, UI::Text);
+	Markdown::RenderMarkdown(Thunderstore::SelectedMod.Description, 1.1, MarkdownBackground, 1, UI::Text);
 }
 
 void ModsTab::GenerateModPage()
@@ -577,6 +584,57 @@ void ModsTab::UpdateClickedCategoryButton()
 			CategoryButtons[i]->SetColor(1);
 		}
 	}
+}
+
+void ModsTab::CheckForModUpdates()
+{
+	using namespace nlohmann;
+
+	Installer::BackgroundName = "Checking for mod updates";
+	Installer::BackgroundTask = "Checking for mod updates";
+	Installer::ThreadProgress = 0;
+
+	std::vector<Thunderstore::Package> Mods = Thunderstore::GetInstalledMods();
+
+	size_t it = 0;
+	for (const auto& m : Mods)
+	{
+		Networking::Download("https://thunderstore.io/api/experimental/frontend/c/northstar/p/" + m.Namespace + "/" + m.Name, "temp/net/mod.txt", "");
+
+		try
+		{
+			std::ifstream in = std::ifstream("temp/net/mod.txt");
+			std::stringstream str; str << in.rdbuf();
+			json response = json::parse(str.str());
+			if (m.Version != response.at("versions")[0].at("version_number").get<std::string>())
+			{
+				Log::Print("Mod '" + m.Name + "' is outdated!", Log::Warning);
+				Log::Print(response.at("versions")[0].at("version_number").get<std::string>() + " != " + m.Version, Log::Warning);
+				// Uninstall mod, then install mod again. (InstallMod() uninstalls a mod if it's already installed)
+
+				auto NewMod = m;
+				NewMod.DownloadUrl = response.at("download_url");
+				Thunderstore::InstallMod(NewMod, false);
+				Thunderstore::InstallMod(NewMod, false);
+			}
+			else
+			{
+				Log::Print("Mod '" + m.Name + "' is not outdated.");
+			}
+		}
+		catch (std::exception& e)
+		{
+			Log::Print("Thunderstore response has an invalid layout.", Log::Error);
+			Log::Print(e.what(), Log::Error);
+
+			Log::Print("Writing response to temp/invalidresponse.txt", Log::Error);
+			std::filesystem::copy("temp/net/mod.txt", "temp/invalidresponse.txt");
+		}
+		Installer::ThreadProgress += (float)it / (float)Mods.size();
+		Installer::ThreadProgress = std::min(0.95f, Installer::ThreadProgress);
+		it++;
+	}
+	Installer::ThreadProgress = 1;
 }
 
 ModsTab::ModsTab()

@@ -7,8 +7,7 @@ namespace Log
 	struct LogMsg
 	{
 		std::string msg;
-		Log::PrintType Type;
-		Log::Severity sev;
+		Severity sev;
 	};
 	
 	std::vector<LogMsg> BufferedMessages;
@@ -30,7 +29,7 @@ LogPanel::LogPanel()
 	LogBackground = new UIBackground(false, Vector2f(0.4, -0.8), 0.1, Vector2f(0.6, 1.8));
 	LogBackground->Align = UIBox::E_REVERSE;
 
-	auto Callbackfun = [](std::string Msg, Log::PrintType Type, Log::Severity sev) {
+	auto Callbackfun = [](std::string Msg, Log::Severity sev) {
 		auto NewText = new UIText(0.25, ColoredText({ TextSegment("[" + Log::SeverityStrings[sev] + "]: ", Log::SeverityColors[sev]), TextSegment(Msg, Vector3f32(1))}), UI::MonoText);
 		NewText->Wrap = true;
 		NewText->WrapDistance = 1.95;
@@ -40,7 +39,7 @@ LogPanel::LogPanel()
 
 	for (auto& i : Log::BufferedMessages)
 	{
-		Callbackfun(i.msg, i.Type, i.sev);
+		Callbackfun(i.msg, i.sev);
 	}
 
 	Log::RegisterOnPrintCallback(Callbackfun);
@@ -52,11 +51,10 @@ void LogPanel::Update()
 
 void LogPanel::PrebufferLogEvents()
 {
-	Log::RegisterOnPrintCallback([](std::string Msg, Log::PrintType Type, Log::Severity sev) {
+	Log::RegisterOnPrintCallback([](std::string Msg, Log::Severity sev) {
 		Log::LogMsg m;
 		m.msg = Msg;
 		m.sev = sev;
-		m.Type = Type;
 		Log::BufferedMessages.push_back(m);
 		});
 }

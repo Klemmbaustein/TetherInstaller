@@ -116,7 +116,7 @@ void DeleteAllMods()
 		if (CoreModNames.find(m.path().filename().string()) == CoreModNames.end() && std::filesystem::is_directory(m))
 		{
 			std::filesystem::remove_all(m);
-			Log::Print("Removing mod: " + m.path().filename().string(), Log::General, Log::Warning);
+			Log::Print("Removing mod: " + m.path().filename().string(),  Log::Warning);
 		}
 	}
 	std::filesystem::remove_all("Data/var/modinfo");
@@ -176,9 +176,9 @@ void SettingsTab::GenerateSettings()
 	SettingsBox->AddChild((new UIButton(true, 0, 1, []() {
 		if (!Installer::CurrentBackgroundThread)
 		{
-			Log::Print("Un-fucking installation...", Log::General, Log::Warning);
+			Log::Print("Un-fucking installation...",  Log::Warning);
 			std::filesystem::remove_all("temp");
-			Log::Print("Deleted ./temp/", Log::General, Log::Warning);
+			Log::Print("Deleted ./temp/",  Log::Warning);
 			DeleteAllMods();
 			Game::UpdateGameAsync();
 		}

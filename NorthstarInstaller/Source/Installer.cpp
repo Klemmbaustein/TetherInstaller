@@ -40,6 +40,7 @@ namespace Installer
 	const std::string InstallerVersion = "0.1.1";
 	float ThreadProgress = 0;
 
+	bool HasCheckedForModUpdates = false;
 
 	void GenerateTabs()
 	{
@@ -103,7 +104,7 @@ namespace Installer
 		
 		if (Latest.empty())
 		{
-			Log::Print("Could not get latest game version", Log::General, Log::Error);
+			Log::Print("Could not get latest game version",  Log::Error);
 			BackgroundTask = "Could not get latest game version";
 			ThreadProgress = 1;
 			return;
@@ -111,7 +112,7 @@ namespace Installer
 
 		if (Latest != Game::GetCurrentVersion())
 		{
-			Log::Print("Game needs to be updated", Log::General, Log::Warning);
+			Log::Print("Game needs to be updated",  Log::Warning);
 			Game::RequiresUpdate = true;
 			BackgroundTask = "Update required";
 			ThreadProgress = 1;
@@ -207,6 +208,12 @@ int main(int argc, char** argv)
 		{
 			Installer::TaskProgressBar->IsVisible = false;
 			Installer::TaskNameText->SetText("No background task");
+		}
+
+		if (!Installer::CurrentBackgroundThread && !Installer::HasCheckedForModUpdates)
+		{
+			Installer::HasCheckedForModUpdates = true;
+			Installer::CurrentBackgroundThread = new std::thread(ModsTab::CheckForModUpdates);
 		}
 
 		Application::UpdateWindow();
