@@ -68,7 +68,6 @@ std::string Game::GetTitanfallLocation()
 	{
 		std::wstring GameDir, GameDirDefault;
 		LONG KeyResult = GetStringRegKey(RegKey, L"Install Dir", GameDir, GameDirDefault);
-		Log::Print(wstrtostr(GameDir));
 		if (KeyResult == ERROR_SUCCESS && IsValidTitanfallLocation(GameDir))
 		{
 			std::string UTF8GameDir = wstrtostr(GameDir);
