@@ -16,8 +16,31 @@ std::string CommonTitanfallLocations[] =
 {
 	"C:/Program Files (x86)/Steam/steamapps/common/Titanfall2",
 	"C:/Program Files (x86)/Origin Games/Titanfall2",
-	// "D:/EA/Titanfall2", // My Titanfall 2 path for testing
 };
+
+#if _WIN32
+
+#define NOMINMAX
+#include <Windows.h>
+
+
+std::string wstrtostr(const std::wstring& wstr);
+
+LONG GetStringRegKey(HKEY hKey, const std::wstring& strValueName, std::wstring& strValue, const std::wstring& strDefaultValue)
+{
+	strValue = strDefaultValue;
+	WCHAR szBuffer[512];
+	DWORD dwBufferSize = sizeof(szBuffer);
+	ULONG nError;
+	nError = RegQueryValueExW(hKey, strValueName.c_str(), 0, NULL, (LPBYTE)szBuffer, &dwBufferSize);
+	if (ERROR_SUCCESS == nError)
+	{
+		strValue = szBuffer;
+	}
+	return nError;
+}
+
+#endif
 
 std::string Game::GetTitanfallLocation()
 {
@@ -36,6 +59,29 @@ std::string Game::GetTitanfallLocation()
 		Log::Print("'" + GameDirTxtPath + "' does not contain a valid Titanfall 2 install location!",  Log::Warning);
 	}
 	Log::Print("Could not find game dir from '" + GameDirTxtPath + "'");
+
+#if _WIN32
+
+	HKEY RegKey;
+	LONG lRes = RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Respawn\\Titanfall2", 0, KEY_READ, &RegKey);
+	if (lRes == ERROR_SUCCESS)
+	{
+		std::wstring GameDir, GameDirDefault;
+		LONG KeyResult = GetStringRegKey(RegKey, L"Install Dir", GameDir, GameDirDefault);
+		Log::Print(wstrtostr(GameDir));
+		if (KeyResult == ERROR_SUCCESS && IsValidTitanfallLocation(GameDir))
+		{
+			std::string UTF8GameDir = wstrtostr(GameDir);
+			Log::Print("Found game dir through Windows registry: " + UTF8GameDir);
+			SaveGameDir(UTF8GameDir);
+			return UTF8GameDir;
+		}
+	}
+	else
+	{
+		Log::Print("Cannot open reg key 'SOFTWARE\\Respawn\\Titanfall2'");
+	}
+#endif
 
 	for (auto& i : CommonTitanfallLocations)
 	{
