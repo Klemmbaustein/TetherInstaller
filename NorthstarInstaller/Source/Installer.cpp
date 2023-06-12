@@ -37,7 +37,7 @@ namespace Installer
 	std::thread* CurrentBackgroundThread = nullptr;
 	std::string BackgroundTask;
 	std::string BackgroundName;
-	const std::string InstallerVersion = "0.1.1";
+	const std::string InstallerVersion = "v0.1.2";
 	float ThreadProgress = 0;
 
 	bool HasCheckedForModUpdates = false;

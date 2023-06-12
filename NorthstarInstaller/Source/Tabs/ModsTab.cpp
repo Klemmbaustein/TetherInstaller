@@ -415,7 +415,7 @@ void ModsTab::GenerateModInfo()
 							Installer::CurrentBackgroundThread = new std::thread(Thunderstore::InstallMod, Thunderstore::SelectedMod, true);
 						}}))
 					->SetPadding(0.01, 0.07, 0.01, 0.01)
-					->AddChild(new UIText(0.4, 0, IsInstalled ? "Uninstall" : "Install", UI::Text)))
+					->AddChild(new UIText(0.4, 0, IsInstalled ? "Uninstall" : (Game::GamePath.empty() ? "Install (No game path!)" : "Install"), UI::Text)))
 
 				->AddChild((new UIButton(true, 0, 1, []() {
 							system(("start https://northstar.thunderstore.io/package/"

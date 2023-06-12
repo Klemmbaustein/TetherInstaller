@@ -157,33 +157,37 @@ void SettingsTab::GenerateSettings()
 	SettingsBox->AddChild((new UIButton(true, 0, 1, LocateTitanfall))
 		->AddChild(new UIText(0.4, 0, Game::GamePath.empty() ? "Locate Titanfall 2 (No path!)" : "Locate Titanfall (" + ShortGamePath + ")", UI::Text)));
 
-	SettingsBox->AddChild((new UIButton(true, 0, 1, []() {
-		if (!Installer::CurrentBackgroundThread)
-		{
-			Installer::CurrentBackgroundThread = new std::thread(Installer::CheckForUpdates);
-		}
-		}))
-		->AddChild(new UIText(0.4, 0, "Re-check for updates", UI::Text)));
+	if (Game::IsValidTitanfallLocation(Game::GamePath))
+	{
+		SettingsBox->AddChild((new UIButton(true, 0, 1, []() {
+			if (!Installer::CurrentBackgroundThread)
+			{
+				Installer::CurrentBackgroundThread = new std::thread(Installer::CheckForUpdates);
+			}
+			}))
+			->AddChild(new UIText(0.4, 0, "Re-check for updates", UI::Text)));
 
-	SettingsBox->AddChild((new UIButton(true, 0, 1, Game::UpdateGameAsync))
-		->AddChild(new UIText(0.4, 0, "Force reinstall Northstar", UI::Text)));
+		SettingsBox->AddChild((new UIButton(true, 0, 1, Game::UpdateGameAsync))
+			->AddChild(new UIText(0.4, 0, "Force reinstall Northstar", UI::Text)));
 
 
-	AddCategoryHeader("Danger zone", SettingsBox);
-	SettingsBox->AddChild((new UIButton(true, 0, 1, DeleteAllMods))
-		->AddChild(new UIText(0.4, 0, "Delete all mods", UI::Text)));
+		AddCategoryHeader("Danger zone", SettingsBox);
+		SettingsBox->AddChild((new UIButton(true, 0, 1, DeleteAllMods))
+			->AddChild(new UIText(0.4, 0, "Delete all mods", UI::Text)));
 
-	SettingsBox->AddChild((new UIButton(true, 0, 1, []() {
-		if (!Installer::CurrentBackgroundThread)
-		{
-			Log::Print("Un-fucking installation...",  Log::Warning);
-			std::filesystem::remove_all("temp");
-			Log::Print("Deleted ./temp/",  Log::Warning);
-			DeleteAllMods();
-			Game::UpdateGameAsync();
-		}
-		}))
-		->AddChild(new UIText(0.4, 0, "Try to unfuck installation", UI::Text)));
+		SettingsBox->AddChild((new UIButton(true, 0, 1, []() {
+			if (!Installer::CurrentBackgroundThread)
+			{
+				Log::Print("Un-fucking installation...", Log::Warning);
+				std::filesystem::remove_all("temp");
+				Log::Print("Deleted ./temp/", Log::Warning);
+				DeleteAllMods();
+				Game::UpdateGameAsync();
+			}
+			}))
+			->AddChild(new UIText(0.4, 0, "Try to unfuck installation", UI::Text)));
+	}
+
 	AddCategoryHeader("About", SettingsBox);
 	SettingsBox->AddChild(new UIText(0.35, 1, "Installed Northstar version: " + Game::GetCurrentVersion(), UI::Text));
 	SettingsBox->AddChild(new UIText(0.35, 1, "Installer version: " + Installer::InstallerVersion, UI::Text));
