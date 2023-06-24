@@ -38,6 +38,7 @@ namespace Thunderstore
 		std::string PageUrl;
 		size_t Downloads = 0;
 		size_t Rating = 0;
+		bool IsUnknownLocalMod = false;
 	};
 
 	std::vector<Package> FoundMods;
@@ -77,15 +78,33 @@ namespace Thunderstore
 		Thunderstore::Category("Top Rated", Thunderstore::Ordering::Top_Rated),
 	};
 
-	std::vector<Package> GetInstalledMods()
+	struct InstalledModsResult
+	{
+		std::vector<Package> Managed;
+		std::vector<Package> Unmanaged;
+
+		std::vector<Package> Combined() const
+		{
+			std::vector<Package> comb = Managed;
+			for (auto& i : Unmanaged)
+			{
+				comb.push_back(i);
+			}
+			return comb;
+		}
+	};
+	InstalledModsResult GetInstalledMods()
 	{
 		using namespace nlohmann;
 
 		if (!std::filesystem::exists("Data/var/modinfo"))
 		{
-			return std::vector<Package>();
+			return InstalledModsResult();
 		}
 
+		// Mods managed by the installer
+		std::set<std::string> ManagedMods;
+		std::vector<Package> UnmanagedMods;
 		std::vector<Package> InstalledMods;
 		for (auto& i : std::filesystem::directory_iterator("Data/var/modinfo"))
 		{
@@ -107,9 +126,37 @@ namespace Thunderstore
 			p.Img = modinfo.at("image");
 			p.Version = modinfo.at("version");
 
+			for (auto& i : modinfo.at("mod_files"))
+			{
+				auto file = Game::GamePath + "/R2Northstar/mods/" + i.get<std::string>();
+				if (std::filesystem::exists(file))
+				{
+					ManagedMods.insert(i.get<std::string>());
+				}
+			}
 			InstalledMods.push_back(p);
 		}
-		return InstalledMods;
+
+		for (auto& i : std::filesystem::directory_iterator(Game::GamePath + "/R2Northstar/mods"))
+		{
+			std::string ModName = i.path().filename().string();
+			std::string Author = ModName.substr(0, ModName.find_first_of("."));
+			std::string Name = ModName.substr(ModName.find_first_of(".") + 1);
+
+			if (!ManagedMods.contains(ModName) && std::filesystem::is_directory(i) && Author != "Northstar")
+			{
+				Package p;
+				p.Name = Name;
+				p.Author = Author;
+				p.Namespace = Author;
+				p.Version = "?";
+				p.IsUnknownLocalMod = true;
+				p.DownloadUrl = i.path().string();
+				UnmanagedMods.push_back(p);
+			}
+		}
+
+		return InstalledModsResult(InstalledMods, UnmanagedMods);
 	}
 
 	bool IsModInstalled(Package m)
@@ -135,7 +182,7 @@ namespace Thunderstore
 			Installer::ThreadProgress = 0.5;
 			try
 			{
-				FoundMods = GetInstalledMods();
+				FoundMods = GetInstalledMods().Combined();
 			}
 			catch (std::exception& e)
 			{
@@ -162,7 +209,7 @@ namespace Thunderstore
 				}
 
 				// If the already loaded images are larger than 10mb, delete them.
-				if (size >= 20 * 1000 * 1000)
+				if (size >= 20ull * 1000ull * 1000ull)
 				{
 					std::filesystem::remove_all("temp/net/ts");
 				}
@@ -318,7 +365,7 @@ namespace Thunderstore
 				Thunderstore::LoadedSelectedMod = true;
 				try
 				{
-					FoundMods = GetInstalledMods();
+					FoundMods = GetInstalledMods().Combined();
 				}
 				catch (std::exception& e)
 				{
@@ -402,6 +449,17 @@ void ModsTab::GenerateModInfo()
 	ModsScrollBox->AddChild((new UIBackground(true, 0, 1, Vector2f(1.15, 0.005)))
 			->SetPadding(0));
 
+	std::string DescriptionText = "By: " + Thunderstore::SelectedMod.Author
+		+ " | Downloads: " + std::to_string(Thunderstore::SelectedMod.Downloads)
+		+ " | Ratings: " + std::to_string(Thunderstore::SelectedMod.Rating);
+
+	if (Thunderstore::SelectedMod.IsUnknownLocalMod)
+	{
+		DescriptionText = "By: " + Thunderstore::SelectedMod.Author
+			+ " | Downloads: ???"
+			+ " | Ratings: ???";
+	}
+
 	ModsScrollBox->AddChild((new UIBox(true, 0))
 		->SetPadding(0)
 		->AddChild((new UIBox(false, 0))
@@ -410,6 +468,13 @@ void ModsTab::GenerateModInfo()
 			->AddChild((new UIBox(true, 0))
 
 				->AddChild((new UIButton(true, 0, 1, []() {
+						if (Thunderstore::SelectedMod.IsUnknownLocalMod)
+						{
+							std::filesystem::remove_all(Thunderstore::SelectedMod.DownloadUrl);
+							Thunderstore::FoundMods = Thunderstore::GetInstalledMods().Combined();
+							Thunderstore::LoadedSelectedMod = true;
+							return;
+						}
 						if (!Installer::CurrentBackgroundThread)
 						{
 							Installer::CurrentBackgroundThread = new std::thread(Thunderstore::InstallMod, Thunderstore::SelectedMod, true);
@@ -426,10 +491,7 @@ void ModsTab::GenerateModInfo()
 					->SetPadding(0.01, 0.07, 0.01, 0.01)
 					->AddChild(new UIText(0.4, 0, "Open In Browser", UI::Text))))
 
-			->AddChild(new UIText(0.4, 1, 
-				"By: " + Thunderstore::SelectedMod.Author
-				+ " | Downloads: " + std::to_string(Thunderstore::SelectedMod.Downloads)
-				+ " | Ratings: " + std::to_string(Thunderstore::SelectedMod.Rating), UI::Text))
+			->AddChild(new UIText(0.4, 1, DescriptionText, UI::Text))
 			->AddChild(new UIText(0.7, 1, Thunderstore::SelectedMod.Name + (IsInstalled ? " (Installed)" : ""), UI::Text)))
 
 		->AddChild((new UIBackground(true, 0, 1, Vector2(0.35)))
@@ -503,6 +565,14 @@ void ModsTab::GenerateModPage()
 				if (ModButtons[i]->GetIsHovered())
 				{
 					const auto& m = Thunderstore::FoundMods[i];
+
+					if (m.IsUnknownLocalMod)
+					{
+						Thunderstore::SelectedMod = m;
+						Thunderstore::LoadedSelectedMod = true;
+						return;
+					}
+
 					if (!Installer::CurrentBackgroundThread)
 					{
 						CurrentModsTab->ShowLoadingText();
@@ -536,7 +606,7 @@ void ModsTab::GenerateModPage()
 		{
 			Image->Align = UIBox::E_CENTERED;
 			Image->SetColor(0.1);
-			Image->AddChild(new UIText(0.4, 1, "Loading...", UI::Text));
+			Image->AddChild(new UIText(0.4, 1, i.IsUnknownLocalMod ? " Unknown" : "Loading...", UI::Text));
 		}
 		ModButtons.push_back(b);
 	}
@@ -594,7 +664,7 @@ void ModsTab::CheckForModUpdates()
 	Installer::BackgroundTask = "Checking for mod updates";
 	Installer::ThreadProgress = 0;
 
-	std::vector<Thunderstore::Package> Mods = Thunderstore::GetInstalledMods();
+	std::vector<Thunderstore::Package> Mods = Thunderstore::GetInstalledMods().Managed;
 
 	size_t it = 0;
 	for (const auto& m : Mods)
@@ -612,7 +682,7 @@ void ModsTab::CheckForModUpdates()
 				Log::Print(response.at("versions")[0].at("version_number").get<std::string>() + " != " + m.Version, Log::Warning);
 				// Uninstall mod, then install mod again. (InstallMod() uninstalls a mod if it's already installed)
 
-				auto NewMod = m;
+				Thunderstore::Package NewMod = m;
 				NewMod.DownloadUrl = response.at("download_url");
 				Thunderstore::InstallMod(NewMod, false);
 				Thunderstore::InstallMod(NewMod, false);
