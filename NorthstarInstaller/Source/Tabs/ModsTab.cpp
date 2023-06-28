@@ -306,10 +306,15 @@ namespace Thunderstore
 			std::stringstream str; str << in.rdbuf();
 			auto response = json::parse(str.str());
 			m.Description = response.at("markdown");
-			m.Downloads = response.at("download_count");
-			m.Rating = response.at("rating_score");
 			m.DownloadUrl = response.at("download_url");
 			m.Version = response.at("versions")[0].at("version_number").get<std::string>();
+			m.Rating = response.at("rating_score") / response.at("versions").size();
+
+			for (auto& i : response.at("versions"))
+			{
+				m.Downloads += i.at("download_count");
+
+			}
 		}
 		catch (std::exception& e)
 		{
