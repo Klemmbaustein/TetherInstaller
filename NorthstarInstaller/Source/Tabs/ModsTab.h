@@ -5,6 +5,7 @@
 #include <UI/UIText.h>
 #include <UI/UIScrollBox.h>
 #include <UI/UITextField.h>
+#include <atomic>
 
 class ModsTab : public UITab
 {
@@ -18,6 +19,7 @@ class ModsTab : public UITab
 	unsigned int ModPreviewTexture = 0;
 	float AspectRatio = 0;
 public:
+	static std::atomic<unsigned int> ModsPerPage;
 	UITextField* SearchBar = nullptr;
 	std::string Filter = "";
 	bool DownloadingPage = false;

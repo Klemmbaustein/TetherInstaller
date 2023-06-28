@@ -19,6 +19,7 @@ std::vector<UIButton*> ModsTab::ModButtons;
 std::vector<UIButton*> ModsTab::PageButtons;
 std::vector<UIButton*> ModsTab::CategoryButtons;
 
+std::atomic<unsigned int> ModsTab::ModsPerPage = 20;
 ModsTab* ModsTab::CurrentModsTab = nullptr;
 
 namespace Thunderstore
@@ -35,6 +36,7 @@ namespace Thunderstore
 		std::string Namespace;
 		std::string DownloadUrl;
 		std::string Version;
+		std::string UUID;
 		std::string PageUrl;
 		size_t Downloads = 0;
 		size_t Rating = 0;
@@ -173,6 +175,8 @@ namespace Thunderstore
 	void DownloadThunderstoreInfo(Ordering ModOrdering, size_t Page, std::string Filter)
 	{
 		using namespace nlohmann;
+		std::transform(Filter.begin(), Filter.end(), Filter.begin(),
+			[](unsigned char c) { return std::tolower(c); });
 
 		if (ModOrdering == Ordering::Installed)
 		{
@@ -225,7 +229,7 @@ namespace Thunderstore
 		Installer::BackgroundName = "Loading Thunderstore";
 		Installer::BackgroundTask = "Loading Thunderstore";
 		Installer::ThreadProgress = 0.1;
-		Networking::Download("https://thunderstore.io/api/experimental/frontend/c/northstar/packages/"
+		Networking::Download("https://thunderstore.io/c/northstar/api/v1/package/"
 			+ OrderingStrings[(int)ModOrdering]
 			+ "&q=" + Filter
 			+ "&page=" + std::to_string(Page),
@@ -242,19 +246,34 @@ namespace Thunderstore
 			std::stringstream str; str << in.rdbuf();
 			auto response = json::parse(str.str());
 			FoundMods.clear();
-			for (auto& elem : response["packages"])
+			size_t Start = ModsTab::ModsPerPage * (Page - 1);
+			size_t FoundCount = 0;
+			for (size_t i = Start; i < response.size(); i++)
 			{
+				if (FoundCount == ModsTab::ModsPerPage)
+				{
+					break;
+				}
 				Package Mod;
-				Mod.Name = elem.at("package_name").get<std::string>();
-				Mod.Img = elem.at("image_src").get<std::string>();
-				Mod.Namespace = elem.at("namespace").get<std::string>();
-				Mod.Author = elem.at("team_name").get<std::string>();
+				auto& elem = response[i];
 				if (elem.at("is_pinned").get<bool>())
 				{
 					continue;
 				}
-
+				Mod.Name = elem.at("versions")[0].at("name").get<std::string>();
+				std::string LowerCaseName = Mod.Name;
+				std::transform(LowerCaseName.begin(), LowerCaseName.end(), LowerCaseName.begin(),
+					[](unsigned char c) { return std::tolower(c); });
+				if (!Filter.empty() && (LowerCaseName.find(Filter) == std::string::npos))
+				{
+					continue;
+				}
+				Mod.UUID = elem.at("uuid4");
+				Mod.Img = elem.at("versions")[0].at("icon");
+				Mod.Namespace = elem.at("owner").get<std::string>();
+				Mod.Author = elem.at("owner").get<std::string>();
 				FoundMods.push_back(Mod);
+				FoundCount++;
 			}
 
 			std::vector<Package> ModsCopy = FoundMods;
