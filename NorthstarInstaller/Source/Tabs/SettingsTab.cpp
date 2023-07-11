@@ -180,7 +180,7 @@ void SettingsTab::GenerateSettings()
 			{
 				Log::Print("Un-fucking installation...", Log::Warning);
 				std::filesystem::remove_all("temp");
-				Log::Print("Deleted ./temp/", Log::Warning);
+				Log::Print("Deleted ./Data/temp/", Log::Warning);
 				DeleteAllMods();
 				Game::UpdateGameAsync();
 			}

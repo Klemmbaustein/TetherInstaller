@@ -1,33 +1,52 @@
 #include "Log.h"
+#include <iostream>
 
-namespace Log
+#if _WIN32
+#include <Windows.h>
+#include <wincon.h>
+
+bool IsVerbose = false;
+HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+std::string MessageTypeStrings[3] =
 {
-	std::string TypeStrings[2] =
-	{
-		"General",
-		"Install"
-	};
+	"[Info]",
+	"[Warning]",
+	"[Error]",
+};
+unsigned int MessageTypeMajorColors[3] =
+{
+	FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED,
+	FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY,
+	FOREGROUND_RED | FOREGROUND_INTENSITY
+};
 
-	std::string SeverityStrings[3] =
-	{
-		"Info",
-		"Warning",
-		"Error"
-	};
+unsigned int MessageTypeMinorColors[3] =
+{
+	BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_INTENSITY,
+	BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_INTENSITY,
+	BACKGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED
+};
 
-	void(*PrintCallback)(std::string Msg, Severity MsgSeverity) = nullptr;
+void Log::SetIsVerbose(bool NewIsVerbose)
+{
+	IsVerbose = NewIsVerbose;
 }
 
-void Log::RegisterOnPrintCallback(void(*OnPrint)(std::string Msg, Severity MsgSeverity))
+bool Log::GetIsVerbose()
 {
-	PrintCallback = OnPrint;
+	return IsVerbose;
 }
 
-void Log::Print(std::string Msg, Severity MsgSeverity)
+void Log::Print(std::string Message, Severity Type)
 {
-	std::puts((SeverityStrings[MsgSeverity] + "]: " + Msg).c_str());
-	if (PrintCallback)
-	{
-		PrintCallback(Msg, MsgSeverity);
-	}
+	SetConsoleTextAttribute(hConsole, MessageTypeMinorColors[Type]);
+	std::cout << MessageTypeStrings[Type];
+	SetConsoleTextAttribute(hConsole, MessageTypeMajorColors[Type]);
+	std::cout << ": " << Message << std::endl;
+	SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
 }
+
+#elif __linux__
+//TODO Log on Linux
+#endif

@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <regex>
+#include <iomanip>
 
 #include <Rendering/Texture.h>
 #include <Application.h>
@@ -41,7 +42,9 @@ namespace Thunderstore
 		size_t Downloads = 0;
 		size_t Rating = 0;
 		bool IsUnknownLocalMod = false;
+		bool IsNSFW = false;
 	};
+
 
 	std::vector<Package> FoundMods;
 
@@ -56,14 +59,6 @@ namespace Thunderstore
 
 	Ordering SelectedOrdering = Ordering::Last_Updated;
 
-	std::vector<std::string> OrderingStrings =
-	{
-		"?ordering=newest",
-		"?ordering=last-updated",
-		"?ordering=most-downloaded",
-		"?ordering=top-rated",
-		"?ordering=none"
-	};
 
 	struct Category
 	{
@@ -200,11 +195,11 @@ namespace Thunderstore
 
 		try
 		{
-			if (std::filesystem::exists("temp/net/ts"))
+			if (std::filesystem::exists("Data/temp/net/ts"))
 			{
 				// Get size of already loaded image folders.
 				size_t size = 0;
-				for (std::filesystem::recursive_directory_iterator it("temp/net/ts");
+				for (std::filesystem::recursive_directory_iterator it("Data/temp/net/ts");
 					it != std::filesystem::recursive_directory_iterator();
 					++it)
 				{
@@ -215,7 +210,7 @@ namespace Thunderstore
 				// If the already loaded images are larger than 10mb, delete them.
 				if (size >= 20ull * 1000ull * 1000ull)
 				{
-					std::filesystem::remove_all("temp/net/ts");
+					std::filesystem::remove_all("Data/temp/net/ts");
 				}
 			}
 		}
@@ -229,51 +224,137 @@ namespace Thunderstore
 		Installer::BackgroundName = "Loading Thunderstore";
 		Installer::BackgroundTask = "Loading Thunderstore";
 		Installer::ThreadProgress = 0.1;
-		Networking::Download("https://thunderstore.io/c/northstar/api/v1/package/"
-			+ OrderingStrings[(int)ModOrdering]
-			+ "&q=" + Filter
-			+ "&page=" + std::to_string(Page),
-			"temp/net/tspage.txt", "");
+		Networking::Download("https://thunderstore.io/c/northstar/api/v1/package/", "Data/temp/net/tspage.txt", "");
 
 		Installer::ThreadProgress = 0.3;
 
-		std::filesystem::create_directories("temp/net/ts/");
+		std::filesystem::create_directories("Data/temp/net/ts/");
+
+		
 
 
 		try
 		{
-			std::ifstream in = std::ifstream("temp/net/tspage.txt");
+			// The thunderstore API sucks.
+			std::ifstream in = std::ifstream("Data/temp/net/tspage.txt");
 			std::stringstream str; str << in.rdbuf();
 			auto response = json::parse(str.str());
 			FoundMods.clear();
-			size_t Start = ModsTab::ModsPerPage * (Page - 1);
+			size_t Start = ModsTab::ModsPerPage * (Page);
 			size_t FoundCount = 0;
-			for (size_t i = Start; i < response.size(); i++)
+
+			struct ModElement
 			{
-				if (FoundCount == ModsTab::ModsPerPage)
+				ModElement(size_t CurrentIndex,size_t Rating, bool SortByLowest)
+				{
+					this->CurrentIndex = CurrentIndex;
+					this->Rating = Rating;
+					this->SortByLowest = SortByLowest;
+				}
+				size_t CurrentIndex = 0;
+				size_t Rating = 0;
+				bool SortByLowest = true;
+
+				static bool compare(const ModElement& a, const ModElement& b)
+				{
+					if (a.SortByLowest)
+						return a.Rating < b.Rating;
+					else
+						return a.Rating > b.Rating;
+				}
+
+			};
+
+			std::vector<ModElement> RatedMods;
+
+			for (size_t i = 0; i < response.size(); i++)
+			{
+				size_t Rating = 0;
+				bool SortByLowest = true;
+
+				switch (SelectedOrdering)
+				{
+				case Thunderstore::Ordering::Newest:
+				{
+					// https://stackoverflow.com/questions/21021388/how-to-parse-a-date-string-into-a-c11-stdchrono-time-point-or-similar
+					std::tm tm = {};
+					std::stringstream ss(response[i].at("date_created").get<std::string>());
+					ss >> std::get_time(&tm, "%Y-%m-%dT%H:%M:%S");
+					auto tp = std::chrono::system_clock::from_time_t(std::mktime(&tm));
+					Rating = tp.time_since_epoch().count();
+					SortByLowest = false;
+				}
+					break;
+				case Thunderstore::Ordering::Last_Updated:
+					Rating = i;
+					break;
+				case Thunderstore::Ordering::Most_Downloaded:
+					for (auto& i : response.at(i).at("versions"))
+					{
+						Rating += i.at("downloads");
+					}
+					SortByLowest = false;
+					break;
+				case Thunderstore::Ordering::Top_Rated:
+					Rating = response[i].at("rating_score");
+					SortByLowest = false;
+					break;
+				default:
+					break;
+				}
+
+				RatedMods.push_back(ModElement(i, Rating, SortByLowest));
+			}
+
+			std::sort(RatedMods.begin(), RatedMods.end(), ModElement::compare);
+
+
+			for (size_t i = 0; i < RatedMods.size(); i++)
+			{
+				// Kwality code
+				if (FoundCount == ModsTab::ModsPerPage + Start - (Page == 0 ? 0 : 1))
 				{
 					break;
 				}
 				Package Mod;
-				auto& elem = response[i];
-				if (elem.at("is_pinned").get<bool>())
+				auto& elem = response[RatedMods[i].CurrentIndex];
+				if (elem.at("is_pinned"))
 				{
 					continue;
 				}
-				Mod.Name = elem.at("versions")[0].at("name").get<std::string>();
+				Mod.Name = elem.at("versions")[0].at("name");
+				Mod.Author = elem.at("owner");
+				if (Mod.Author == "northstar")
+				{
+					continue;
+				}
+
 				std::string LowerCaseName = Mod.Name;
+				std::string LowerCaseAuthor = Mod.Author;
+
+
 				std::transform(LowerCaseName.begin(), LowerCaseName.end(), LowerCaseName.begin(),
 					[](unsigned char c) { return std::tolower(c); });
-				if (!Filter.empty() && (LowerCaseName.find(Filter) == std::string::npos))
+				std::transform(LowerCaseAuthor.begin(), LowerCaseAuthor.end(), LowerCaseAuthor.begin(),
+					[](unsigned char c) { return std::tolower(c); });
+
+				if (!Filter.empty() && (LowerCaseName.find(Filter) == std::string::npos && LowerCaseAuthor.find(Filter) == std::string::npos))
 				{
 					continue;
 				}
 				Mod.UUID = elem.at("uuid4");
 				Mod.Img = elem.at("versions")[0].at("icon");
-				Mod.Namespace = elem.at("owner").get<std::string>();
-				Mod.Author = elem.at("owner").get<std::string>();
-				FoundMods.push_back(Mod);
+				Mod.Namespace = elem.at("owner");
+				Mod.IsNSFW = elem.at("has_nsfw_content");
+
+
 				FoundCount++;
+
+				if (FoundCount < Start)
+				{
+					continue;
+				}
+				FoundMods.push_back(Mod);
 			}
 
 			std::vector<Package> ModsCopy = FoundMods;
@@ -283,7 +364,7 @@ namespace Thunderstore
 			{
 				Installer::ThreadProgress += 0.0275;
 
-				std::string TargetName = "temp/net/ts/" + Elem.Name + ".png";
+				std::string TargetName = "Data/temp/net/ts/" + Elem.Name + ".png";
 				// Windows file size monent
 				if (!std::filesystem::exists(TargetName) || std::filesystem::file_size(TargetName) < 1000)
 				{
@@ -299,8 +380,12 @@ namespace Thunderstore
 			Log::Print("Thunderstore response has an invalid layout.", Log::Error);
 			Log::Print(e.what(), Log::Error);
 
-			Log::Print("Writing response to temp/invalidresponse.txt", Log::Error);
-			std::filesystem::copy("temp/net/tspage.txt", "temp/invalidresponse.txt");
+			Log::Print("Writing response to Data/temp/invalidresponse.txt", Log::Error);
+			if (std::filesystem::exists("Data/temp/invalidresponse.txt"))
+			{
+				std::filesystem::remove("Data/temp/invalidresponse.txt");
+			}
+			std::filesystem::copy("Data/temp/net/tspage.txt", "Data/temp/invalidresponse.txt");
 		}
 		Installer::ThreadProgress = 1;
 		IsDownloading = false;
@@ -318,21 +403,38 @@ namespace Thunderstore
 		Installer::ThreadProgress = 0;
 		Installer::BackgroundName = "Loading Thunderstore mod";
 		Installer::BackgroundTask = "Loading Thunderstore mod";
-		Networking::Download("https://thunderstore.io/api/experimental/frontend/c/northstar/p/" + m.Namespace + "/" + m.Name, "temp/net/mod.txt", "");
+		Networking::Download("https://thunderstore.io/c/northstar/api/v1/package/" + m.UUID, "Data/temp/net/mod.txt", "");
 		try
 		{
-			std::ifstream in = std::ifstream("temp/net/mod.txt");
+			std::ifstream in = std::ifstream("Data/temp/net/mod.txt");
 			std::stringstream str; str << in.rdbuf();
 			auto response = json::parse(str.str());
-			m.Description = response.at("markdown");
-			m.DownloadUrl = response.at("download_url");
+			auto& version = response.at("versions")[0];
+			m.Description = version.at("description");
+			m.DownloadUrl = version.at("download_url");
 			m.Version = response.at("versions")[0].at("version_number").get<std::string>();
-			m.Rating = response.at("rating_score") / response.at("versions").size();
+			m.Rating = response.at("rating_score");
 
 			for (auto& i : response.at("versions"))
 			{
-				m.Downloads += i.at("download_count");
+				m.Downloads += i.at("downloads");
 
+			}
+
+			// I'm using the experimental API anyways because there doesn't seem to be another way to do this.
+			// Fuck this.
+			// If any of this fails, (as it probably will), it shouldn't matter that much.
+			try
+			{
+				Networking::Download("https://thunderstore.io/api/experimental/frontend/c/northstar/p/" + m.Namespace + "/" + m.Name + "/", "Data/temp/net/expmod.txt", "");
+				std::ifstream in = std::ifstream("Data/temp/net/expmod.txt");
+				std::stringstream str; str << in.rdbuf();
+				response = json::parse(str.str());
+				m.Description = response.at("markdown");
+			}
+			catch (std::exception& e)
+			{
+				Log::Print("Error reading thunderstore response.", Log::Warning);
 			}
 		}
 		catch (std::exception& e)
@@ -340,16 +442,16 @@ namespace Thunderstore
 			Log::Print("Thunderstore response has an invalid layout.", Log::Error);
 			Log::Print(e.what(), Log::Error);
 
-			Log::Print("Writing response to temp/invalidresponse.txt", Log::Error);
-			std::filesystem::copy("temp/net/mod.txt", "temp/invalidresponse.txt");
+			Log::Print("Writing response to Data/temp/invalidresponse.txt", Log::Error);
+			std::filesystem::copy("Data/temp/net/mod.txt", "Data/temp/invalidresponse.txt");
 		}
 		SelectedMod = m;
 		LoadedSelectedMod = true;
 		Installer::ThreadProgress = 1;
 	}
 
-	// Downloads the given package into "temp/net/{m.Author}.{m.Name}.zip,
-	// extracts it's contents into "temp/mod",
+	// Downloads the given package into "Data/temp/net/{m.Author}.{m.Name}.zip,
+	// extracts it's contents into "Data/temp/mod",
 	// then extracts the content of the extracted zip file's "mods" Folder into the Titanfall 2
 	// mods folder.
 	// TODO: Extract other elements of the mod. (I've seen some mods have different Folders that
@@ -404,19 +506,19 @@ namespace Thunderstore
 			}
 			Installer::BackgroundName = "Downloading mod";
 			Installer::BackgroundTask = "Downloading mod";
-			std::string TargetZipName = "temp/net/" + m.Author + "." + m.Name + ".zip";
+			std::string TargetZipName = "Data/temp/net/" + m.Author + "." + m.Name + ".zip";
 			Networking::Download(m.DownloadUrl, TargetZipName, "");
 
-			std::filesystem::remove_all("temp/mod");
-			std::filesystem::create_directories("temp/mod");
-			Networking::ExtractZip(TargetZipName, "temp/mod/");
+			std::filesystem::remove_all("Data/temp/mod");
+			std::filesystem::create_directories("Data/temp/mod");
+			Networking::ExtractZip(TargetZipName, "Data/temp/mod/");
 			std::filesystem::remove(TargetZipName);
-			std::filesystem::copy("temp/mod/mods/", Game::GamePath + "/R2Northstar/mods",
+			std::filesystem::copy("Data/temp/mod/mods/", Game::GamePath + "/R2Northstar/mods",
 				std::filesystem::copy_options::overwrite_existing
 				| std::filesystem::copy_options::recursive);
 
 			std::vector<std::string> Files;
-			for (auto& i : std::filesystem::directory_iterator("temp/mod/mods"))
+			for (auto& i : std::filesystem::directory_iterator("Data/temp/mod/mods"))
 			{
 				Files.push_back(i.path().filename().string());
 			}
@@ -538,15 +640,12 @@ void ModsTab::GenerateModInfo()
 void ModsTab::GenerateModPage()
 {
 	UpdateClickedCategoryButton();
-
+	ModImages.clear();
 	ModsScrollBox->GetScrollObject()->Percentage = 0;
 	ModsScrollBox->SetMaxScroll(10);
 	ModsScrollBox->DeleteChildren();
 
-	for (auto i : ModTextures)
-	{
-		Texture::UnloadTexture(i);
-	}
+	ClearLoadedTextures();
 
 	std::vector<UIBox*> Rows;
 
@@ -555,7 +654,7 @@ void ModsTab::GenerateModPage()
 			if (CurrentModsTab->Filter != CurrentModsTab->SearchBar->GetText())
 			{
 				CurrentModsTab->Filter = CurrentModsTab->SearchBar->GetText();
-				CurrentModsTab->SelectedPage = 1;
+				CurrentModsTab->SelectedPage = 0;
 				CurrentModsTab->LoadedModList = false;
 				CurrentModsTab->ShowLoadingText();
 			}
@@ -581,7 +680,7 @@ void ModsTab::GenerateModPage()
 	ModButtons.clear();
 	for (const auto& i : Thunderstore::FoundMods)
 	{
-		bool UseTexture = std::filesystem::exists(i.Img);
+		bool UseTexture = std::filesystem::exists(i.Img) && !i.IsNSFW;
 		UIBackground* Image = new UIBackground(false, 0, 1, Vector2(0.25));
 		UIButton* b = new UIButton(false, 0, 1, []() {
 			for (size_t i = 0; i < ModButtons.size(); i++)
@@ -608,6 +707,7 @@ void ModsTab::GenerateModPage()
 
 		b->SetMinSize(Vector2f(0, 0.34));
 		b->Align = UIBox::E_REVERSE;
+		b->SetPadding(0.01 / Application::AspectRatio, 0.01 / Application::AspectRatio, 0.01, 0.01);
 		unsigned int tex = 0;
 		if (UseTexture)
 		{
@@ -616,6 +716,7 @@ void ModsTab::GenerateModPage()
 		}
 		auto NameText = new UIText(0.225, 0, i.Name, UI::Text);
 		Rows[it++ / SlotsPerRow]->AddChild(b
+			->SetBorder(UIBox::E_ROUNDED, 0.5)
 			->AddChild(Image
 				->SetUseTexture(UseTexture, tex)
 				->SetPadding(0)
@@ -630,8 +731,9 @@ void ModsTab::GenerateModPage()
 		{
 			Image->Align = UIBox::E_CENTERED;
 			Image->SetColor(0.1);
-			Image->AddChild(new UIText(0.4, 1, i.IsUnknownLocalMod ? " Unknown" : "Loading...", UI::Text));
+			Image->AddChild(new UIText(0.4, 1, i.IsUnknownLocalMod ? " Unknown" : (i.IsNSFW ? "    NSFW" : "Loading..."), UI::Text));
 		}
+		ModImages.push_back(Image);
 		ModButtons.push_back(b);
 	}
 
@@ -639,13 +741,13 @@ void ModsTab::GenerateModPage()
 	PageButtons.clear();
 	for (int i = 0; i < 6; i++)
 	{
-		auto b = new UIButton(true, 0, SelectedPage == (i + 1) ? 0.5 : 1, []() {			
+		auto b = new UIButton(true, 0, SelectedPage == (i) ? 0.5 : 1, []() {			
 		for (size_t i = 0; i < PageButtons.size(); i++)
 		{
 			if (PageButtons[i]->GetIsHovered() && !Installer::CurrentBackgroundThread)
 			{
 				CurrentModsTab->ShowLoadingText();
-				CurrentModsTab->SelectedPage = i + 1;
+				CurrentModsTab->SelectedPage = i;
 				CurrentModsTab->LoadedModList = false;
 			}
 		} });
@@ -680,6 +782,27 @@ void ModsTab::UpdateClickedCategoryButton()
 	}
 }
 
+void ModsTab::GenerateModImages()
+{
+	ClearLoadedTextures();
+	for (size_t i = 0; i < ModImages.size(); i++)
+	{
+		if (Thunderstore::FoundMods.size() <= i)
+		{
+			break;
+		}		
+		bool UseTexture = std::filesystem::exists(Thunderstore::FoundMods[i].Img) && !Thunderstore::FoundMods[i].IsNSFW;
+		if (UseTexture)
+		{
+			unsigned int tex = Texture::LoadTexture(Thunderstore::FoundMods[i].Img);
+			ModTextures.push_back(tex);
+			ModImages[i]->SetUseTexture(true, tex);
+			ModImages[i]->SetColor(1);
+			ModImages[i]->DeleteChildren();
+		}
+	}
+}
+
 void ModsTab::CheckForModUpdates()
 {
 	using namespace nlohmann;
@@ -693,11 +816,11 @@ void ModsTab::CheckForModUpdates()
 	size_t it = 0;
 	for (const auto& m : Mods)
 	{
-		Networking::Download("https://thunderstore.io/api/experimental/frontend/c/northstar/p/" + m.Namespace + "/" + m.Name, "temp/net/mod.txt", "");
+		Networking::Download("https://thunderstore.io/api/experimental/frontend/c/northstar/p/" + m.Namespace + "/" + m.Name, "Data/temp/net/mod.txt", "");
 
 		try
 		{
-			std::ifstream in = std::ifstream("temp/net/mod.txt");
+			std::ifstream in = std::ifstream("Data/temp/net/mod.txt");
 			std::stringstream str; str << in.rdbuf();
 			json response = json::parse(str.str());
 			if (m.Version != response.at("versions")[0].at("version_number").get<std::string>())
@@ -721,8 +844,8 @@ void ModsTab::CheckForModUpdates()
 			Log::Print("Thunderstore response has an invalid layout.", Log::Error);
 			Log::Print(e.what(), Log::Error);
 
-			Log::Print("Writing response to temp/invalidresponse.txt", Log::Error);
-			std::filesystem::copy("temp/net/mod.txt", "temp/invalidresponse.txt");
+			Log::Print("Writing response to Data/temp/invalidresponse.txt", Log::Error);
+			std::filesystem::copy("Data/temp/net/mod.txt", "Data/temp/invalidresponse.txt");
 		}
 		Installer::ThreadProgress += (float)it / (float)Mods.size();
 		Installer::ThreadProgress = std::min(0.95f, Installer::ThreadProgress);
@@ -769,7 +892,7 @@ ModsTab::ModsTab()
 				if (CategoryButtons[i]->GetIsHovered() && !Installer::CurrentBackgroundThread)
 				{
 					Thunderstore::SelectedOrdering = Thunderstore::CategoryFunctions[i].o;
-					CurrentModsTab->SelectedPage = 1;
+					CurrentModsTab->SelectedPage = 0;
 					CurrentModsTab->LoadedModList = false;
 					CurrentModsTab->ShowLoadingText();
 				}
@@ -784,8 +907,17 @@ ModsTab::ModsTab()
 	}
 }
 
+void ModsTab::ClearLoadedTextures()
+{
+	for (auto i : ModTextures)
+	{
+		Texture::UnloadTexture(i);
+	}
+}
+
 void ModsTab::Tick()
 {
+	ModsPerPage = std::round((Application::AspectRatio / (16.0f / 9.0f)) * 6.9f) * 4;
 	if (!LoadedModList && Background->IsVisible && !Thunderstore::IsDownloading && !Installer::CurrentBackgroundThread)
 	{
 		Installer::CurrentBackgroundThread = new std::thread(Thunderstore::DownloadThunderstoreInfo, Thunderstore::SelectedOrdering, SelectedPage, Filter);
@@ -800,7 +932,7 @@ void ModsTab::Tick()
 	}
 	if (Thunderstore::LoadedImages)
 	{
-		GenerateModPage();
+		GenerateModImages();
 		Thunderstore::LoadedImages = false;
 	}
 	if (Thunderstore::LoadedSelectedMod)

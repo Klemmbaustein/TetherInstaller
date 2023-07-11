@@ -1,19 +1,19 @@
 #pragma once
 #include <string>
+#include <format>
 
 namespace Log
 {
-
 	enum Severity
 	{
-		Info,
-		Warning,
-		Error
+		Info = 0,
+		Warning = 1,
+		Error = 2
 	};
 
-	extern std::string TypeStrings[2];
-	extern std::string SeverityStrings[3];
+	void SetIsVerbose(bool NewIsVerbose);
+	bool GetIsVerbose();
 
-	void RegisterOnPrintCallback(void (*OnPrint)(std::string Msg, Severity MsgSeverity));
-	void Print(std::string Msg, Severity MsgSeverity = Info);
+	void Print(std::string Message, Severity Type = Info);
 }
+#define LOG_PRINTF(msg, ...) Log::Print(std::format(msg,  __VA_ARGS__))

@@ -159,7 +159,7 @@ void Game::UpdateGame()
 		Networking::ExtractZip(result, Game::GamePath);
 		Installer::BackgroundTask = "Removing temporary files";
 		Installer::ThreadProgress = 0.9;
-		std::filesystem::remove_all("temp/net");
+		std::filesystem::remove_all("Data/temp/net");
 		Log::Print("Removed temporary files");
 		Game::SetCurrentVersion(Networking::GetLatestReleaseOf("R2Northstar/Northstar"));
 		Game::RequiresUpdate = false;

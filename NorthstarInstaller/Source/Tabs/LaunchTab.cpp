@@ -49,7 +49,7 @@ LaunchTab::LaunchTab()
 	LaunchText = new UIText(0.7, 0, "Launch", UI::Text);
 
 	Background->AddChild(TextBox
-		->SetMinSize(Vector2f(1.4, 0.2))
+		->SetMinSize(Vector2f(2, 0.2))
 		->SetPadding(0)
 		->AddChild(LaunchButton
 			->SetPadding(0.03)

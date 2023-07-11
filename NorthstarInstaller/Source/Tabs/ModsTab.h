@@ -18,18 +18,21 @@ class ModsTab : public UITab
 	std::vector<unsigned int> ModTextures;
 	unsigned int ModPreviewTexture = 0;
 	float AspectRatio = 0;
+	std::vector<UIBackground*> ModImages;
 public:
 	static std::atomic<unsigned int> ModsPerPage;
 	UITextField* SearchBar = nullptr;
 	std::string Filter = "";
 	bool DownloadingPage = false;
 	bool LoadedModList = false;
-	size_t SelectedPage = 1;
+	size_t SelectedPage = 0;
 	void GenerateModInfo();
 	void GenerateModPage();
+	void GenerateModImages();
 	void ShowLoadingText();
 	void UpdateClickedCategoryButton();
 
+	void ClearLoadedTextures();
 	static void CheckForModUpdates();
 
 	ModsTab();

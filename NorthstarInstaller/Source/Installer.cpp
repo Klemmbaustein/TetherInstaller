@@ -4,7 +4,6 @@
 
 #include "Game.h"
 #include "Log.h"
-#include "LogPanel.h"
 #include "Installer.h"
 #include "UIDef.h"
 #include "Networking.h"
@@ -16,8 +15,6 @@
 /*
 * 
 * TODO:
-* Unfuck markdown parser. (The fucky markdown parser is now part of the UISystem library)
-* Auto update mods.
 * Auto update installer.
 * Make background thread system good.
 * 
@@ -37,7 +34,7 @@ namespace Installer
 	std::thread* CurrentBackgroundThread = nullptr;
 	std::string BackgroundTask;
 	std::string BackgroundName;
-	const std::string InstallerVersion = "v0.1.2";
+	const std::string InstallerVersion = "v0.1.3";
 	float ThreadProgress = 0;
 
 	bool HasCheckedForModUpdates = false;
@@ -88,10 +85,9 @@ namespace Installer
 
 	void CreateTaskWindow()
 	{
-		TaskBackground->Align = UIBox::E_REVERSE;
 		TaskNameText = new UIText(0.4, 1, "No background task", UI::Text);
-		TaskBackground->AddChild(TaskNameText);
 		TaskBackground->AddChild(new UIText(0.3, 0.8, "Background task", UI::Text));
+		TaskBackground->AddChild(TaskNameText);
 	}
 
 	void CheckForUpdates()
@@ -129,7 +125,6 @@ float BackgroundFade = 0;
 
 int main(int argc, char** argv)
 {
-	LogPanel::PrebufferLogEvents();
 	Application::Initialize("Installer", 0);
 	Log::Print("Created app window");
 
@@ -139,14 +134,12 @@ int main(int argc, char** argv)
 
 	Vector2f bgCenter = Vector2f(-0.3, 0);
 
-	auto bg = new UIBackground(true, 0, 1, Vector2f(2 * (16.f/9.f), 2));
+	auto bg = new UIBackground(true, 0, 1, Vector2f(2.5 * (16.f/9.f), 2.5));
 	bg->SetSizeMode(UIBox::E_PIXEL_RELATIVE);
 	bg->SetUseTexture(true, Texture::LoadTexture("Data/Game.png"));
 
-	new LogPanel();
-
-	Installer::TaskBackground = new UIBackground(false, Vector2f(0.4, -1), Vector3f32(0.15), Vector2f(0.6, 0.2));
-	Installer::TaskProgressBar = new UIBackground(false, Vector2f(0.4, -1.025), Vector3f32(1, 0.5, 0), Vector2f(0.6, 0.05));
+	Installer::TaskBackground = new UIBackground(false, Vector2f(0.5, 0.85), Vector3f32(0.15), Vector2f(0.5, 0.15));
+	Installer::TaskProgressBar = new UIBackground(false, Vector2f(0.5, 0.985), Vector3f32(1, 0.5, 0), Vector2f(0.5, 0.05));
 	Installer::TaskProgressBar->SetBorder(UIBox::E_ROUNDED, 0.5);
 
 	Installer::CreateTaskWindow();
@@ -161,7 +154,7 @@ int main(int argc, char** argv)
 		new SettingsTab(),
 	};
 
-	Installer::TabBackground = new UIBackground(true, Vector2f(-1, 0.85), 0, Vector2f(1.4, 0.15));
+	Installer::TabBackground = new UIBackground(true, Vector2f(-1, 0.85), 0, Vector2f(1.5, 0.15));
 	Installer::TabBackground->SetOpacity(0.3);
 	Log::Print("Loading tab bar...");
 	Installer::GenerateTabs();
@@ -177,7 +170,7 @@ int main(int argc, char** argv)
 		{
 			i->Tick();
 		}
-		bg->SetPosition(bgCenter - bg->GetUsedSize() / 2);
+		bg->SetPosition(Vector2f(0.0) - bg->GetUsedSize() / 2);
 		if (Installer::CurrentBackgroundThread)
 		{
 			BackgroundFade = 0;

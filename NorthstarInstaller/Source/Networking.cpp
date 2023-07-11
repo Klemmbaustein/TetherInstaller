@@ -8,13 +8,13 @@
 #include <fstream>
 #include <filesystem>
 #include <zip.h>
-
 #define DEV_NET_DEBUGGING 0
 
 namespace Networking
 {
+
 	const std::string NorthstarVersionFile = "Data/";
-	const std::string NetTempFolder = "temp/net/";
+	const std::string NetTempFolder = "Data/temp/net/";
 
 	static size_t write_data(void* ptr, size_t size, size_t nmemb, void* stream)
 	{
@@ -30,9 +30,9 @@ namespace Networking
 			std::filesystem::create_directories(NetTempFolder);
 		}
 
-		if (std::filesystem::exists("temp/invalidresponse.txt"))
+		if (std::filesystem::exists("Data/temp/invalidresponse.txt"))
 		{
-			std::filesystem::remove("temp/invalidresponse.txt");
+			std::filesystem::remove("Data/temp/invalidresponse.txt");
 		}
 	}
 
@@ -106,11 +106,11 @@ namespace Networking
 
 		CheckNetTempFolder();
 
-		Download("https://api.github.com/repos/" + RepoName + "/releases/latest", NetTempFolder + "version.temp", "User-Agent: None");
+		Download("https://api.github.com/repos/" + RepoName + "/releases/latest", NetTempFolder + "version.txt", "User-Agent: None");
 
 		try
 		{
-			std::ifstream in = std::ifstream(NetTempFolder + "version.temp");
+			std::ifstream in = std::ifstream(NetTempFolder + "version.txt");
 			in.exceptions(std::ios::failbit | std::ios::badbit);
 			std::stringstream str; str << in.rdbuf();
 			auto response = json::parse(str.str());
@@ -127,8 +127,8 @@ namespace Networking
 			Log::Print("Github response has an invalid layout.", Log::Error);
 			Log::Print(e.what(), Log::Error);
 
-			Log::Print("Writing response to temp/invalidresponse.txt", Log::Error);
-			std::filesystem::copy(NetTempFolder + "version.temp", "temp/invalidresponse.txt");
+			Log::Print("Writing response to Data/temp/invalidresponse.txt", Log::Error);
+			std::filesystem::copy(NetTempFolder + "version.txt", "Data/temp/invalidresponse.txt");
 		}
 		return "";
 	}
@@ -138,11 +138,11 @@ namespace Networking
 		using namespace nlohmann;
 		CheckNetTempFolder();
 
-		Download("https://api.github.com/repos/" + RepoName + "/releases/latest", NetTempFolder + "version.temp", "User-Agent: None");
+		Download("https://api.github.com/repos/" + RepoName + "/releases/latest", NetTempFolder + "version.txt", "User-Agent: None");
 
 		try
 		{
-			std::ifstream in = std::ifstream(NetTempFolder + "version.temp");
+			std::ifstream in = std::ifstream(NetTempFolder + "version.txt");
 			std::stringstream str; str << in.rdbuf();
 			auto response = json::parse(str.str());
 
@@ -162,8 +162,8 @@ namespace Networking
 			Log::Print("Github response has an invalid layout.", Log::Error);
 			Log::Print(e.what(), Log::Error);
 
-			Log::Print("Writing response to temp/invalidresponse.txt", Log::Error);
-			std::filesystem::copy(NetTempFolder + "version.temp", "temp/invalidresponse.txt");
+			Log::Print("Writing response to Data/temp/invalidresponse.txt", Log::Error);
+			std::filesystem::copy(NetTempFolder + "version.txt", "Data/temp/invalidresponse.txt");
 		}
 		return "";
 	}
