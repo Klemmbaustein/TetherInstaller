@@ -6,28 +6,37 @@
 #include "../Log.h"
 #include "../Game.h"
 #include "../Installer.h"
+#include "../BackgroundTask.h"
 
 #include <thread>
 #include <atomic>
 
+/*
+{
+	Installer::BackgroundName = "Northstar is running";
+	Installer::BackgroundTask = "Northstar";
+	Log::Print("Game has started");
+	system((Game::GamePath + "/NorthstarLauncher.exe").c_str());
+	Log::Print("Game has finished running");
+	Installer::ThreadProgress = 1;
+}*/
+
 void LaunchNorthstar()
 {
-	if (Installer::CurrentBackgroundThread)
-	{
-		return;
-	}
+	//if (Installer::CurrentBackgroundThread)
+	//{
+	//	return;
+	//}
 	if (!Game::GamePath.empty() && !Game::RequiresUpdate)
 	{
 		Log::Print("Starting game...");
 
-		Installer::CurrentBackgroundThread = new std::thread([]()
-			{		
-				Installer::BackgroundName = "Northstar is running";
-				Installer::BackgroundTask = "Northstar";
+		new BackgroundTask([]()
+			{
+				BackgroundTask::SetStatus("Northstar is running");
 				Log::Print("Game has started");
 				system((Game::GamePath + "/NorthstarLauncher.exe").c_str());
 				Log::Print("Game has finished running");
-				Installer::ThreadProgress = 1;
 			});
 	}
 	if (Game::RequiresUpdate && !Game::GamePath.empty())
@@ -65,10 +74,10 @@ void LaunchTab::Tick()
 	{
 		LaunchText->SetText("Titanfall 2 not found");
 	}
-	else if (Installer::CurrentBackgroundThread)
-	{
-		LaunchText->SetText(Installer::BackgroundName);
-	}
+	//else if (Installer::CurrentBackgroundThread)
+	//{
+	//	LaunchText->SetText(Installer::BackgroundName);
+	//}
 	else if (Game::RequiresUpdate)
 	{
 		LaunchText->SetText("Update northstar");

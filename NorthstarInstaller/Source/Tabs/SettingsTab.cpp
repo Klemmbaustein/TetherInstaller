@@ -13,6 +13,7 @@
 #include "../UIDef.h"
 #include "../Game.h"
 #include "../Installer.h"
+#include "../BackgroundTask.h"
 
 #if _WIN32
 #include <Shlobj.h>
@@ -160,10 +161,7 @@ void SettingsTab::GenerateSettings()
 	if (Game::IsValidTitanfallLocation(Game::GamePath))
 	{
 		SettingsBox->AddChild((new UIButton(true, 0, 1, []() {
-			if (!Installer::CurrentBackgroundThread)
-			{
-				Installer::CurrentBackgroundThread = new std::thread(Installer::CheckForUpdates);
-			}
+			new BackgroundTask(Installer::CheckForUpdates);
 			}))
 			->AddChild(new UIText(0.4, 0, "Re-check for updates", UI::Text)));
 
@@ -176,14 +174,11 @@ void SettingsTab::GenerateSettings()
 			->AddChild(new UIText(0.4, 0, "Delete all mods", UI::Text)));
 
 		SettingsBox->AddChild((new UIButton(true, 0, 1, []() {
-			if (!Installer::CurrentBackgroundThread)
-			{
 				Log::Print("Un-fucking installation...", Log::Warning);
 				std::filesystem::remove_all("temp");
 				Log::Print("Deleted ./Data/temp/", Log::Warning);
 				DeleteAllMods();
 				Game::UpdateGameAsync();
-			}
 			}))
 			->AddChild(new UIText(0.4, 0, "Try to unfuck installation", UI::Text)));
 	}

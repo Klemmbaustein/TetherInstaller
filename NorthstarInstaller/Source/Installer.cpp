@@ -7,6 +7,7 @@
 #include "Installer.h"
 #include "UIDef.h"
 #include "Networking.h"
+#include "BackgroundTask.h"
 
 #include "Tabs/LaunchTab.h"
 #include "Tabs/SettingsTab.h"
@@ -16,7 +17,6 @@
 * 
 * TODO:
 * Auto update installer.
-* Make background thread system good.
 * 
 */
 
@@ -30,12 +30,7 @@ namespace Installer
 	UIBackground* TaskBackground = nullptr;
 	UIBackground* TaskProgressBar = nullptr;
 	UIText* TaskNameText = nullptr;
-
-	std::thread* CurrentBackgroundThread = nullptr;
-	std::string BackgroundTask;
-	std::string BackgroundName;
 	const std::string InstallerVersion = "v0.1.3";
-	float ThreadProgress = 0;
 
 	bool HasCheckedForModUpdates = false;
 
@@ -68,7 +63,7 @@ namespace Installer
 				});
 			Button->Align = UIBox::E_CENTERED;
 			TabBackground->AddChild(Button
-				->SetBorder(UIBox::E_ROUNDED, 1)
+				->SetBorder(UIBox::E_ROUNDED, 0.5)
 				->SetPadding(0.02)
 				->SetSizeMode(UIBox::E_PIXEL_RELATIVE)
 				->SetMinSize(Vector2f(0.4, 0))
@@ -93,16 +88,15 @@ namespace Installer
 	void CheckForUpdates()
 	{
 		Log::Print("Checking for updates...");
-		BackgroundTask = "Checking for updates...";
-		BackgroundName = "Checking for updates";
-		ThreadProgress = 0.999;
+		BackgroundTask::SetStatus("Checking for updates");
+		BackgroundTask::SetProgress(0.999);
 		std::string Latest = Networking::GetLatestReleaseOf("R2Northstar/Northstar");
 		
 		if (Latest.empty())
 		{
 			Log::Print("Could not get latest game version",  Log::Error);
-			BackgroundTask = "Could not get latest game version";
-			ThreadProgress = 1;
+			BackgroundTask::SetStatus("Could not get latest game version");
+			BackgroundTask::SetProgress(1);
 			return;
 		}
 
@@ -110,15 +104,12 @@ namespace Installer
 		{
 			Log::Print("Game needs to be updated",  Log::Warning);
 			Game::RequiresUpdate = true;
-			BackgroundTask = "Update required";
-			BackgroundName = "Update required";
-			ThreadProgress = 1;
+			BackgroundTask::SetStatus("Update required");
+			BackgroundTask::SetProgress(1);
 			return;
 		}
-		BackgroundTask = "No update required";
-		BackgroundName = "No update required";
+		BackgroundTask::SetStatus("No update required");
 		Log::Print("No update required");
-		ThreadProgress = 1;
 	}
 	
 }
@@ -164,7 +155,7 @@ int main(int argc, char** argv)
 
 	Log::Print("Successfully started launcher");
 
-	Installer::CurrentBackgroundThread = new std::thread(Installer::CheckForUpdates);
+	new BackgroundTask(Installer::CheckForUpdates);
 
 	while (!Application::Quit)
 	{
@@ -173,32 +164,29 @@ int main(int argc, char** argv)
 			i->Tick();
 		}
 		bg->SetPosition(Vector2f(0.0) - bg->GetUsedSize() / 2);
-		if (Installer::CurrentBackgroundThread)
+		BackgroundTask::UpdateTaskStatus();
+		if (BackgroundTask::IsRunningTask)
 		{
 			BackgroundFade = 0;
 			Installer::TaskProgressBar->SetOpacity(1);
-			if (Installer::ThreadProgress == 1)
+			if (BackgroundTask::CurrentTaskProgress == 1)
 			{
-				Installer::ThreadProgress = 0;
-				Installer::CurrentBackgroundThread->join();
-				delete Installer::CurrentBackgroundThread;
-				Installer::CurrentBackgroundThread = nullptr;
 				Installer::UpdateTaskWindow();
 			}
 			else
 			{
-				Installer::TaskProgressBar->SetMinSize(Vector2f(0.6 * Installer::ThreadProgress, 0.05));
+				Installer::TaskProgressBar->SetMinSize(Vector2f(0.5 * BackgroundTask::CurrentTaskProgress, 0.05));
 				Installer::TaskProgressBar->IsVisible = true;
-				Installer::TaskNameText->SetText(Installer::BackgroundTask);
+				Installer::TaskNameText->SetText(BackgroundTask::CurrentTaskStatus);
 			}
 		}
 		else if (BackgroundFade < 1)
 		{
-			Installer::TaskProgressBar->SetMinSize(Vector2f(0.6, 0.05));
+			Installer::TaskProgressBar->SetMinSize(Vector2f(0.5, 0.05));
 			BackgroundFade += Application::DeltaTime;
 			Installer::TaskProgressBar->SetOpacity(1 - BackgroundFade);
 			Installer::TaskProgressBar->IsVisible = true;
-			Installer::TaskNameText->SetText(Installer::BackgroundTask);
+			Installer::TaskNameText->SetText(BackgroundTask::CurrentTaskStatus);
 		}
 		else
 		{
@@ -206,14 +194,14 @@ int main(int argc, char** argv)
 			Installer::TaskNameText->SetText("No background task");
 		}
 
-		if (!Installer::CurrentBackgroundThread && !Installer::HasCheckedForModUpdates)
+		if (!BackgroundTask::IsRunningTask && !Installer::HasCheckedForModUpdates)
 		{
 			Installer::HasCheckedForModUpdates = true;
-			Installer::CurrentBackgroundThread = new std::thread(ModsTab::CheckForModUpdates);
+			new BackgroundTask(ModsTab::CheckForModUpdates);
 		}
 
 		Application::UpdateWindow();
-		if (Application::Quit && Installer::CurrentBackgroundThread)
+		if (Application::Quit && BackgroundTask::IsRunningTask)
 		{
 			Application::Quit = false;
 		}

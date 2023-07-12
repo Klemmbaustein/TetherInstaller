@@ -4,8 +4,8 @@
 #include "Log.h"
 #include <fstream>
 #include <sstream>
-#include "Installer.h"
 #include "Networking.h"
+#include "BackgroundTask.h"
 
 std::string Game::GamePath;
 bool Game::RequiresUpdate = false;
@@ -149,34 +149,27 @@ void Game::UpdateGame()
 {
 	try
 	{
-		Installer::BackgroundName = "Updating Northstar";
-		Installer::BackgroundTask = "Downloading Northstar";
-		Installer::ThreadProgress = 0.5;
+		BackgroundTask::SetStatus("Downloading Northstar");
+		BackgroundTask::SetProgress(0.5);
 		auto result = Networking::DownloadLatestReleaseOf("R2Northstar/Northstar");
-		Installer::ThreadProgress = 0.7;
-		Installer::BackgroundTask = "Installing Northstar from " + result;
+		BackgroundTask::SetProgress(0.7);
+		BackgroundTask::SetStatus("Installing Northstar from " + result);
 		Log::Print("Extracting zip: " + result);
 		Networking::ExtractZip(result, Game::GamePath);
-		Installer::BackgroundTask = "Removing temporary files";
-		Installer::ThreadProgress = 0.9;
+		BackgroundTask::SetStatus("Removing temporary files");
+		BackgroundTask::SetProgress(0.9);
 		std::filesystem::remove_all("Data/temp/net");
 		Log::Print("Removed temporary files");
 		Game::SetCurrentVersion(Networking::GetLatestReleaseOf("R2Northstar/Northstar"));
 		Game::RequiresUpdate = false;
-		Installer::ThreadProgress = 1;
 	}
 	catch (std::exception& e)
 	{
-		Installer::BackgroundTask = e.what();
-		Installer::ThreadProgress = 1;
 		Log::Print(e.what(), Log::Error);
 	}
 }
 
 void Game::UpdateGameAsync()
 {
-	if (!Installer::CurrentBackgroundThread)
-	{
-		Installer::CurrentBackgroundThread = new std::thread(UpdateGame);
-	}
+	new BackgroundTask(UpdateGame);
 }
