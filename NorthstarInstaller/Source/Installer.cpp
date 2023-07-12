@@ -111,10 +111,12 @@ namespace Installer
 			Log::Print("Game needs to be updated",  Log::Warning);
 			Game::RequiresUpdate = true;
 			BackgroundTask = "Update required";
+			BackgroundName = "Update required";
 			ThreadProgress = 1;
 			return;
 		}
 		BackgroundTask = "No update required";
+		BackgroundName = "No update required";
 		Log::Print("No update required");
 		ThreadProgress = 1;
 	}
@@ -196,6 +198,7 @@ int main(int argc, char** argv)
 			BackgroundFade += Application::DeltaTime;
 			Installer::TaskProgressBar->SetOpacity(1 - BackgroundFade);
 			Installer::TaskProgressBar->IsVisible = true;
+			Installer::TaskNameText->SetText(Installer::BackgroundTask);
 		}
 		else
 		{

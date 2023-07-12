@@ -17,7 +17,7 @@ class ModsTab : public UITab
 	UIScrollBox* ModsScrollBox = nullptr;
 	std::vector<unsigned int> ModTextures;
 	unsigned int ModPreviewTexture = 0;
-	float AspectRatio = 0;
+	float PrevAspectRatio = 0;
 	std::vector<UIBackground*> ModImages;
 public:
 	static std::atomic<unsigned int> ModsPerPage;
@@ -32,6 +32,7 @@ public:
 	void ShowLoadingText();
 	void UpdateClickedCategoryButton();
 
+	static int GetModsPerPage(float Aspect);
 	void ClearLoadedTextures();
 	static void CheckForModUpdates();
 

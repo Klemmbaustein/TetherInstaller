@@ -27,6 +27,7 @@ namespace Thunderstore
 {
 	std::atomic<bool> IsDownloading = false;
 	std::atomic<bool> LoadedImages = false;
+	std::atomic<bool> ShouldStopLoadingImages = false;
 
 	struct Package
 	{
@@ -165,6 +166,7 @@ namespace Thunderstore
 			|| std::filesystem::exists(Game::GamePath + "/R2Northstar/mods/" + m.Namespace + "." + m.Name);
 	}
 
+
 	// Gets the thunderstore mod page with the given ordering, filter and page index.
 	// The result will be put into 'FoundMods' because this function is meant to be run as a new thread.
 	void DownloadThunderstoreInfo(Ordering ModOrdering, size_t Page, std::string Filter)
@@ -274,7 +276,7 @@ namespace Thunderstore
 
 				switch (SelectedOrdering)
 				{
-				case Thunderstore::Ordering::Newest:
+				case Ordering::Newest:
 				{
 					// https://stackoverflow.com/questions/21021388/how-to-parse-a-date-string-into-a-c11-stdchrono-time-point-or-similar
 					std::tm tm = {};
@@ -285,17 +287,17 @@ namespace Thunderstore
 					SortByLowest = false;
 				}
 					break;
-				case Thunderstore::Ordering::Last_Updated:
+				case Ordering::Last_Updated:
 					Rating = i;
 					break;
-				case Thunderstore::Ordering::Most_Downloaded:
+				case Ordering::Most_Downloaded:
 					for (auto& i : response.at(i).at("versions"))
 					{
 						Rating += i.at("downloads");
 					}
 					SortByLowest = false;
 					break;
-				case Thunderstore::Ordering::Top_Rated:
+				case Ordering::Top_Rated:
 					Rating = response[i].at("rating_score");
 					SortByLowest = false;
 					break;
@@ -360,9 +362,11 @@ namespace Thunderstore
 			std::vector<Package> ModsCopy = FoundMods;
 			IsDownloading = false;
 
+			size_t i = 0;
+			ShouldStopLoadingImages = false;
 			for (auto& Elem : FoundMods)
 			{
-				Installer::ThreadProgress += 0.0275;
+				Installer::ThreadProgress = 0.3f + ((float)i++ / (float)FoundMods.size()) * 0.5f;
 
 				std::string TargetName = "Data/temp/net/ts/" + Elem.Name + ".png";
 				// Windows file size monent
@@ -373,6 +377,10 @@ namespace Thunderstore
 					LoadedImages = true;
 				}
 				Elem.Img = TargetName;
+				if (ShouldStopLoadingImages)
+				{
+					break;
+				}
 			}
 		}
 		catch (std::exception& e)
@@ -399,7 +407,13 @@ namespace Thunderstore
 	void GetModInfo(Package m)
 	{
 		using namespace nlohmann;
-
+		if (m.UUID.empty())
+		{
+			SelectedMod = m;
+			LoadedSelectedMod = true;
+			Installer::ThreadProgress = 1;
+			return;
+		}
 		Installer::ThreadProgress = 0;
 		Installer::BackgroundName = "Loading Thunderstore mod";
 		Installer::BackgroundTask = "Loading Thunderstore mod";
@@ -441,7 +455,11 @@ namespace Thunderstore
 		{
 			Log::Print("Thunderstore response has an invalid layout.", Log::Error);
 			Log::Print(e.what(), Log::Error);
-
+			if (std::filesystem::exists("Data/temp/invalidresponse.txt"))
+			{
+				std::filesystem::remove("Data/temp/invalidresponse.txt");
+			}
+			Log::Print("address: https://thunderstore.io/c/northstar/api/v1/package/" + m.UUID, Log::Error);
 			Log::Print("Writing response to Data/temp/invalidresponse.txt", Log::Error);
 			std::filesystem::copy("Data/temp/net/mod.txt", "Data/temp/invalidresponse.txt");
 		}
@@ -701,13 +719,22 @@ void ModsTab::GenerateModPage()
 						CurrentModsTab->ShowLoadingText();
 						Installer::CurrentBackgroundThread = new std::thread(Thunderstore::GetModInfo, m);
 					}
+					else
+					{
+						Installer::CurrentBackgroundThread->join();
+						delete Installer::CurrentBackgroundThread;
+						Installer::CurrentBackgroundThread = nullptr;
+						Installer::ThreadProgress = 0;
+						CurrentModsTab->ShowLoadingText();
+						Installer::CurrentBackgroundThread = new std::thread(Thunderstore::GetModInfo, m);
+					}
 				}
 			}
 			});
 
 		b->SetMinSize(Vector2f(0, 0.34));
 		b->Align = UIBox::E_REVERSE;
-		b->SetPadding(0.01 / Application::AspectRatio, 0.01 / Application::AspectRatio, 0.01, 0.01);
+		b->SetPadding(0.005 * Application::AspectRatio, 0.005 * Application::AspectRatio, 0.005, 0.005);
 		unsigned int tex = 0;
 		if (UseTexture)
 		{
@@ -761,6 +788,7 @@ void ModsTab::GenerateModPage()
 void ModsTab::ShowLoadingText()
 {
 	ModButtons.clear();
+	ModImages.clear();
 
 	ModsScrollBox->DeleteChildren();
 	ModsScrollBox->AddChild((new UIText(0.5, 1, "Loading...", UI::Text))->SetPadding(0.5));
@@ -856,7 +884,7 @@ void ModsTab::CheckForModUpdates()
 
 ModsTab::ModsTab()
 {
-	AspectRatio = Application::AspectRatio;
+	PrevAspectRatio = Application::AspectRatio;
 	CurrentModsTab = this;
 	Name = "Mods";
 
@@ -915,9 +943,14 @@ void ModsTab::ClearLoadedTextures()
 	}
 }
 
+int ModsTab::GetModsPerPage(float Aspect)
+{
+	return std::round((Aspect / (16.0f / 9.0f)) * 6.9f) * 4;;
+}
+
 void ModsTab::Tick()
 {
-	ModsPerPage = std::round((Application::AspectRatio / (16.0f / 9.0f)) * 6.9f) * 4;
+	ModsPerPage = GetModsPerPage(Application::AspectRatio);
 	if (!LoadedModList && Background->IsVisible && !Thunderstore::IsDownloading && !Installer::CurrentBackgroundThread)
 	{
 		Installer::CurrentBackgroundThread = new std::thread(Thunderstore::DownloadThunderstoreInfo, Thunderstore::SelectedOrdering, SelectedPage, Filter);
@@ -941,13 +974,21 @@ void ModsTab::Tick()
 		Thunderstore::LoadedSelectedMod = false;
 	}
 
-	if (AspectRatio != Application::AspectRatio)
+	if (PrevAspectRatio != Application::AspectRatio && ModButtons.size() && GetModsPerPage(Application::AspectRatio) != GetModsPerPage(PrevAspectRatio))
 	{
-		if (ModButtons.size())
+		if (!Installer::CurrentBackgroundThread)
 		{
-			AspectRatio = Application::AspectRatio;
-			GenerateModPage();
+			ShowLoadingText();
+			Installer::CurrentBackgroundThread = new std::thread(Thunderstore::DownloadThunderstoreInfo, Thunderstore::SelectedOrdering, SelectedPage, Filter);
+			DownloadingPage = true;
+			LoadedModList = true;
+			Thunderstore::IsDownloading = true;
+			PrevAspectRatio = Application::AspectRatio;
 		}
+	}
+	else
+	{
+		PrevAspectRatio = Application::AspectRatio;
 	}
 }
 
