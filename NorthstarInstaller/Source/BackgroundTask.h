@@ -26,6 +26,8 @@ struct BackgroundTask
 
 	static void UpdateTaskStatus();
 
+	static bool IsFunctionRunningAsTask(void (*Function)());
+
 private:
 	static std::vector<BackgroundTask*> AllTasks;
 	static void TaskRun(void (*Function)(), BackgroundTask* Task);

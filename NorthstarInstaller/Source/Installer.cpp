@@ -2,12 +2,16 @@
 #include <UI/UIBackground.h>
 #include <Rendering/Texture.h>
 
+#include <queue>
+#include <fstream>
+
 #include "Game.h"
 #include "Log.h"
 #include "Installer.h"
 #include "UIDef.h"
 #include "Networking.h"
 #include "BackgroundTask.h"
+#include "WindowFunctions.h"
 
 #include "Tabs/LaunchTab.h"
 #include "Tabs/SettingsTab.h"
@@ -31,8 +35,7 @@ namespace Installer
 	UIBackground* TaskProgressBar = nullptr;
 	UIText* TaskNameText = nullptr;
 	const std::string InstallerVersion = "v0.1.3";
-
-	bool HasCheckedForModUpdates = false;
+	const std::string GithubInstallerVersion = InstallerVersion;
 
 	void GenerateTabs()
 	{
@@ -111,7 +114,44 @@ namespace Installer
 		BackgroundTask::SetStatus("No update required");
 		Log::Print("No update required");
 	}
-	
+
+	std::atomic<bool> RequiresUpdate = false;
+
+	void CheckForInstallerUpdate()
+	{
+		Log::Print("Checking for installer updates...");
+		BackgroundTask::SetStatus("Checking for installer updates");
+		BackgroundTask::SetProgress(0.999);
+
+		std::string Ver = Networking::GetLatestReleaseOf("Klemmbaustein/NorthstarInstaller");
+		if (GithubInstallerVersion != Ver)
+		{
+			RequiresUpdate = true;
+			Log::Print(std::format("Installer requires update. {} -> {}", GithubInstallerVersion, Ver) , Log::Warning);
+		}
+	}
+	std::queue<void (*)()> LaunchTasks =
+	std::queue<void (*)()>({
+		CheckForUpdates,
+		CheckForInstallerUpdate,
+		ModsTab::CheckForModUpdates
+	});
+
+	void UpdateInstaller()
+	{
+		BackgroundTask::SetStatus("Updating installer");
+		if (Window::ShowPopup("Update", "An update for the installer is avaliabe.\nWould you like to install it?") != Window::PopupReply::Yes)
+		{
+			return;
+		}
+		BackgroundTask::SetProgress(0.3);
+		Networking::DownloadLatestReleaseOf("Klemmbaustein/NorthstarInstaller");
+		Networking::ExtractZip("Data/temp/net/latest.zip", "Data/temp/install");
+		std::ofstream out = std::ofstream("update.bat");
+		out << "@echo off";
+		out << "xcopy /s/e Data\\temp\\install .\\";
+		exit(0);
+	}
 }
 
 float BackgroundFade = 0;
@@ -155,8 +195,6 @@ int main(int argc, char** argv)
 
 	Log::Print("Successfully started launcher");
 
-	new BackgroundTask(Installer::CheckForUpdates);
-
 	while (!Application::Quit)
 	{
 		for (auto i : Installer::Tabs)
@@ -194,10 +232,10 @@ int main(int argc, char** argv)
 			Installer::TaskNameText->SetText("No background task");
 		}
 
-		if (!BackgroundTask::IsRunningTask && !Installer::HasCheckedForModUpdates)
+		if (!BackgroundTask::IsRunningTask && !Installer::LaunchTasks.empty())
 		{
-			Installer::HasCheckedForModUpdates = true;
-			new BackgroundTask(ModsTab::CheckForModUpdates);
+			new BackgroundTask(Installer::LaunchTasks.front());
+			Installer::LaunchTasks.pop();
 		}
 
 		Application::UpdateWindow();
@@ -205,6 +243,13 @@ int main(int argc, char** argv)
 		{
 			Application::Quit = false;
 		}
+#if !DEBUG
+		if (Installer::RequiresUpdate)
+		{
+			Installer::RequiresUpdate = false;
+			new BackgroundTask(Installer::UpdateInstaller);
+		}
+#endif
 	}
 	Networking::Cleanup();
 	Log::Print("Application closed.");

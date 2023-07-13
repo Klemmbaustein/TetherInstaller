@@ -43,6 +43,18 @@ void BackgroundTask::TaskRun(void (*Function)(), BackgroundTask* ThisTask)
 	ThisTask->Progress = 1;
 }
 
+bool BackgroundTask::IsFunctionRunningAsTask(void(*Function)())
+{
+	for (auto& i : AllTasks)
+	{
+		if (i->Type == (size_t)Function)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 void BackgroundTask::UpdateTaskStatus()
 {
 	IsRunningTask = false;

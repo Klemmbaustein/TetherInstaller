@@ -10,34 +10,41 @@
 
 #include <thread>
 #include <atomic>
+#include <map>
+#include "ModsTab.h"
 
-/*
+void NorthstarLaunchTask()
 {
-	Installer::BackgroundName = "Northstar is running";
-	Installer::BackgroundTask = "Northstar";
+	BackgroundTask::SetStatus("Northstar is running");
 	Log::Print("Game has started");
 	system((Game::GamePath + "/NorthstarLauncher.exe").c_str());
 	Log::Print("Game has finished running");
-	Installer::ThreadProgress = 1;
-}*/
+}
+
+std::map<void (*)(), std::string> LaunchStoppingTasks =
+{
+	std::pair(Game::UpdateGame, "Updating northstar"),
+	std::pair(NorthstarLaunchTask, "Northstar is running"),
+	std::pair(Installer::CheckForUpdates, "Checking for updates (1/3)"),
+	std::pair(Installer::CheckForInstallerUpdate, "Checking for updates (2/3)"),
+	std::pair(ModsTab::CheckForModUpdates, "Checking for updates (3/3)"),
+	std::pair(Installer::UpdateInstaller, "Updating installer")
+};
 
 void LaunchNorthstar()
 {
-	//if (Installer::CurrentBackgroundThread)
-	//{
-	//	return;
-	//}
+	for (auto& i : LaunchStoppingTasks)
+	{
+		if (BackgroundTask::IsFunctionRunningAsTask(i.first))
+		{
+			return;
+		}
+	}
 	if (!Game::GamePath.empty() && !Game::RequiresUpdate)
 	{
 		Log::Print("Starting game...");
 
-		new BackgroundTask([]()
-			{
-				BackgroundTask::SetStatus("Northstar is running");
-				Log::Print("Game has started");
-				system((Game::GamePath + "/NorthstarLauncher.exe").c_str());
-				Log::Print("Game has finished running");
-			});
+		new BackgroundTask(NorthstarLaunchTask);
 	}
 	if (Game::RequiresUpdate && !Game::GamePath.empty())
 	{
@@ -73,12 +80,17 @@ void LaunchTab::Tick()
 	if (Game::GamePath.empty())
 	{
 		LaunchText->SetText("Titanfall 2 not found");
+		return;
 	}
-	//else if (Installer::CurrentBackgroundThread)
-	//{
-	//	LaunchText->SetText(Installer::BackgroundName);
-	//}
-	else if (Game::RequiresUpdate)
+	for (auto& i : LaunchStoppingTasks)
+	{
+		if (BackgroundTask::IsFunctionRunningAsTask(i.first))
+		{
+			LaunchText->SetText(i.second);
+			return;
+		}
+	}
+	if (Game::RequiresUpdate)
 	{
 		LaunchText->SetText("Update northstar");
 	}
