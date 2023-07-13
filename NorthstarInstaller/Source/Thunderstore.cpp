@@ -29,59 +29,57 @@ bool Thunderstore::IsMostRecentFileVersion(std::string VersionString)
 Thunderstore::InstalledModsResult Thunderstore::GetInstalledMods()
 {
 	using namespace nlohmann;
-
-	if (!std::filesystem::exists("Data/var/modinfo"))
-	{
-		return InstalledModsResult();
-	}
-
 	// Mods managed by the installer
 	std::set<std::string> ManagedMods;
 
 	std::vector<Package> UnmanagedMods;
 	std::vector<Package> InstalledMods;
-
-	for (auto& i : std::filesystem::directory_iterator("Data/var/modinfo"))
+	if (!std::filesystem::exists("Data/var/modinfo"))
 	{
-		auto pathstring = i.path().string();
-		if (pathstring.substr(i.path().string().find_last_of(".")) == ".png")
+		for (auto& i : std::filesystem::directory_iterator("Data/var/modinfo"))
 		{
-			continue;
-		}
-
-		std::ifstream in = std::ifstream(i.path().string());
-		std::stringstream str; str << in.rdbuf();
-		auto modinfo = json::parse(str.str());
-		Package p;
-
-		try
-		{
-			p.Author = modinfo.at("author");
-			p.Namespace = modinfo.at("namespace");
-			p.Name = modinfo.at("name");
-			p.Description = modinfo.at("description");
-			p.Img = modinfo.at("image");
-			p.Version = modinfo.at("version");
-			p.UUID = modinfo.at("UUID");
-			p.FileVersion = modinfo.at("file_format_version");
-		}
-		catch (std::exception& e)
-		{
-			Log::Print("Error reading mod descriptor file. Possibly outdated version", Log::Warning);
-			Log::Print(e.what(), Log::Warning);
-			p.FileVersion = "Unknown";
-		}
-		for (auto& i : modinfo.at("mod_files"))
-		{
-			auto file = Game::GamePath + "/R2Northstar/mods/" + i.get<std::string>();
-			if (std::filesystem::exists(file))
+			auto pathstring = i.path().string();
+			if (pathstring.substr(i.path().string().find_last_of(".")) == ".png")
 			{
-				ManagedMods.insert(i.get<std::string>());
+				continue;
 			}
-		}
-		InstalledMods.push_back(p);
-	}
 
+			std::ifstream in = std::ifstream(i.path().string());
+			std::stringstream str; str << in.rdbuf();
+			auto modinfo = json::parse(str.str());
+			Package p;
+
+			try
+			{
+				p.Author = modinfo.at("author");
+				p.Namespace = modinfo.at("namespace");
+				p.Name = modinfo.at("name");
+				p.Description = modinfo.at("description");
+				p.Img = modinfo.at("image");
+				p.Version = modinfo.at("version");
+				p.UUID = modinfo.at("UUID");
+				p.FileVersion = modinfo.at("file_format_version");
+			}
+			catch (std::exception& e)
+			{
+				Log::Print("Error reading mod descriptor file. Possibly outdated version", Log::Warning);
+				Log::Print(e.what(), Log::Warning);
+				p.FileVersion = "Unknown";
+
+			}
+
+
+			for (auto& i : modinfo.at("mod_files"))
+			{
+				auto file = Game::GamePath + "/R2Northstar/mods/" + i.get<std::string>();
+				if (std::filesystem::exists(file))
+				{
+					ManagedMods.insert(i.get<std::string>());
+				}
+			}
+			InstalledMods.push_back(p);
+		}
+	}
 	for (auto& i : std::filesystem::directory_iterator(Game::GamePath + "/R2Northstar/mods"))
 	{
 		std::string ModName = i.path().filename().string();
