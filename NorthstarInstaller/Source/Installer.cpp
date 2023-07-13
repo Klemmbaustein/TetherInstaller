@@ -160,10 +160,6 @@ float BackgroundFade = 0;
 
 int main(int argc, char** argv)
 {
-	if (std::filesystem::exists("update.bat"))
-	{
-		std::filesystem::remove("update.bat");
-	}
 	Application::Initialize("Installer", 0);
 	Log::Print("Created app window");
 
