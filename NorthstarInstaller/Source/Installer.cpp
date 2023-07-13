@@ -150,12 +150,7 @@ namespace Installer
 		BackgroundTask::SetProgress(0.3);
 		Networking::DownloadLatestReleaseOf("Klemmbaustein/NorthstarInstaller");
 		Networking::ExtractZip("Data/temp/net/latest.zip", "Data/temp/install");
-		std::ofstream out = std::ofstream("update.bat");
-		out << "@echo off\n";
-		out << "ping 127.0.0.1 -n 2 > nul\n";
-		out << "xcopy /s/e/y Data\\temp\\install .\\\n";
-		out << "start NorthstarInstaller.exe\n";
-		out << "exit\n";
+
 		system("start update.bat");
 		exit(0);
 	}
