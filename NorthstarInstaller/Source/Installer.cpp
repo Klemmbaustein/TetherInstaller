@@ -20,7 +20,6 @@
 /*
 * 
 * TODO:
-* Auto update installer.
 * 
 */
 
@@ -148,8 +147,12 @@ namespace Installer
 		Networking::DownloadLatestReleaseOf("Klemmbaustein/NorthstarInstaller");
 		Networking::ExtractZip("Data/temp/net/latest.zip", "Data/temp/install");
 		std::ofstream out = std::ofstream("update.bat");
-		out << "@echo off";
-		out << "xcopy /s/e Data\\temp\\install .\\";
+		out << "@echo off\n";
+		out << "ping 127.0.0.1 -n 2 > nul\n";
+		out << "xcopy /s/e/y Data\\temp\\install .\\\n";
+		out << "start NorthstarInstaller.exe\n";
+		out << "exit\n";
+		system("start update.bat");
 		exit(0);
 	}
 }
@@ -158,6 +161,10 @@ float BackgroundFade = 0;
 
 int main(int argc, char** argv)
 {
+	if (std::filesystem::exists("update.bat"))
+	{
+		std::filesystem::remove("update.bat");
+	}
 	Application::Initialize("Installer", 0);
 	Log::Print("Created app window");
 
