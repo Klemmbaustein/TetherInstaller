@@ -34,7 +34,7 @@ Thunderstore::InstalledModsResult Thunderstore::GetInstalledMods()
 
 	std::vector<Package> UnmanagedMods;
 	std::vector<Package> InstalledMods;
-	if (!std::filesystem::exists("Data/var/modinfo"))
+	if (std::filesystem::exists("Data/var/modinfo"))
 	{
 		for (auto& i : std::filesystem::directory_iterator("Data/var/modinfo"))
 		{
