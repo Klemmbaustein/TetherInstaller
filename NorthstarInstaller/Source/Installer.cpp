@@ -123,6 +123,10 @@ namespace Installer
 		BackgroundTask::SetProgress(0.999);
 
 		std::string Ver = Networking::GetLatestReleaseOf("Klemmbaustein/NorthstarInstaller");
+		if (Ver.empty())
+		{
+			return;
+		}
 		if (GithubInstallerVersion != Ver)
 		{
 			RequiresUpdate = true;
