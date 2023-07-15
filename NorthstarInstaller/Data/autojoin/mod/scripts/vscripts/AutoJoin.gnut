@@ -1,0 +1,120 @@
+global function joinFromConvar
+
+void function joinFromConvar()
+{
+    thread joinFromConvarThread()
+}
+
+bool function ShouldWeConnect()
+{
+    string Serv
+	try
+    {
+    Serv = GetConVarString("AutoJoinServer")
+    }
+    catch(a)
+    {
+        print("AutoJoinServer is not set, or is not a string")
+        print(a)
+        return false
+    }
+
+    if( Serv == "none" )
+    {
+		print("AutoJoinServer is set to none")
+		return false
+    }
+    if( Serv == "" )
+    {
+		print("AutoJoinServer is set to an empty string")
+		return false
+	}
+
+	return true
+}
+
+
+void function joinFromConvarThread()
+{
+    float time = Time()
+
+    while ( GetConVarInt( "ns_has_agreed_to_send_token" ) != NS_AGREED_TO_SEND_TOKEN || time + 10.0 > Time() )
+	{
+		if ( ( NSIsMasterServerAuthenticated() && IsStryderAuthenticated() ) || GetConVarBool( "ns_auth_allow_insecure" ) )
+			break
+			
+		WaitFrame()
+	}
+    connectFromConvar()
+}
+
+void function connectFromConvar()
+{
+    string Serv
+    try
+    {
+    Serv = GetConVarString("AutoJoinServer")
+    }
+    catch(a)
+    {
+        print("AutoJoinServer is not set, or is not a string")
+        print(a)
+        return
+    }
+
+	NSRequestServerList()
+
+	while ( NSIsRequestingServerList() )
+	{
+		WaitFrame() 
+	}
+	
+	int TargetID
+	
+	int i = 0
+
+	foreach ( s in NSGetGameServers() )
+	{
+		if (s.id == Serv)
+		{
+			TargetID = i
+		}
+		i++
+	}
+
+	NSTryAuthWithServer( TargetID, "" )
+
+	while ( NSIsAuthenticatingWithServer() )
+	{
+		WaitFrame()
+	}
+
+	if ( NSWasAuthSuccessful() )
+	{
+		NSConnectToAuthedServer()
+	}
+	else
+	{
+		string reason = NSGetAuthFailReason()
+
+		DialogData dialogData
+		dialogData.header = "#ERROR"
+		dialogData.message = reason
+		dialogData.image = $"ui/menu/common/dialog_error"
+
+		#if PC_PROG
+			AddDialogButton( dialogData, "#DISMISS" )
+
+			AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
+		#endif // PC_PROG
+		AddDialogFooter( dialogData, "#B_BUTTON_DISMISS_RUI" )
+
+		OpenDialog( dialogData )
+	}
+	SetConVarString( "AutoJoinServer", "" )
+}
+
+bool function IsStryderAuthenticated()
+{
+	return GetConVarInt( "mp_allowed" ) != -1
+}
