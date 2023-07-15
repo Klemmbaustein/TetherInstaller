@@ -80,6 +80,12 @@ Thunderstore::InstalledModsResult Thunderstore::GetInstalledMods()
 			InstalledMods.push_back(p);
 		}
 	}
+
+	if (!std::filesystem::exists(Game::GamePath + "/R2Northstar/mods"))
+	{
+		std::filesystem::create_directories(Game::GamePath + "/R2Northstar/mods");
+	}
+
 	for (auto& i : std::filesystem::directory_iterator(Game::GamePath + "/R2Northstar/mods"))
 	{
 		std::string ModName = i.path().filename().string();
@@ -108,8 +114,33 @@ bool Thunderstore::IsModInstalled(Package m)
 	// As a failsafe also check for mod files that could've been installed using another method.
 	// This way we hopefully won't install a mod twice. (Oh no)
 	// This won't always work.
-	return std::filesystem::exists("Data/var/modinfo/" + m.Namespace + "." + m.Name + ".json")
-		|| std::filesystem::exists(Game::GamePath + "/R2Northstar/mods/" + m.Namespace + "." + m.Name);
+	if (std::filesystem::exists("Data/var/modinfo/" + m.Namespace + "." + m.Name + ".json")
+		|| std::filesystem::exists(Game::GamePath + "/R2Northstar/mods/" + m.Namespace + "." + m.Name))
+	{
+		return true;
+	}
+	if (!std::filesystem::exists(Game::GamePath + "/R2Northstar/mods"))
+	{
+		return false;
+	}
+	for (auto& i : std::filesystem::directory_iterator(Game::GamePath + "R2Northstar/mods"))
+	{
+		Package fm;
+		std::string FileName = i.path().filename().string();
+
+		if (FileName.find(".") != std::string::npos)
+		{
+			fm.Name = FileName.substr(FileName.find_first_of(".") + 1);
+			fm.Namespace = FileName.substr(0, FileName.find_first_of("."));
+			fm.Author = m.Namespace;
+		}
+		else
+		{
+			fm.Name = FileName;
+		}
+		return (fm.Namespace == m.Namespace || m.Namespace.empty() || fm.Namespace.empty())
+			&& (fm.Name == m.Name);
+	}
 }
 namespace Thunderstore::TSDownloadThunderstoreInfo
 {
@@ -267,10 +298,6 @@ namespace Thunderstore::TSDownloadThunderstoreInfo
 				}
 				Mod.Name = elem.at("versions")[0].at("name");
 				Mod.Author = elem.at("owner");
-				if (Mod.Author == "northstar")
-				{
-					continue;
-				}
 
 				std::string LowerCaseName = Mod.Name;
 				std::string LowerCaseAuthor = Mod.Author;
@@ -380,7 +407,6 @@ namespace Thunderstore::TSGetModInfoFunc
 			for (auto& i : response.at("versions"))
 			{
 				m.Downloads += i.at("downloads");
-
 			}
 
 			// I'm using the experimental API anyways because there doesn't seem to be another way to do this.
@@ -434,7 +460,7 @@ namespace Thunderstore::TSModFunc
 				auto InfoFile = "Data/var/modinfo/" + m.Namespace + "." + m.Name + ".json";
 				std::ifstream in = std::ifstream(InfoFile);
 				std::stringstream str; str << in.rdbuf();
-				auto modinfo = json::parse(str.str());
+				json modinfo = json::parse(str.str());
 				in.close();
 				if (std::filesystem::exists(InfoFile))
 				{
@@ -444,13 +470,21 @@ namespace Thunderstore::TSModFunc
 				{
 					std::filesystem::remove(modinfo.at("image"));
 				}
-				for (auto& i : modinfo.at("mod_files"))
+
+				if (m.Name != "NorthstarReleaseCandidate")
 				{
-					auto file = Game::GamePath + "/R2Northstar/mods/" + i.get<std::string>();
-					if (std::filesystem::exists(file))
+					for (auto& i : modinfo.at("mod_files"))
 					{
-						std::filesystem::remove_all(file);
+						auto file = Game::GamePath + "/R2Northstar/mods/" + i.get<std::string>();
+						if (std::filesystem::exists(file))
+						{
+							std::filesystem::remove_all(file);
+						}
 					}
+				}
+				else
+				{
+					Game::UpdateGameAsync();
 				}
 				Thunderstore::LoadedSelectedMod = true;
 				try
@@ -465,6 +499,7 @@ namespace Thunderstore::TSModFunc
 				return;
 			}
 			BackgroundTask::SetStatus("Downloading mod");
+			BackgroundTask::SetProgress(0.999);
 			std::string TargetZipName = "Data/temp/net/" + m.Author + "." + m.Name + ".zip";
 			Networking::Download(m.DownloadUrl, TargetZipName, "");
 
@@ -472,6 +507,42 @@ namespace Thunderstore::TSModFunc
 			std::filesystem::create_directories("Data/temp/mod");
 			Networking::ExtractZip(TargetZipName, "Data/temp/mod/");
 			std::filesystem::remove(TargetZipName);
+			
+			if (m.Name == "NorthstarReleaseCandidate")
+			{
+				std::filesystem::copy("Data/temp/mod/Northstar", Game::GamePath,
+					std::filesystem::copy_options::overwrite_existing
+					| std::filesystem::copy_options::recursive);
+
+				std::string Image;
+				if (std::filesystem::exists(m.Img))
+				{
+					std::filesystem::copy(m.Img, "Data/var/modinfo/" + m.Namespace + "." + m.Name + ".png");
+					Image = "Data/var/modinfo/" + m.Namespace + "." + m.Name + ".png";
+				}
+				else
+				{
+					Networking::Download(m.Img, "Data/var/modinfo/" + m.Namespace + "." + m.Name + ".png", "");
+				}
+
+				json descr(json::object({
+					{"version", m.Version},
+					{"author", m.Author},
+					{"namespace", m.Namespace},
+					{"name", m.Name},
+					{"mod_files", ""},
+					{"description", m.Description},
+					{"image", Image},
+					{"file_format_version", MOD_DESCRIPTOR_FILE_FORMAT_VERSION},
+					{"UUID", m.UUID}
+					}));
+
+				std::ofstream out = std::ofstream("Data/var/modinfo/" + m.Namespace + "." + m.Name + ".json");
+				out << descr.dump();
+				out.close();
+				return;
+			}
+
 			std::filesystem::copy("Data/temp/mod/mods/", Game::GamePath + "/R2Northstar/mods",
 				std::filesystem::copy_options::overwrite_existing
 				| std::filesystem::copy_options::recursive);

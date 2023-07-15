@@ -16,6 +16,7 @@
 #include "Tabs/LaunchTab.h"
 #include "Tabs/SettingsTab.h"
 #include "Tabs/ModsTab.h"
+#include "Tabs/ServerBrowserTab.h"
 
 /*
 * 
@@ -33,9 +34,13 @@ namespace Installer
 	UIBackground* TaskBackground = nullptr;
 	UIBackground* TaskProgressBar = nullptr;
 	UIText* TaskNameText = nullptr;
-	const std::string InstallerVersion = "v0.1.3";
+	const std::string InstallerVersion = "v0.1.4";
 	const std::string GithubInstallerVersion = InstallerVersion;
-
+#if DEBUG
+	const std::string UserAgent = std::format("KlemmNorthstarInstaller/{}-dev", Installer::InstallerVersion);
+#else
+	const std::string UserAgent = std::format("KlemmNorthstarInstaller/{}", Installer::InstallerVersion);
+#endif
 	void GenerateTabs()
 	{
 		TabButtons.clear();
@@ -185,6 +190,7 @@ int main(int argc, char** argv)
 	Installer::Tabs =
 	{
 		new LaunchTab(),
+		new ServerBrowserTab(),
 		new ModsTab(),
 		new SettingsTab(),
 	};

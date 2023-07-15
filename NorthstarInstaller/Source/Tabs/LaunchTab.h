@@ -11,4 +11,5 @@ public:
 	LaunchTab();
 	void Tick() override;
 	virtual ~LaunchTab();
+	static void LaunchNorthstar();
 };

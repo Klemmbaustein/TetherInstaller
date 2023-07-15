@@ -113,7 +113,25 @@ void ModsTab::GenerateModInfo()
 			->AddChild((new UIText(0.3, 0, "Deprecated mods are no longer supported and might have issues.", UI::Text))
 				->SetPadding(0, 0.01, 0.01, 0.01))
 			->AddChild((new UIText(0.4, 0, "This mod is deprecated", UI::Text))
-				->SetPadding(0.01, 0, 0.01, 0.01)));
+				->SetPadding(0.01, 0, 0.01, 0.01))
+			->SetPadding(0.0, 0.03, 0, 0));
+	}
+
+	if (Thunderstore::SelectedMod.Name == "NorthstarReleaseCandidate")
+	{
+		ModsScrollBox->AddChild((new UIBackground(false, 0, Vector3f32(0, 0.5, 1), Vector2(1.15, 0.1)))
+			->SetBorder(UIBox::E_DARKENED_EDGE, 0.2)
+			->AddChild((new UIBox(true, 0))
+				->SetPadding(0)
+				->AddChild((new UIButton(true, 0, 1, []() {system("start https://discord.com/channels/920776187884732556/951461326478262292"); }))
+					->AddChild(new UIText(0.3, 0, "Open discord channel", UI::Text))))
+			->AddChild((new UIText(0.3, 0, "If you notice any issues with it, please report them to github or the northstar discord server.", UI::Text))
+				->SetPadding(0, 0.01, 0.01, 0.01))
+			->AddChild((new UIText(0.3, 0, "Release canidates are versions of northstar that are almost ready to release.", UI::Text))
+				->SetPadding(0, 0, 0.01, 0.01))
+			->AddChild((new UIText(0.4, 0, "This is a northstar release canidate", UI::Text))
+				->SetPadding(0.01, 0, 0.01, 0.01))
+			->SetPadding(0.0, 0.03, 0, 0));
 	}
 
 	UIBox* MarkdownBackground = new UIBox(false, 0);

@@ -7,6 +7,7 @@
 #include "../Game.h"
 #include "../Installer.h"
 #include "../BackgroundTask.h"
+#include "../Thunderstore.h"
 
 #include <thread>
 #include <atomic>
@@ -28,10 +29,11 @@ std::map<void (*)(), std::string> LaunchStoppingTasks =
 	std::pair(Installer::CheckForUpdates, "Checking for updates (1/3)"),
 	std::pair(Installer::CheckForInstallerUpdate, "Checking for updates (2/3)"),
 	std::pair(ModsTab::CheckForModUpdates, "Checking for updates (3/3)"),
-	std::pair(Installer::UpdateInstaller, "Updating installer")
+	std::pair(Installer::UpdateInstaller, "Updating installer"),
+	std::pair(Thunderstore::TSModFunc::InstallOrUninstallMod, "Downloading mod")
 };
 
-void LaunchNorthstar()
+void LaunchTab::LaunchNorthstar()
 {
 	for (auto& i : LaunchStoppingTasks)
 	{

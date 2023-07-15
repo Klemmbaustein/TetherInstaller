@@ -8,6 +8,7 @@
 #include <fstream>
 #include <filesystem>
 #include <zip.h>
+#include "Installer.h"
 #define DEV_NET_DEBUGGING 0
 
 namespace Networking
@@ -106,7 +107,7 @@ namespace Networking
 
 		CheckNetTempFolder();
 
-		Download("https://api.github.com/repos/" + RepoName + "/releases/latest", NetTempFolder + "version.txt", "User-Agent: None");
+		Download("https://api.github.com/repos/" + RepoName + "/releases/latest", NetTempFolder + "version.txt", "User-Agent: " + Installer::UserAgent);
 
 		try
 		{
@@ -138,7 +139,7 @@ namespace Networking
 		using namespace nlohmann;
 		CheckNetTempFolder();
 
-		Download("https://api.github.com/repos/" + RepoName + "/releases/latest", NetTempFolder + "version.txt", "User-Agent: None");
+		Download("https://api.github.com/repos/" + RepoName + "/releases/latest", NetTempFolder + "version.txt", "User-Agent: " + Installer::UserAgent);
 
 		try
 		{

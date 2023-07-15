@@ -84,6 +84,11 @@ namespace Thunderstore
 	// TODO: Extract other elements of the mod. (Plugins, ...)
 	void InstallOrUninstallMod(Package m, bool Async = true);
 
+	namespace TSModFunc
+	{
+		void InstallOrUninstallMod();
+	}
+
 	// Sets the Thunderstore::SelectedMod variable to a more detailed version of the given package.
 	void AsyncGetModInfo(Package m);
 

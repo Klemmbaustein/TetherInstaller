@@ -8,14 +8,14 @@ float BackgroundTask::CurrentTaskProgress;
 bool BackgroundTask::IsRunningTask;
 std::vector<BackgroundTask*> BackgroundTask::AllTasks;
 
-BackgroundTask::BackgroundTask(void (*Function)())
-{
+BackgroundTask::BackgroundTask(void(*Function)(), void(*Callback)())
+{	
 	// Using a pointer as an ID. Why not?
 	Type = (size_t)Function;
 	AllTasks.push_back(this);
+	this->Callback = Callback;
 
 	Thread = new std::thread(TaskRun, Function, this);
-
 }
 
 BackgroundTask::~BackgroundTask()
@@ -62,6 +62,10 @@ void BackgroundTask::UpdateTaskStatus()
 	{
 		if (AllTasks[i]->Progress >= 1)
 		{
+			if (AllTasks[i]->Callback)
+			{
+				AllTasks[i]->Callback();
+			}
 			delete AllTasks[i];
 			AllTasks.erase(AllTasks.begin() + i);
 			break;
