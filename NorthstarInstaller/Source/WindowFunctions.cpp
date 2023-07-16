@@ -60,7 +60,7 @@ std::string Window::ShowSelectFolderDialog()
 	return FilePath;
 }
 
-Window::PopupReply Window::ShowPopup(std::string Title, std::string Message)
+Window::PopupReply Window::ShowPopupQuestion(std::string Title, std::string Message)
 {
 	int a = MessageBoxA(NULL, Message.c_str(), Title.c_str(), MB_YESNO | MB_ICONQUESTION);
 	if (a == IDYES)
@@ -68,5 +68,9 @@ Window::PopupReply Window::ShowPopup(std::string Title, std::string Message)
 		return Window::PopupReply::Yes;
 	}
 	return Window::PopupReply::No;
+}
+void Window::ShowPopup(std::string Title, std::string Message)
+{
+	MessageBoxA(NULL, Message.c_str(), Title.c_str(), MB_OK);
 }
 #endif

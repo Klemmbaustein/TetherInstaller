@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <zip.h>
 #include "Installer.h"
+#include "WindowFunctions.h"
 #define DEV_NET_DEBUGGING 0
 
 namespace Networking
@@ -171,8 +172,24 @@ namespace Networking
 
 	void Init()
 	{
+		Log::Print("Checking internet connection");
 		Log::Print("Initialised cURL");
+		std::filesystem::create_directories("Data/temp/net/");
 		curl_global_init(CURL_GLOBAL_ALL);
+		Networking::Download("https://northstar.tf", "Data/temp/net/ntf.html", "");
+		if (std::filesystem::is_empty("Data/temp/net/ntf.html"))
+		{
+			std::filesystem::remove("Data/temp/net/ntf.html");
+			Window::ShowPopup("Error", "Failed to ping https://northstar.tf\n\n\
+What this could mean:\n\
+- No internet connection\n\
+- The northstar master server is currently offline\n\n\
+What you can do:\n\
+- Check your internet connection\n\
+- Wait (Up to a few hours)");
+			exit(0);
+		}
+		std::filesystem::remove("Data/temp/net/ntf.html");
 	}
 
 	void Cleanup()

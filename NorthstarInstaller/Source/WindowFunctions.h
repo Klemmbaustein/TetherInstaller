@@ -11,5 +11,6 @@ namespace Window
 		Yes = 1,
 	};
 
-	PopupReply ShowPopup(std::string Title, std::string Message);
+	PopupReply ShowPopupQuestion(std::string Title, std::string Message);
+	void ShowPopup(std::string Title, std::string Message);
 }

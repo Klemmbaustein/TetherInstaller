@@ -179,7 +179,7 @@ bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
 	}
 	FailedModsString.append("Continue anyways?");
 
-	return Window::ShowPopup("Joining " + e.Name, FailedModsString) == Window::PopupReply::Yes;
+	return Window::ShowPopupQuestion("Joining " + e.Name, FailedModsString) == Window::PopupReply::Yes;
 }
 
 
@@ -506,6 +506,11 @@ unsigned int ServerBrowserTab::GetMapTexture(std::string Map)
 void ServerBrowserTab::LoadServers()
 {
 	using namespace nlohmann;
+
+	if (!std::filesystem::exists("Data/temp"))
+	{
+		return;
+	}
 
 	BackgroundTask::SetStatus("Loading servers");
 	Networking::Download("https://northstar.tf/client/servers", "Data/temp/net/servers.json", "User-Agent: " + Installer::UserAgent);

@@ -81,6 +81,7 @@ void ModsTab::GenerateModInfo()
 							return;
 						}
 						new BackgroundTask([]() {
+							BackgroundTask::SetStatus("Installing mod");
 								Thunderstore::InstallOrUninstallMod(Thunderstore::SelectedMod, false, false);
 							},
 							[]() {
@@ -88,7 +89,11 @@ void ModsTab::GenerateModInfo()
 							});
 					}))
 					->SetPadding(0.01, 0.07, 0.01, 0.01)
-					->AddChild(new UIText(0.4, 0, IsInstalled ? "Uninstall" : (Game::GamePath.empty() ? "Install (No game path!)" : "Install"), UI::Text)))
+					->AddChild(new UIText(0.4, 0, 
+						(Thunderstore::IsInstallingMod) ?
+							"Installing..."
+							: (IsInstalled ? "Uninstall" : (Game::GamePath.empty() ? "Install (No game path!)" : "Install")),
+						UI::Text)))
 
 				->AddChild((new UIButton(true, 0, 1, []() {
 							system(("start https://northstar.thunderstore.io/package/"
@@ -436,6 +441,7 @@ int ModsTab::GetModsPerPage(float Aspect)
 	return std::round((Aspect / (16.0f / 9.0f)) * 6.9f) * 4;
 }
 
+bool InstallingMod = false;
 void ModsTab::Tick()
 {
 	if (!Background->IsVisible)
@@ -464,6 +470,19 @@ void ModsTab::Tick()
 	{
 		GenerateModInfo();
 		Thunderstore::LoadedSelectedMod = false;
+	}
+
+	if (Thunderstore::IsInstallingMod)
+	{
+		if (!InstallingMod)
+		{
+			GenerateModInfo();
+		}
+		InstallingMod = true;
+	}
+	else
+	{
+		InstallingMod = false;
 	}
 
 	if (PrevAspectRatio != Application::AspectRatio && ModButtons.size() && GetModsPerPage(Application::AspectRatio) != GetModsPerPage(PrevAspectRatio))

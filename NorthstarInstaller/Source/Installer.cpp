@@ -135,7 +135,7 @@ namespace Installer
 		if (GithubInstallerVersion != Ver)
 		{
 			RequiresUpdate = true;
-			Log::Print(std::format("Installer requires update. {} -> {}", GithubInstallerVersion, Ver) , Log::Warning);
+			Log::Print(std::format("Launcher requires update. {} -> {}", GithubInstallerVersion, Ver) , Log::Warning);
 		}
 	}
 	std::queue<void (*)()> LaunchTasks =
@@ -148,7 +148,7 @@ namespace Installer
 	void UpdateInstaller()
 	{
 		BackgroundTask::SetStatus("Updating installer");
-		if (Window::ShowPopup("Update", "An update for the installer is avaliabe.\nWould you like to install it?") != Window::PopupReply::Yes)
+		if (Window::ShowPopupQuestion("Update", "An update for the launcher is avaliabe.\nWould you like to install it?") != Window::PopupReply::Yes)
 		{
 			return;
 		}

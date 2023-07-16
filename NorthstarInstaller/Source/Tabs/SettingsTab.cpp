@@ -114,16 +114,24 @@ void SettingsTab::GenerateSettings()
 			->AddChild(new UIText(0.4, 0, "Delete all mods", UI::Text)));
 
 		SettingsBox->AddChild((new UIButton(true, 0, 1, []() {
-				Log::Print("Un-fucking installation...", Log::Warning);
-				std::filesystem::remove_all("temp");
+			try
+			{
+				std::filesystem::remove_all("Data/temp");
 				Log::Print("Deleted ./Data/temp/", Log::Warning);
-				DeleteAllMods();
-				Game::UpdateGameAsync();
+				std::filesystem::remove_all("./Data/var");
+				Log::Print("Deleted ./Data/var/", Log::Warning);
+				std::filesystem::create_directories("./Data/var");
+				std::filesystem::create_directories("./Data/temp");
+			}
+			catch (std::exception& e)
+			{
+
+			}
 			}))
-			->AddChild(new UIText(0.4, 0, "Try to unfuck installation", UI::Text)));
+			->AddChild(new UIText(0.4, 0, "Reset launcher", UI::Text)));
 	}
 
 	AddCategoryHeader("About", SettingsBox);
 	SettingsBox->AddChild(new UIText(0.35, 1, "Installed Northstar version: " + Game::GetCurrentVersion(), UI::Text));
-	SettingsBox->AddChild(new UIText(0.35, 1, "Installer version: " + Installer::InstallerVersion, UI::Text));
+	SettingsBox->AddChild(new UIText(0.35, 1, "Launcher version: " + Installer::InstallerVersion, UI::Text));
 }

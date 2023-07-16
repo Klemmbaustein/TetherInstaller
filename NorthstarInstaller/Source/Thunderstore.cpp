@@ -18,6 +18,7 @@ std::atomic<bool> Thunderstore::IsDownloading = false;
 std::atomic<bool> Thunderstore::LoadedImages = false;
 std::atomic<bool> Thunderstore::ShouldStopLoadingImages = false;
 std::atomic<bool> Thunderstore::LoadedSelectedMod = false;
+std::atomic<bool> Thunderstore::IsInstallingMod = false;
 std::vector<Thunderstore::Package> Thunderstore::FoundMods;
 Thunderstore::Package Thunderstore::SelectedMod;
 
@@ -124,7 +125,8 @@ bool Thunderstore::IsModInstalled(Package m)
 	{
 		return false;
 	}
-	for (auto& i : std::filesystem::directory_iterator(Game::GamePath + "R2Northstar/mods"))
+
+	for (auto& i : std::filesystem::directory_iterator(Game::GamePath + "/R2Northstar/mods"))
 	{
 		Package fm;
 		std::string FileName = i.path().filename().string();
@@ -173,6 +175,8 @@ namespace Thunderstore::TSDownloadThunderstoreInfo
 		using namespace nlohmann;
 		std::transform(Filter.begin(), Filter.end(), Filter.begin(),
 			[](unsigned char c) { return std::tolower(c); });
+
+		std::filesystem::create_directories("Data/temp/net");
 
 		if (ModOrdering == Ordering::Installed)
 		{
@@ -377,11 +381,17 @@ namespace Thunderstore::TSDownloadThunderstoreInfo
 			Log::Print("Thunderstore response has an invalid layout.", Log::Error);
 			Log::Print(e.what(), Log::Error);
 
+			if (!std::filesystem::exists("Data/temp"))
+			{
+				std::filesystem::create_directories("Data/temp");
+			}
+
 			Log::Print("Writing response to Data/temp/invalidresponse.txt", Log::Error);
 			if (std::filesystem::exists("Data/temp/invalidresponse.txt"))
 			{
 				std::filesystem::remove("Data/temp/invalidresponse.txt");
 			}
+
 			std::filesystem::copy("Data/temp/net/tspage.txt", "Data/temp/invalidresponse.txt");
 		}
 		BackgroundTask::SetProgress(1);
@@ -492,6 +502,8 @@ namespace Thunderstore::TSModFunc
 		using namespace nlohmann;
 		try
 		{
+			IsInstallingMod = true;
+			std::filesystem::create_directories("Data/var/modinfo");
 			if (Thunderstore::IsModInstalled(m))
 			{
 				auto InfoFile = "Data/var/modinfo/" + m.Namespace + "." + m.Name + ".json";
@@ -532,6 +544,7 @@ namespace Thunderstore::TSModFunc
 					FoundMods.clear();
 					Log::Print("Error parsing installed mods: " + std::string(e.what()), Log::Error);
 				}
+				IsInstallingMod = false;
 				return;
 			}
 			if (Async)
@@ -580,6 +593,7 @@ namespace Thunderstore::TSModFunc
 				std::ofstream out = std::ofstream("Data/var/modinfo/" + m.Namespace + "." + m.Name + ".json");
 				out << descr.dump();
 				out.close();
+				IsInstallingMod = false;
 				return;
 			}
 
@@ -628,7 +642,8 @@ namespace Thunderstore::TSModFunc
 			Log::Print(e.what());
 		}
 		Thunderstore::LoadedSelectedMod = true;
-	}
+		IsInstallingMod = false;
+}
 }
 
 void Thunderstore::InstallOrUninstallMod(Package m, bool IsTemporary, bool Async)

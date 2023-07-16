@@ -51,6 +51,10 @@ void LaunchTab::LaunchNorthstar(std::string Args)
 			return;
 		}
 	}
+	if (Thunderstore::IsInstallingMod)
+	{
+		return;
+	}
 	if (!Game::GamePath.empty() && !Game::RequiresUpdate)
 	{
 		Log::Print("Starting game...");
@@ -101,6 +105,10 @@ void LaunchTab::Tick()
 			LaunchText->SetText(i.second);
 			return;
 		}
+	}
+	if (Thunderstore::IsInstallingMod)
+	{
+		LaunchText->SetText("Downloading mod");
 	}
 	if (Game::RequiresUpdate)
 	{

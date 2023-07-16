@@ -93,4 +93,6 @@ namespace Thunderstore
 	// Sets the Thunderstore::SelectedMod variable to a more detailed version of the given package.
 	void GetModInfo(Package m, bool Async);
 
+	extern std::atomic<bool> IsInstallingMod;
+
 }
