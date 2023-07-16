@@ -11,7 +11,7 @@
 #include "Networking.h"
 #include "Tabs/ModsTab.h"
 
-constexpr const char* MOD_DESCRIPTOR_FILE_FORMAT_VERSION = "v1";
+constexpr const char* MOD_DESCRIPTOR_FILE_FORMAT_VERSION = "v2";
 
 Thunderstore::Ordering Thunderstore::SelectedOrdering = Ordering::Last_Updated;
 std::atomic<bool> Thunderstore::IsDownloading = false;
@@ -59,6 +59,7 @@ Thunderstore::InstalledModsResult Thunderstore::GetInstalledMods()
 				p.Version = modinfo.at("version");
 				p.UUID = modinfo.at("UUID");
 				p.FileVersion = modinfo.at("file_format_version");
+				p.IsTemporary = modinfo.at("is_temporary");
 			}
 			catch (std::exception& e)
 			{
@@ -92,7 +93,7 @@ Thunderstore::InstalledModsResult Thunderstore::GetInstalledMods()
 		std::string Author = ModName.substr(0, ModName.find_first_of("."));
 		std::string Name = ModName.substr(ModName.find_first_of(".") + 1);
 
-		if (!ManagedMods.contains(ModName) && std::filesystem::is_directory(i) && Author != "Northstar")
+		if (!ManagedMods.contains(ModName) && std::filesystem::is_directory(i) && Author != "Northstar" && Name != "autojoin")
 		{
 			Package p;
 			p.Name = Name;
@@ -138,9 +139,29 @@ bool Thunderstore::IsModInstalled(Package m)
 		{
 			fm.Name = FileName;
 		}
-		return (fm.Namespace == m.Namespace || m.Namespace.empty() || fm.Namespace.empty())
-			&& (fm.Name == m.Name);
+		if ((fm.Namespace == m.Namespace || m.Namespace.empty() || fm.Namespace.empty())
+			&& (fm.Name == m.Name))
+		{
+			return true;
+		}
 	}
+
+	if (!std::filesystem::exists("Data/var/modinfo"))
+	{
+		return false;
+	}
+
+	for (auto& i : std::filesystem::directory_iterator("Data/var/modinfo"))
+	{
+		std::string Name = i.path().filename().string();
+		std::string ModName = Name.substr(Name.find_first_of(".") + 1);
+		if (ModName == m.Name + ".json")
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 namespace Thunderstore::TSDownloadThunderstoreInfo
 {
@@ -369,12 +390,19 @@ namespace Thunderstore::TSDownloadThunderstoreInfo
 	}
 }
 
-void Thunderstore::AsyncDownloadThunderstoreInfo(Ordering ModOrdering, size_t Page, std::string Filter)
+void Thunderstore::DownloadThunderstoreInfo(Ordering ModOrdering, size_t Page, std::string Filter, bool Async)
 {
 	TSDownloadThunderstoreInfo::ModOrdering = ModOrdering;
 	TSDownloadThunderstoreInfo::Page = Page;
 	TSDownloadThunderstoreInfo::Filter = Filter;
-	new BackgroundTask(TSDownloadThunderstoreInfo::DownloadThunderstoreInfoInternal);
+	if (Async)
+	{
+		new BackgroundTask(TSDownloadThunderstoreInfo::DownloadThunderstoreInfoInternal);
+	}
+	else
+	{
+		TSDownloadThunderstoreInfo::DownloadThunderstoreInfoInternal();
+	}
 }
 
 namespace Thunderstore::TSGetModInfoFunc
@@ -441,15 +469,24 @@ namespace Thunderstore::TSGetModInfoFunc
 	}
 }
 
-void Thunderstore::AsyncGetModInfo(Package m)
+void Thunderstore::GetModInfo(Package m, bool Async)
 {
 	TSGetModInfoFunc::m = m;
-	new BackgroundTask(TSGetModInfoFunc::AsyncGetModInfoInternal);
+	if (Async)
+	{
+		new BackgroundTask(TSGetModInfoFunc::AsyncGetModInfoInternal);
+	}
+	else
+	{
+		TSGetModInfoFunc::AsyncGetModInfoInternal();
+	}
 }
 
 namespace Thunderstore::TSModFunc
 {
 	Package m;
+	bool Async;
+	bool IsTemporary;
 	void InstallOrUninstallMod()
 	{
 		using namespace nlohmann;
@@ -486,7 +523,6 @@ namespace Thunderstore::TSModFunc
 				{
 					Game::UpdateGameAsync();
 				}
-				Thunderstore::LoadedSelectedMod = true;
 				try
 				{
 					FoundMods = GetInstalledMods().Combined();
@@ -498,8 +534,11 @@ namespace Thunderstore::TSModFunc
 				}
 				return;
 			}
-			BackgroundTask::SetStatus("Downloading mod");
-			BackgroundTask::SetProgress(0.999);
+			if (Async)
+			{
+				BackgroundTask::SetStatus("Downloading mod");
+				BackgroundTask::SetProgress(0.999);
+			}
 			std::string TargetZipName = "Data/temp/net/" + m.Author + "." + m.Name + ".zip";
 			Networking::Download(m.DownloadUrl, TargetZipName, "");
 
@@ -520,7 +559,7 @@ namespace Thunderstore::TSModFunc
 					std::filesystem::copy(m.Img, "Data/var/modinfo/" + m.Namespace + "." + m.Name + ".png");
 					Image = "Data/var/modinfo/" + m.Namespace + "." + m.Name + ".png";
 				}
-				else
+				else if (!IsTemporary)
 				{
 					Networking::Download(m.Img, "Data/var/modinfo/" + m.Namespace + "." + m.Name + ".png", "");
 				}
@@ -533,8 +572,9 @@ namespace Thunderstore::TSModFunc
 					{"mod_files", ""},
 					{"description", m.Description},
 					{"image", Image},
+					{"is_temporary", IsTemporary},
 					{"file_format_version", MOD_DESCRIPTOR_FILE_FORMAT_VERSION},
-					{"UUID", m.UUID}
+					{"UUID", m.UUID},
 					}));
 
 				std::ofstream out = std::ofstream("Data/var/modinfo/" + m.Namespace + "." + m.Name + ".json");
@@ -575,6 +615,7 @@ namespace Thunderstore::TSModFunc
 				{"mod_files", Files},
 				{"description", m.Description},
 				{"image", Image},
+				{"is_temporary", IsTemporary},
 				{"file_format_version", MOD_DESCRIPTOR_FILE_FORMAT_VERSION},
 				{"UUID", m.UUID}
 				}));
@@ -590,9 +631,11 @@ namespace Thunderstore::TSModFunc
 	}
 }
 
-void Thunderstore::InstallOrUninstallMod(Package m, bool Async)
+void Thunderstore::InstallOrUninstallMod(Package m, bool IsTemporary, bool Async)
 {
 	TSModFunc::m = m;
+	TSModFunc::Async = Async;
+	TSModFunc::IsTemporary = IsTemporary;
 	
 	if (Async)
 	{

@@ -10,54 +10,82 @@ bool function ShouldWeConnect()
     string Serv
 	try
     {
-    Serv = GetConVarString("AutoJoinServer")
+    Serv = GetConVarString("autoJoinServer")
     }
     catch(a)
     {
-        print("AutoJoinServer is not set, or is not a string")
+        print("autoJoinServer is not set, or is not a string")
         print(a)
         return false
     }
 
     if( Serv == "none" )
     {
-		print("AutoJoinServer is set to none")
+		print("autoJoinServer is set to none")
 		return false
     }
     if( Serv == "" )
     {
-		print("AutoJoinServer is set to an empty string")
+		print("autoJoinServer is set to an empty string")
 		return false
 	}
 
+	print( "We should connect to the server" )
 	return true
 }
 
+void function DisplayLoadingDialog(string Title, string Description)
+{
+	CloseAllDialogs()
+	DialogData dialogData
+	dialogData.showSpinner = true
+	dialogData.header = Title
+	dialogData.message = Description
+
+	AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
+
+	OpenDialog( dialogData )
+}
 
 void function joinFromConvarThread()
 {
-    float time = Time()
+	float time = Time()
 
-    while ( GetConVarInt( "ns_has_agreed_to_send_token" ) != NS_AGREED_TO_SEND_TOKEN || time + 10.0 > Time() )
+	while (time + 3 > Time())
+	{
+		WaitFrame()
+	}
+
+	if ( !ShouldWeConnect() )
+	{
+		return
+	}
+	DisplayLoadingDialog("#CONNECTING", "#DIALOG_AUTHENTICATING_MASTERSERVER");
+
+    while ( GetConVarInt( "ns_has_agreed_to_send_token" ) != NS_AGREED_TO_SEND_TOKEN || time + 15.0 > Time() )
 	{
 		if ( ( NSIsMasterServerAuthenticated() && IsStryderAuthenticated() ) || GetConVarBool( "ns_auth_allow_insecure" ) )
 			break
 			
 		WaitFrame()
 	}
+
+
+
     connectFromConvar()
 }
 
 void function connectFromConvar()
 {
-    string Serv
+   	DisplayLoadingDialog("#CONNECTING", "Connecting to server");
+	string Serv
     try
     {
-    Serv = GetConVarString("AutoJoinServer")
+    Serv = GetConVarString("autoJoinServer")
     }
     catch(a)
     {
-        print("AutoJoinServer is not set, or is not a string")
+        print("autoJoinServer is not set, or is not a string")
         print(a)
         return
     }
@@ -111,7 +139,7 @@ void function connectFromConvar()
 
 		OpenDialog( dialogData )
 	}
-	SetConVarString( "AutoJoinServer", "" )
+	SetConVarString( "autoJoinServer", "" )
 }
 
 bool function IsStryderAuthenticated()

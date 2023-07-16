@@ -80,7 +80,12 @@ void ModsTab::GenerateModInfo()
 							Thunderstore::LoadedSelectedMod = true;
 							return;
 						}
-						Thunderstore::InstallOrUninstallMod(Thunderstore::SelectedMod, true);
+						new BackgroundTask([]() {
+								Thunderstore::InstallOrUninstallMod(Thunderstore::SelectedMod, false, false);
+							},
+							[]() {
+								Thunderstore::LoadedSelectedMod = true;
+							});
 					}))
 					->SetPadding(0.01, 0.07, 0.01, 0.01)
 					->AddChild(new UIText(0.4, 0, IsInstalled ? "Uninstall" : (Game::GamePath.empty() ? "Install (No game path!)" : "Install"), UI::Text)))
@@ -205,7 +210,7 @@ void ModsTab::GenerateModPage()
 					}
 
 					CurrentModsTab->ShowLoadingText();
-					Thunderstore::AsyncGetModInfo(m);
+					Thunderstore::GetModInfo(m, true);
 				}
 			}
 			});
@@ -236,7 +241,7 @@ void ModsTab::GenerateModPage()
 		{
 			Image->Align = UIBox::E_CENTERED;
 			Image->SetColor(0.1);
-			Image->AddChild(new UIText(0.4, 1, i.IsUnknownLocalMod ? " Unknown" : (i.IsNSFW ? "    NSFW" : "Loading..."), UI::Text));
+			Image->AddChild(new UIText(0.4, 1, i.IsUnknownLocalMod ? " Unknown" : (i.IsNSFW ? "    NSFW" : (i.IsTemporary ? "Temporary" : "Loading...")), UI::Text));
 		}
 		ModImages.push_back(Image);
 		ModButtons.push_back(b);
@@ -335,12 +340,17 @@ void ModsTab::CheckForModUpdates()
 				// Uninstall mod, then install mod again.
 				Thunderstore::Package NewMod = m;
 				NewMod.DownloadUrl = response.at("download_url");
-				Thunderstore::InstallOrUninstallMod(NewMod, false);
-				Thunderstore::InstallOrUninstallMod(NewMod, false);
+				Thunderstore::InstallOrUninstallMod(NewMod, false, false);
+				Thunderstore::InstallOrUninstallMod(NewMod, false, false);
 			}
 			else
 			{
 				Log::Print("Mod '" + m.Name + "' is not outdated.");
+			}
+
+			if (m.IsTemporary)
+			{
+				Thunderstore::InstallOrUninstallMod(m, true, false);
 			}
 		}
 		catch (std::exception& e)
@@ -418,6 +428,7 @@ void ModsTab::ClearLoadedTextures()
 	{
 		Texture::UnloadTexture(i);
 	}
+	ModTextures.clear();
 }
 
 int ModsTab::GetModsPerPage(float Aspect)
@@ -427,10 +438,14 @@ int ModsTab::GetModsPerPage(float Aspect)
 
 void ModsTab::Tick()
 {
+	if (!Background->IsVisible)
+	{
+		return;
+	}
 	ModsPerPage = GetModsPerPage(Application::AspectRatio);
 	if (!LoadedModList && Background->IsVisible && !Thunderstore::IsDownloading)
 	{
-		Thunderstore::AsyncDownloadThunderstoreInfo(Thunderstore::SelectedOrdering, SelectedPage, Filter);
+		Thunderstore::DownloadThunderstoreInfo(Thunderstore::SelectedOrdering, SelectedPage, Filter, true);
 		DownloadingPage = true;
 		LoadedModList = true;
 		Thunderstore::IsDownloading = true;
@@ -454,7 +469,7 @@ void ModsTab::Tick()
 	if (PrevAspectRatio != Application::AspectRatio && ModButtons.size() && GetModsPerPage(Application::AspectRatio) != GetModsPerPage(PrevAspectRatio))
 	{
 		ShowLoadingText();
-		Thunderstore::AsyncDownloadThunderstoreInfo(Thunderstore::SelectedOrdering, SelectedPage, Filter);
+		Thunderstore::DownloadThunderstoreInfo(Thunderstore::SelectedOrdering, SelectedPage, Filter, true);
 		DownloadingPage = true;
 		LoadedModList = true;
 		Thunderstore::IsDownloading = true;

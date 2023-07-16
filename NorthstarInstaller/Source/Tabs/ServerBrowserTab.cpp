@@ -1,7 +1,6 @@
 #include "ServerBrowserTab.h"
 #include "LaunchTab.h"
 
-
 #include <fstream>
 #include <sstream>
 
@@ -17,7 +16,12 @@
 #include "../Log.h"
 #include "../BackgroundTask.h"
 #include "../Thunderstore.h"
+#include "../WindowFunctions.h"
+#include "../Game.h"
 
+bool ServerBrowserTab::ShouldLaunchGame;
+ServerBrowserTab* ServerBrowserTab::CurrentServerTab = nullptr;
+std::vector<ServerBrowserTab::ServerEntry> ServerBrowserTab::Servers;
 constexpr unsigned int MaxServerNameSize = 40;
 const std::map<std::string, std::string> KNOWN_GAMEMODES = {
 	std::pair("private_match", "Private Match"),
@@ -66,6 +70,118 @@ const std::map<std::string, std::string> KNOWN_GAMEMODES = {
 	std::pair("sp_coop" , "Campaign Coop"),
 };
 
+std::string GetFile(std::string InFile)
+{
+	std::ifstream i = std::ifstream(InFile);
+	std::stringstream istream;
+	istream << i.rdbuf();
+	return istream.str();
+}
+
+std::string ToLowerCase(std::string Target)
+{
+	std::transform(Target.begin(), Target.end(), Target.begin(),
+		[](unsigned char c) { return std::tolower(c); });
+	return Target;
+}
+
+bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
+{
+	using namespace nlohmann;
+
+	BackgroundTask::SetStatus("Loading required mods");
+
+	Networking::Download("https://thunderstore.io/c/northstar/api/v1/package/", "Data/temp/net/allmods.json", "User-Agent: " + Installer::UserAgent);
+
+	json Response = json::parse(GetFile("Data/temp/net/allmods.json"));
+
+	std::vector<ServerBrowserTab::ServerEntry::ServerMod> FailedMods;
+
+
+	if (!std::filesystem::exists(Game::GamePath + "/R2Northstar/mods/autojoin"))
+	{
+		std::filesystem::copy("Data/autojoin", Game::GamePath + "/R2Northstar/mods/autojoin",
+			std::filesystem::copy_options::recursive);
+	}
+
+	float Progress = 0;
+
+	for (auto& RequiredMod : e.RequiredMods)
+	{
+		bool HasInstalledMod = false;
+		Thunderstore::Package m;
+
+		if (RequiredMod.ModName.find(".") != std::string::npos)
+		{
+			m.Name = RequiredMod.ModName.substr(RequiredMod.ModName.find_first_of(".") + 1);
+			m.Namespace = RequiredMod.ModName.substr(0, RequiredMod.ModName.find_first_of("."));
+			m.Author = m.Namespace;
+		}
+		else
+		{
+			m.Name = RequiredMod.ModName;
+		}
+
+		Progress += 1.0f / e.RequiredMods.size();
+		BackgroundTask::SetProgress(Progress - 0.001);
+		if (Thunderstore::IsModInstalled(m))
+		{
+			continue;
+		}
+
+
+		for (auto& item : Response)
+		{
+			if (ToLowerCase(m.Name).find(ToLowerCase(item.at("name"))) != std::string::npos
+				|| ToLowerCase(item.at("name")).find(ToLowerCase(m.Name)) != std::string::npos)
+			{
+				if (item.at("is_deprecated"))
+				{
+					continue;
+				}
+
+				m.Author = item.at("owner");
+				m.Namespace = item.at("owner");
+				m.Name = item.at("name");
+				m.UUID = item.at("uuid4");
+				m.Version = item.at("versions")[0].at("version_number");
+				m.DownloadUrl = item.at("versions")[0].at("download_url");
+				LOG_PRINTF("Need to install mod {}.{} with UUID of {}",
+					item.at("owner").get<std::string>(), 
+					item.at("name").get<std::string>(), 
+					item.at("uuid4").get<std::string>());
+				BackgroundTask::SetStatus("Installing " + m.Name);
+				Thunderstore::InstallOrUninstallMod(m, true, false);
+				HasInstalledMod = true;
+			}
+		}
+		if (!HasInstalledMod)
+		{
+			FailedMods.push_back(RequiredMod);
+		}
+	}
+
+	if (FailedMods.empty())
+	{
+		return true;
+	}
+
+	std::string FailedModsString = "The following mods could not be installed:\n";
+
+	for (auto& i : FailedMods)
+	{
+		FailedModsString.append("- " + i.ModName);
+		if (i.IsRequired)
+		{
+			FailedModsString.append(" (Required)");
+		}
+		FailedModsString.append("\n");
+	}
+	FailedModsString.append("Continue anyways?");
+
+	return Window::ShowPopup("Joining " + e.Name, FailedModsString) == Window::PopupReply::Yes;
+}
+
 
 void RefreshServerBrowser()
 {
@@ -76,8 +192,6 @@ void RefreshServerBrowser()
 	}
 }
 
-ServerBrowserTab* ServerBrowserTab::CurrentServerTab = nullptr;
-std::vector<ServerBrowserTab::ServerEntry> ServerBrowserTab::Servers;
 ServerBrowserTab::ServerBrowserTab()
 {
 	CurrentServerTab = this;
@@ -194,13 +308,10 @@ void ServerBrowserTab::DisplayServers()
 	{
 		std::string Name = i.Name;
 		std::string Region = i.Region;
-		std::string LowerCaseName = Name;
 
-		std::transform(LowerCaseName.begin(), LowerCaseName.end(), LowerCaseName.begin(),
-			[](unsigned char c) { return std::tolower(c); });
 		TotalPlayers += i.PlayerCount;
 
-		if (!Filter.empty() && LowerCaseName.find(Filter) == std::string::npos)
+		if (!Filter.empty() && ToLowerCase(Name).find(Filter) == std::string::npos)
 		{
 			continue;
 		}
@@ -245,6 +356,11 @@ void ServerBrowserTab::DisplayServers()
 	PlayerCountText->SetText(std::format("Players in game: {}", TotalPlayers));
 }
 
+void JoinCurrentServer()
+{
+	ServerBrowserTab::ShouldLaunchGame = InstallRequiredModsForServer(ServerBrowserTab::CurrentServerTab->SelectedServer);
+}
+
 void ServerBrowserTab::Tick()
 {
 	if (ServerListBox)
@@ -255,6 +371,23 @@ void ServerBrowserTab::Tick()
 	{
 		ServerBox->SetMaxScroll(0);
 		ServerBox->GetScrollObject()->Percentage = 0;
+	}
+
+	if (!ServerDescriptionText)
+		return;
+
+	if (BackgroundTask::IsFunctionRunningAsTask(JoinCurrentServer))
+	{
+		ServerDescriptionText->SetText("Joining server...");
+	}
+	else if (LaunchTab::IsGameRunning)
+	{
+		ServerDescriptionText->SetText("Game is running");
+	}
+	else
+	{
+		ServerDescriptionText->SetText("Join server");
+
 	}
 }
 
@@ -267,8 +400,9 @@ void ServerBrowserTab::DisplayLoadingText()
 
 void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 {
+	SelectedServer = e;
 	ServerDescriptionBox->DeleteChildren();
-
+	ServerDescriptionText = nullptr;
 	if (e.Name.empty())
 	{
 		return;
@@ -292,36 +426,52 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 	MapDescr->SetPadding(0);
 	MapDescr->SetMinSize(9 * 0.025);
 
-	ServerDescriptionBox->AddChild(new UIText(0.5, 1, "Playing on: ", UI::Text));
+	ServerDescriptionBox->AddChild((new UIText(0.5, 1, "Playing on: ", UI::Text)));
 	ServerDescriptionBox->AddChild((new UIBox(true, 0))
 		->AddChild((new UIBackground(true, 0, 1, Vector2f(16, 9) * 0.025))
 			->SetUseTexture(true, GetMapTexture(e.Map))
 			->SetSizeMode(UIBox::E_PIXEL_RELATIVE))
 		->AddChild(MapDescr
-			->AddChild(new UIText(0.5, 1, e.MapName, UI::Text))
-			->AddChild(new UIText(0.3, 1, "Game mode: " + e.GameModeName, UI::Text))
-			->AddChild(new UIText(0.3, 1, PlayerCount, UI::Text))));
+			->AddChild((new UIText(0.5, 1, e.MapName, UI::Text))
+				->SetPadding(0, 0, 0.01, 0.01))
+			->AddChild((new UIText(0.3, 1, e.GameModeName, UI::Text))
+				->SetPadding(0, 0, 0.01, 0.01))
+			->AddChild((new UIText(0.3, 1, PlayerCount, UI::Text))
+				->SetPadding(0, 0, 0.01, 0.01))));
 
 	ServerDescriptionBox->AddChild(new UIBackground(true, 0, 1, Vector2f(0.6, 0.005)));
-	
-	ServerDescriptionBox->AddChild(new UIText(0.5, 1, "Required mods: ", UI::Text));
+	ServerDescriptionText = new UIText(0.4, 0, "Join server", UI::Text);
+	ServerDescriptionBox->AddChild((new UIBox(true, 0))
+		->AddChild((new UIButton(true, 0, Vector3f32(0.5, 0.6, 1), []() { new BackgroundTask(JoinCurrentServer, []() {
+
+				ServerBrowserTab::CurrentServerTab->DisplayServerDescription(ServerBrowserTab::CurrentServerTab->SelectedServer);
+				if (ServerBrowserTab::ShouldLaunchGame) 
+				{ 
+					LaunchTab::LaunchNorthstar("+AutoJoinServer " + ServerBrowserTab::CurrentServerTab->SelectedServer.ServerID); 
+				}
+			});
+			}))
+			->SetBorder(UIBox::E_ROUNDED, 0.5)
+			->AddChild(ServerDescriptionText)));
+
+	ServerDescriptionBox->AddChild(new UIText(0.5, 1, "Mods: ", UI::Text));
 
 	for (const auto& i : e.RequiredMods)
 	{
 		Thunderstore::Package m;
 
-		if (i.find(".") != std::string::npos)
+		if (i.ModName.find(".") != std::string::npos)
 		{
-			m.Name = i.substr(i.find_first_of(".") + 1);
-			m.Namespace = i.substr(0, i.find_first_of("."));
+			m.Name = i.ModName.substr(i.ModName.find_first_of(".") + 1);
+			m.Namespace = i.ModName.substr(0, i.ModName.find_first_of("."));
 			m.Author = m.Namespace;
 		}
 		else
 		{
-			m.Name = i;
+			m.Name = i.ModName;
 		}
 
-		std::string ModName = " - " + i;
+		std::string ModName = " - " + i.ModName;
 
 		if (Thunderstore::IsModInstalled(m))
 		{
@@ -329,9 +479,6 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 		}
 		ServerDescriptionBox->AddChild(new UIText(0.3, 1, ModName, UI::Text));
 	}
-	ServerDescriptionBox->AddChild((new UIBox(true, 0))
-		->AddChild((new UIButton(true, 0, 1, []() {LaunchTab::LaunchNorthstar(); }))
-			->AddChild(new UIText(0.25, 0, "Launch game", UI::Text))));
 }
 
 unsigned int ServerBrowserTab::GetMapTexture(std::string Map)
@@ -362,10 +509,7 @@ void ServerBrowserTab::LoadServers()
 
 	BackgroundTask::SetStatus("Loading servers");
 	Networking::Download("https://northstar.tf/client/servers", "Data/temp/net/servers.json", "User-Agent: " + Installer::UserAgent);
-	std::ifstream i = std::ifstream("Data/temp/net/servers.json");
-	std::stringstream istream;
-	istream << i.rdbuf();
-	json ServerResponse = json::parse(istream.str());
+	json ServerResponse = json::parse(GetFile("Data/temp/net/servers.json"));
 
 	Servers.clear();
 	for (const auto& i : ServerResponse)
@@ -386,6 +530,7 @@ void ServerBrowserTab::LoadServers()
 		{
 			e.GameModeName = KNOWN_GAMEMODES.at(e.GameModeName);
 		}
+		e.ServerID = i.at("id");
 		e.Region = "Unknown";
 		try
 		{
@@ -397,7 +542,10 @@ void ServerBrowserTab::LoadServers()
 
 		for (auto& mod : i.at("modInfo").at("Mods"))
 		{
-			e.RequiredMods.push_back(mod.at("Name"));
+			ServerEntry::ServerMod RequiredMod;
+			RequiredMod.ModName = mod.at("Name");
+			RequiredMod.IsRequired = mod.at("RequiredOnClient");
+			e.RequiredMods.push_back(RequiredMod);
 		}
 
 		e.Description = i.at("description");

@@ -200,6 +200,10 @@ int main(int argc, char** argv)
 	Log::Print("Loading tab bar...");
 	Installer::GenerateTabs();
 
+	if (std::filesystem::exists(Game::GamePath + "R2Northstar/mods/autojoin"))
+	{
+		std::filesystem::remove_all(Game::GamePath + "R2Northstar/mods/autojoin");
+	}
 
 	Log::Print("Successfully started launcher");
 

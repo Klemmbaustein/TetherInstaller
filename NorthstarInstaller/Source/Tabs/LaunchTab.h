@@ -11,5 +11,7 @@ public:
 	LaunchTab();
 	void Tick() override;
 	virtual ~LaunchTab();
+	static bool IsGameRunning;
 	static void LaunchNorthstar();
+	static void LaunchNorthstar(std::string Args);
 };

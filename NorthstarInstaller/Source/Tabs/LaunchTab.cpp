@@ -14,12 +14,15 @@
 #include <map>
 #include "ModsTab.h"
 
+std::string NorthstarLaunchArgs;
+bool LaunchTab::IsGameRunning = false;
 void NorthstarLaunchTask()
 {
 	BackgroundTask::SetStatus("Northstar is running");
 	Log::Print("Game has started");
-	system((Game::GamePath + "/NorthstarLauncher.exe").c_str());
+	system((Game::GamePath + "/NorthstarLauncher.exe " + NorthstarLaunchArgs).c_str());
 	Log::Print("Game has finished running");
+	ModsTab::CheckForModUpdates();
 }
 
 std::map<void (*)(), std::string> LaunchStoppingTasks =
@@ -35,6 +38,12 @@ std::map<void (*)(), std::string> LaunchStoppingTasks =
 
 void LaunchTab::LaunchNorthstar()
 {
+	LaunchNorthstar("");
+}
+
+void LaunchTab::LaunchNorthstar(std::string Args)
+{
+	NorthstarLaunchArgs = Args;
 	for (auto& i : LaunchStoppingTasks)
 	{
 		if (BackgroundTask::IsFunctionRunningAsTask(i.first))
@@ -79,6 +88,7 @@ LaunchTab::LaunchTab()
 
 void LaunchTab::Tick()
 {
+	IsGameRunning = BackgroundTask::IsFunctionRunningAsTask(NorthstarLaunchTask);
 	if (Game::GamePath.empty())
 	{
 		LaunchText->SetText("Titanfall 2 not found");

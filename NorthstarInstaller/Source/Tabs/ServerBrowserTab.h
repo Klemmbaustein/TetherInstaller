@@ -16,18 +16,29 @@ class ServerBrowserTab : public UITab
 	UIBox* ServerDescriptionBox = new UIBox(false, 0);
 	UITextField* ServerSearchBox = nullptr;
 public:
+	UIText* ServerDescriptionText = nullptr;
+	static bool ShouldLaunchGame;
 	struct ServerEntry
 	{
 		std::string Region;
 		std::string Name;
 		std::string Map;
 		std::string MapName;
+		std::string ServerID;
 		std::string GameMode;
 		std::string GameModeName;
 		std::string Description;
-		std::vector<std::string> RequiredMods;
+		struct ServerMod
+		{
+			bool IsRequired = false;
+			std::string ModName;
+		};
+
+		std::vector<ServerMod> RequiredMods;
 		int PlayerCount = 0, MaxPlayerCount = 0;
 	};
+
+	ServerEntry SelectedServer;
 
 	std::vector<ServerEntry> DisplayedServerEntries;
 	std::vector<UIButton*> ServerBrowserButtons;
