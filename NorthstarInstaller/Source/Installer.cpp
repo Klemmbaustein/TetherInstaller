@@ -21,6 +21,7 @@
 /*
 * 
 * TODO:
+* - Branding
 * 
 */
 
@@ -34,7 +35,7 @@ namespace Installer
 	UIBackground* TaskBackground = nullptr;
 	UIBackground* TaskProgressBar = nullptr;
 	UIText* TaskNameText = nullptr;
-	const std::string InstallerVersion = "v0.1.4";
+	const std::string InstallerVersion = "v0.1.5";
 	const std::string GithubInstallerVersion = InstallerVersion;
 #if DEBUG
 	const std::string UserAgent = std::format("KlemmNorthstarInstaller/{}-dev", Installer::InstallerVersion);

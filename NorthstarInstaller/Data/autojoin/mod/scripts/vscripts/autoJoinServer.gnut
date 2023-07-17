@@ -99,7 +99,7 @@ void function connectFromConvar()
 	
 	int TargetID
 	
-	int i = -1
+	int i = 0
 	ServerInfo server
 
 	foreach ( s in NSGetGameServers() )
