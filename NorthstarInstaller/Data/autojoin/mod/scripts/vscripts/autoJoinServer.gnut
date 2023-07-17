@@ -99,6 +99,7 @@ void function connectFromConvar()
 	
 	int TargetID
 	
+	bool FoundServer = false
 	int i = 0
 	ServerInfo server
 
@@ -108,11 +109,12 @@ void function connectFromConvar()
 		{
 			TargetID = i
 			server = s
+			FoundServer = true
 		}
 		i++
 	}
 
-	if (i == -1)
+	if (!FoundServer)
 	{
 		return
 	}

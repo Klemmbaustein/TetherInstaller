@@ -231,7 +231,7 @@ ServerBrowserTab::ServerBrowserTab()
 	ServerBox = new UIScrollBox(false, 0, 10);
 	ServerBox->Align = UIBox::E_REVERSE;
 	ServerBackground->AddChild(new UIBackground(true, 0, 1, Vector2f(1.46, 0.005)));
-	ServerBackground->AddChild((new UIText(0.25, 1, "Region     Name                                      Players  Map", UI::MonoText))->SetPadding(0.05, 0, 0.02, 0.02));
+	ServerBackground->AddChild((new UIText(0.25, 1, "Region     Name                                      Players", UI::MonoText))->SetPadding(0.05, 0, 0.02, 0.02));
 	ServerBackground->AddChild((new UIBox(true, 0))
 		->SetPadding(0)
 		->AddChild(ServerBox
