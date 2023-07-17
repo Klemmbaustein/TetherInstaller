@@ -2,15 +2,35 @@
 
 #include <curl/curl.h>
 #include "JSON/json.hpp"
+#include <zip.h>
 
 #include "Log.h"
+#include "Installer.h"
+#include "WindowFunctions.h"
 
 #include <fstream>
 #include <filesystem>
-#include <zip.h>
-#include "Installer.h"
-#include "WindowFunctions.h"
+#include <regex>
+
 #define DEV_NET_DEBUGGING 0
+
+#if _WIN32
+#include <wtsapi32.h>
+#pragma comment(lib, "Wtsapi32.lib")
+#endif
+
+
+std::string ToLowerCase(std::string str);
+LONG GetStringRegKey(HKEY hKey, const std::wstring& strValueName, std::wstring& strValue, const std::wstring& strDefaultValue);
+bool replace(std::string& str, const std::string& from, const std::string& to) {
+	size_t start_pos = str.find(from);
+	if (start_pos == std::string::npos)
+		return false;
+	str.replace(start_pos, from.length(), to);
+	return true;
+}
+
+
 
 namespace Networking
 {
@@ -190,6 +210,51 @@ What you can do:\n\
 			exit(0);
 		}
 		std::filesystem::remove("Data/temp/net/ntf.html");
+
+#if _WIN32
+		DWORD pCount = 0;
+		PWTS_PROCESS_INFO ppProcessInfo, pProcess;
+		WTSEnumerateProcesses(WTS_CURRENT_SERVER_HANDLE, 0, 1, &ppProcessInfo, &pCount);
+		pProcess = ppProcessInfo;
+		const char* pgm = "EADesktop.exe";
+
+		for (int i = 0; i < pCount; i++)
+		{
+			std::wstring pName = pProcess->pProcessName;
+			if (ToLowerCase(pgm) == ToLowerCase(std::string(pName.begin(), pName.end())))
+			{
+				Log::Print("EA app is running.");
+				return;
+			}
+			pProcess++;
+		}
+		HKEY RegKey;
+		LONG lRes = RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Electronic Arts\\EA Desktop", 0, KEY_READ, &RegKey);
+		if (lRes == ERROR_SUCCESS)
+		{
+			std::wstring GameDir, GameDirDefault;
+			LONG KeyResult = GetStringRegKey(RegKey, L"InstallLocation", GameDir, GameDirDefault);
+			if (KeyResult == ERROR_SUCCESS)
+			{
+				std::string UTF8GameDir = std::string(GameDir.begin(), GameDir.end());
+				Log::Print("Found EA app through Windows registry: " + UTF8GameDir);
+
+				UTF8GameDir = std::regex_replace(UTF8GameDir, std::regex(" "), "^ ");
+
+
+				system((UTF8GameDir + "\\EA^ Desktop\\EALauncher.exe").c_str());
+				Log::Print("\"" + UTF8GameDir + "\\EALauncher.exe\"");
+			}
+			else
+			{
+				Window::ShowPopup("EA app", "EA app could not be found!\nMake sure you have the EA app installed.");
+			}
+		}
+		else
+		{
+			Window::ShowPopup("EA app", "EA app could not be found!\nMake sure you have the EA app installed.");
+		}
+#endif
 	}
 
 	void Cleanup()

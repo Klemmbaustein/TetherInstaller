@@ -98,11 +98,13 @@ bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
 	std::vector<ServerBrowserTab::ServerEntry::ServerMod> FailedMods;
 
 
-	if (!std::filesystem::exists(Game::GamePath + "/R2Northstar/mods/autojoin"))
+	if (std::filesystem::exists(Game::GamePath + "/R2Northstar/mods/autojoin"))
 	{
-		std::filesystem::copy("Data/autojoin", Game::GamePath + "/R2Northstar/mods/autojoin",
-			std::filesystem::copy_options::recursive);
+		std::filesystem::remove_all(Game::GamePath + "/R2Northstar/mods/autojoin");
 	}
+
+	std::filesystem::copy("Data/autojoin", Game::GamePath + "/R2Northstar/mods/autojoin",
+		std::filesystem::copy_options::recursive);
 
 	float Progress = 0;
 
