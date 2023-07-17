@@ -349,7 +349,6 @@ void ServerBrowserTab::DisplayServers()
 				TextSegment(Region, 0.25),
 				TextSegment(" " + Name + "  ", 0),
 				TextSegment(PlayerCount, 0.25),
-				TextSegment("  " + i.MapName, 0)
 				}, UI::MonoText))
 				->SetPadding(0.005)));
 		DisplayedServerEntries.push_back(i);
@@ -415,7 +414,11 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 	Descr->WrapDistance = 1.6;
 	std::string PlayerCount = std::format("Players: {}/{}", e.PlayerCount, e.MaxPlayerCount);
 
-	ServerDescriptionBox->AddChild(new UIText(0.5, 1, e.Name, UI::Text));
+	UIText* Title = new UIText(0.5, 1, e.Name, UI::Text);
+	Title->Wrap = true;
+	Title->WrapDistance = 1;
+
+	ServerDescriptionBox->AddChild(Title);
 	
 	ServerDescriptionBox->AddChild(new UIBackground(true, 0, 1, Vector2f(0.6, 0.005)));
 
