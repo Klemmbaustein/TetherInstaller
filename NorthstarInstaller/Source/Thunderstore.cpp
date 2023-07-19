@@ -562,6 +562,17 @@ namespace Thunderstore::TSModFunc
 			
 			if (m.Name == "NorthstarReleaseCandidate")
 			{
+				// Remove core mods before installing them again
+				for (auto& i : std::filesystem::directory_iterator(Game::GamePath + "/R2Northstar/mods"))
+				{
+					std::string File = i.path().filename().string();
+					std::string Author = File.substr(0, File.find_first_of("."));
+					if (Author == "Northstar")
+					{
+						std::filesystem::remove(File);
+					}
+				}
+
 				std::filesystem::copy("Data/temp/mod/Northstar", Game::GamePath,
 					std::filesystem::copy_options::overwrite_existing
 					| std::filesystem::copy_options::recursive);

@@ -153,8 +153,19 @@ void Game::UpdateGame()
 		BackgroundTask::SetProgress(0.5);
 		auto result = Networking::DownloadLatestReleaseOf("R2Northstar/Northstar");
 		BackgroundTask::SetProgress(0.7);
-		BackgroundTask::SetStatus("Installing Northstar from " + result);
+		BackgroundTask::SetStatus("Installing Northstar");
 		Log::Print("Extracting zip: " + result);
+
+		// Remove core mods before installing them again
+		for (auto& i : std::filesystem::directory_iterator(Game::GamePath + "/R2Northstar/mods"))
+		{
+			std::string File = i.path().filename().string();
+			std::string Author = File.substr(0, File.find_first_of("."));
+			if (Author == "Northstar")
+			{
+				std::filesystem::remove(File);
+			}
+		}
 		Networking::ExtractZip(result, Game::GamePath);
 		BackgroundTask::SetStatus("Removing temporary files");
 		BackgroundTask::SetProgress(0.9);
