@@ -20,7 +20,7 @@ void NorthstarLaunchTask()
 {
 	BackgroundTask::SetStatus("Northstar is running");
 	Log::Print("Game has started");
-	system((Game::GamePath + "/NorthstarLauncher.exe " + NorthstarLaunchArgs).c_str());
+	system((Game::GamePath + "/NorthstarLauncher.exe " + NorthstarLaunchArgs + " " + Game::GetLaunchArgs()).c_str());
 	Log::Print("Game has finished running");
 	ModsTab::CheckForModUpdates();
 }

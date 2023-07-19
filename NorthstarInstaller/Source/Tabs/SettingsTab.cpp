@@ -1,4 +1,5 @@
 #include "SettingsTab.h"
+
 #include <UI/UIText.h>
 #include <UI/UIButton.h>
 
@@ -17,7 +18,6 @@
 #include "../WindowFunctions.h"
 
 SettingsTab* CurrentSettingsTab = nullptr;
-
 SettingsTab::SettingsTab()
 {
 	CurrentSettingsTab = this;
@@ -96,22 +96,32 @@ void SettingsTab::GenerateSettings()
 
 	AddCategoryHeader("General", SettingsBox);
 	SettingsBox->AddChild((new UIButton(true, 0, 1, LocateTitanfall))
-		->AddChild(new UIText(0.4, 0, Game::GamePath.empty() ? "Locate Titanfall 2 (No path!)" : "Locate Titanfall (" + ShortGamePath + ")", UI::Text)));
+		->AddChild(new UIText(0.35, 0, Game::GamePath.empty() ? "Locate Titanfall 2 (No path!)" : "Locate Titanfall (" + ShortGamePath + ")", UI::Text)));
 
 	if (Game::IsValidTitanfallLocation(Game::GamePath))
 	{
+
+
 		SettingsBox->AddChild((new UIButton(true, 0, 1, []() {
 			new BackgroundTask(Installer::CheckForUpdates);
 			}))
-			->AddChild(new UIText(0.4, 0, "Re-check for updates", UI::Text)));
+			->AddChild(new UIText(0.35, 0, "Re-check for updates", UI::Text)));
 
 		SettingsBox->AddChild((new UIButton(true, 0, 1, Game::UpdateGameAsync))
-			->AddChild(new UIText(0.4, 0, "Force reinstall Northstar", UI::Text)));
+			->AddChild(new UIText(0.35, 0, "Reinstall Northstar", UI::Text)));
 
+		LaunchArgsText = new UITextField(true, 0, 0, UI::MonoText, []() {Game::SetLaunchArgs(CurrentSettingsTab->LaunchArgsText->GetText()); });
+
+		SettingsBox->AddChild(new UIText(0.35, 1, "Launch arguments", UI::Text));
+		SettingsBox->AddChild(LaunchArgsText
+			->SetHintText("Launch arguments")
+			->SetTextSize(0.3)
+			->SetText(Game::GetLaunchArgs())
+			->SetMinSize(Vector2f(0.75, 0.05)));
 
 		AddCategoryHeader("Danger zone", SettingsBox);
 		SettingsBox->AddChild((new UIButton(true, 0, 1, DeleteAllMods))
-			->AddChild(new UIText(0.4, 0, "Delete all mods", UI::Text)));
+			->AddChild(new UIText(0.35, 0, "Delete all mods", UI::Text)));
 
 		SettingsBox->AddChild((new UIButton(true, 0, 1, []() {
 			try
@@ -128,7 +138,7 @@ void SettingsTab::GenerateSettings()
 
 			}
 			}))
-			->AddChild(new UIText(0.4, 0, "Reset launcher", UI::Text)));
+			->AddChild(new UIText(0.35, 0, "Reset launcher", UI::Text)));
 	}
 
 	AddCategoryHeader("About", SettingsBox);

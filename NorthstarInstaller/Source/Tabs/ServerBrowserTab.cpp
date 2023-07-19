@@ -452,6 +452,9 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 				ServerBrowserTab::CurrentServerTab->DisplayServerDescription(ServerBrowserTab::CurrentServerTab->SelectedServer);
 				if (ServerBrowserTab::ShouldLaunchGame) 
 				{ 
+					LOG_PRINTF("Joining server \"{}\" (id: {})",
+						ServerBrowserTab::CurrentServerTab->SelectedServer.Name,
+						ServerBrowserTab::CurrentServerTab->SelectedServer.ServerID);
 					LaunchTab::LaunchNorthstar("+AutoJoinServer " + ServerBrowserTab::CurrentServerTab->SelectedServer.ServerID); 
 				}
 			});

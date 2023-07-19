@@ -173,3 +173,23 @@ void Game::UpdateGameAsync()
 {
 	new BackgroundTask(UpdateGame);
 }
+
+std::string Game::GetLaunchArgs()
+{
+	if (!std::filesystem::exists("Data/var/launch_args.txt"))
+	{
+		return "-novid -multiple";
+	}
+	std::ifstream LaunchArgStream = std::ifstream("Data/var/launch_args.txt");
+	std::stringstream s;
+	s << LaunchArgStream.rdbuf();
+	LaunchArgStream.close();
+	return s.str();
+}
+
+void Game::SetLaunchArgs(std::string NewArgs)
+{
+	std::ofstream LaunchArgStream = std::ofstream("Data/var/launch_args.txt");
+	LaunchArgStream << NewArgs;
+	LaunchArgStream.close();
+}

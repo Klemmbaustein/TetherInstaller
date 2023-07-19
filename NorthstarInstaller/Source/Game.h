@@ -14,6 +14,9 @@ namespace Game
 	void UpdateGame();
 	void UpdateGameAsync();
 
+	std::string GetLaunchArgs();
+	void SetLaunchArgs(std::string NewArgs);
+
 	extern bool RequiresUpdate;
 	extern std::string GamePath;
 }
