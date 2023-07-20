@@ -22,6 +22,7 @@ std::string CommonTitanfallLocations[] =
 
 #define NOMINMAX
 #include <Windows.h>
+#include "Tabs/SettingsTab.h"
 
 
 std::string wstrtostr(const std::wstring& wstr);
@@ -182,7 +183,7 @@ void Game::UpdateGame()
 
 void Game::UpdateGameAsync()
 {
-	new BackgroundTask(UpdateGame);
+	new BackgroundTask(UpdateGame, []() {SettingsTab::CurrentSettingsTab->GenerateSettings(); });
 }
 
 std::string Game::GetLaunchArgs()

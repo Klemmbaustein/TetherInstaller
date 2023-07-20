@@ -168,7 +168,7 @@ void ModsTab::GenerateModPage()
 	{
 		SearchBar = new UITextField(true, 0, 0, UI::Text, []()
 			{
-				if (CurrentModsTab->Filter != CurrentModsTab->SearchBar->GetText())
+				if (CurrentModsTab->Filter != CurrentModsTab->SearchBar->GetText() && !Thunderstore::IsDownloading)
 				{
 					CurrentModsTab->Filter = CurrentModsTab->SearchBar->GetText();
 					CurrentModsTab->SelectedPage = 0;
@@ -259,7 +259,7 @@ void ModsTab::GenerateModPage()
 		auto b = new UIButton(true, 0, SelectedPage == (i) ? 0.5 : 1, []() {			
 		for (size_t i = 0; i < PageButtons.size(); i++)
 		{
-			if (PageButtons[i]->GetIsHovered())
+			if (PageButtons[i]->GetIsHovered() && !Thunderstore::IsDownloading)
 			{
 				CurrentModsTab->ShowLoadingText();
 				CurrentModsTab->SelectedPage = i;
@@ -408,7 +408,7 @@ ModsTab::ModsTab()
 		auto b = new UIButton(true, 0, 1, []() {
 			for (size_t i = 0; i < CategoryButtons.size(); i++)
 			{
-				if (CategoryButtons[i]->GetIsHovered())
+				if (CategoryButtons[i]->GetIsHovered() && !Thunderstore::IsDownloading)
 				{
 					Thunderstore::SelectedOrdering = Thunderstore::TSCategoryNames[i].o;
 					CurrentModsTab->SelectedPage = 0;

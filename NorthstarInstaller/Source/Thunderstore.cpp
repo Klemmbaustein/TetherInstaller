@@ -173,6 +173,9 @@ namespace Thunderstore::TSDownloadThunderstoreInfo
 	void DownloadThunderstoreInfoInternal()
 	{
 		using namespace nlohmann;
+
+		ShouldStopLoadingImages = true;
+
 		std::transform(Filter.begin(), Filter.end(), Filter.begin(),
 			[](unsigned char c) { return std::tolower(c); });
 
@@ -509,40 +512,45 @@ namespace Thunderstore::TSModFunc
 				auto InfoFile = "Data/var/modinfo/" + m.Namespace + "." + m.Name + ".json";
 				std::ifstream in = std::ifstream(InfoFile);
 				std::stringstream str; str << in.rdbuf();
-				json modinfo = json::parse(str.str());
 				in.close();
 				if (std::filesystem::exists(InfoFile))
 				{
 					std::filesystem::remove_all(InfoFile);
 				}
-				if (std::filesystem::exists(modinfo.at("image")))
-				{
-					std::filesystem::remove(modinfo.at("image"));
-				}
 
-				if (m.Name != "NorthstarReleaseCandidate")
+
+				if (!str.str().empty())
 				{
-					for (auto& i : modinfo.at("mod_files"))
+					json modinfo = json::parse(str.str());
+					if (modinfo.contains("image") && std::filesystem::exists(modinfo.at("image")))
 					{
-						auto file = Game::GamePath + "/R2Northstar/mods/" + i.get<std::string>();
-						if (std::filesystem::exists(file))
+						std::filesystem::remove(modinfo.at("image"));
+					}
+
+					if (m.Name != "NorthstarReleaseCandidate")
+					{
+						for (auto& i : modinfo.at("mod_files"))
 						{
-							std::filesystem::remove_all(file);
+							auto file = Game::GamePath + "/R2Northstar/mods/" + i.get<std::string>();
+							if (std::filesystem::exists(file))
+							{
+								std::filesystem::remove_all(file);
+							}
 						}
 					}
-				}
-				else
-				{
-					Game::UpdateGameAsync();
-				}
-				try
-				{
-					FoundMods = GetInstalledMods().Combined();
-				}
-				catch (std::exception& e)
-				{
-					FoundMods.clear();
-					Log::Print("Error parsing installed mods: " + std::string(e.what()), Log::Error);
+					else
+					{
+						Game::UpdateGameAsync();
+					}
+					try
+					{
+						FoundMods = GetInstalledMods().Combined();
+					}
+					catch (std::exception& e)
+					{
+						FoundMods.clear();
+						Log::Print("Error parsing installed mods: " + std::string(e.what()), Log::Error);
+					}
 				}
 				IsInstallingMod = false;
 				return;
@@ -654,7 +662,7 @@ namespace Thunderstore::TSModFunc
 		}
 		Thunderstore::LoadedSelectedMod = true;
 		IsInstallingMod = false;
-}
+	}
 }
 
 void Thunderstore::InstallOrUninstallMod(Package m, bool IsTemporary, bool Async)

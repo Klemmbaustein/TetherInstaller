@@ -12,4 +12,5 @@ public:
 	UITextField* LaunchArgsText = nullptr;
 	SettingsTab();
 	void GenerateSettings();
+	static SettingsTab* CurrentSettingsTab;
 };

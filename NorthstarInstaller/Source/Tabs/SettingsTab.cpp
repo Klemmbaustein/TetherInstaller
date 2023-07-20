@@ -17,7 +17,7 @@
 #include "../BackgroundTask.h"
 #include "../WindowFunctions.h"
 
-SettingsTab* CurrentSettingsTab = nullptr;
+SettingsTab* SettingsTab::CurrentSettingsTab = nullptr;
 SettingsTab::SettingsTab()
 {
 	CurrentSettingsTab = this;
@@ -71,7 +71,7 @@ void LocateTitanfall()
 		Game::SaveGameDir(NewPath);
 		Game::GamePath = Game::GetTitanfallLocation();
 	}
-	CurrentSettingsTab->GenerateSettings();
+	SettingsTab::CurrentSettingsTab->GenerateSettings();
 }
 
 constexpr uint16_t MAX_GAMEPATH_SIZE = 30;
@@ -118,6 +118,31 @@ void SettingsTab::GenerateSettings()
 			->SetTextSize(0.3)
 			->SetText(Game::GetLaunchArgs())
 			->SetMinSize(Vector2f(0.75, 0.05)));
+
+		AddCategoryHeader("Logs", SettingsBox);
+
+		SettingsBox->AddChild((new UIButton(true, 0, 1, []() 
+			{
+			system(("cd " + Game::GamePath + "\\R2Northstar\\logs && explorer .").c_str());
+			}))
+			->AddChild(new UIText(0.35, 0, "Open log folder", UI::Text)));
+
+		SettingsBox->AddChild((new UIButton(true, 0, 1, []() 
+			{
+				std::filesystem::directory_entry LatestLog;
+				for (auto& i : std::filesystem::directory_iterator(Game::GamePath + "\\R2Northstar\\logs"))
+				{
+					if (i.path().extension().string() == ".txt"
+						&& (!LatestLog.exists() 
+							|| i.last_write_time() > LatestLog.last_write_time()))
+					{
+						LatestLog = i;
+					}
+				}
+				system(("start \"\" \"" + LatestLog.path().string() + "\"").c_str());
+			}))
+			->AddChild(new UIText(0.35, 0, "View latest log", UI::Text)));
+
 
 		AddCategoryHeader("Danger zone", SettingsBox);
 		SettingsBox->AddChild((new UIButton(true, 0, 1, DeleteAllMods))
