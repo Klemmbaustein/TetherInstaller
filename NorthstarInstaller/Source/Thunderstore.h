@@ -94,5 +94,5 @@ namespace Thunderstore
 	void GetModInfo(Package m, bool Async);
 
 	extern std::atomic<bool> IsInstallingMod;
-
+	extern std::atomic<size_t> CurrentlyLoadedPageID;
 }

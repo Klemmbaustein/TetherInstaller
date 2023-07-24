@@ -78,6 +78,8 @@ std::string GetFile(std::string InFile)
 	return istream.str();
 }
 
+struct opaque;
+
 std::string ToLowerCase(std::string Target)
 {
 	std::transform(Target.begin(), Target.end(), Target.begin(),
@@ -148,10 +150,12 @@ bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
 				m.UUID = item.at("uuid4");
 				m.Version = item.at("versions")[0].at("version_number");
 				m.DownloadUrl = item.at("versions")[0].at("download_url");
+
 				LOG_PRINTF("Need to install mod {}.{} with UUID of {}",
 					item.at("owner").get<std::string>(), 
 					item.at("name").get<std::string>(), 
 					item.at("uuid4").get<std::string>());
+
 				BackgroundTask::SetStatus("Installing " + m.Name);
 				Thunderstore::InstallOrUninstallMod(m, true, false);
 				HasInstalledMod = true;

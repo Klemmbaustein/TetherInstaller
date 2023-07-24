@@ -35,11 +35,15 @@ namespace Thunderstore
 		Thunderstore::Category("Most Downloaded", Thunderstore::Ordering::Most_Downloaded),
 		Thunderstore::Category("Top Rated", Thunderstore::Ordering::Top_Rated),
 	};
+
+	size_t CurrentlyLoadedMod = 0;
 }
 
 void ModsTab::GenerateModInfo()
 {
 	UpdateClickedCategoryButton();
+
+	Log::Print("Displaying info for mod: " + Thunderstore::SelectedMod.Name);
 
 	bool IsInstalled = Thunderstore::IsModInstalled(Thunderstore::SelectedMod);
 
@@ -221,6 +225,7 @@ void ModsTab::GenerateModPage()
 			});
 
 		b->SetMinSize(Vector2f(0, 0.34));
+		b->SetMaxSize(Vector2f(1, 0.34));
 		b->Align = UIBox::E_REVERSE;
 		b->SetPadding(0.005 * Application::AspectRatio, 0.005 * Application::AspectRatio, 0.005, 0.005);
 		unsigned int tex = 0;
@@ -256,16 +261,16 @@ void ModsTab::GenerateModPage()
 	PageButtons.clear();
 	for (int i = 0; i < 6; i++)
 	{
-		auto b = new UIButton(true, 0, SelectedPage == (i) ? 0.5 : 1, []() {			
-		for (size_t i = 0; i < PageButtons.size(); i++)
-		{
-			if (PageButtons[i]->GetIsHovered() && !Thunderstore::IsDownloading)
+		auto b = new UIButton(true, 0, SelectedPage == (i) ? 0.5 : 1, []() {
+			for (size_t i = 0; i < PageButtons.size(); i++)
 			{
-				CurrentModsTab->ShowLoadingText();
-				CurrentModsTab->SelectedPage = i;
-				CurrentModsTab->LoadedModList = false;
-			}
-		} });
+				if (PageButtons[i]->GetIsHovered() && !Thunderstore::IsDownloading)
+				{
+					CurrentModsTab->ShowLoadingText();
+					CurrentModsTab->SelectedPage = i;
+					CurrentModsTab->LoadedModList = false;
+				}
+			} });
 		Rows[19]->AddChild(b
 			->SetPadding(0.005)
 			->SetBorder(UIBox::E_ROUNDED, 0.25)
@@ -307,7 +312,7 @@ void ModsTab::GenerateModImages()
 		if (Thunderstore::FoundMods.size() <= i)
 		{
 			break;
-		}		
+		}
 		bool UseTexture = std::filesystem::exists(Thunderstore::FoundMods[i].Img) && !Thunderstore::FoundMods[i].IsNSFW;
 		if (UseTexture)
 		{
@@ -345,6 +350,7 @@ void ModsTab::CheckForModUpdates()
 				// Uninstall mod, then install mod again.
 				Thunderstore::Package NewMod = m;
 				NewMod.DownloadUrl = response.at("download_url");
+
 				Thunderstore::InstallOrUninstallMod(NewMod, false, false);
 				Thunderstore::InstallOrUninstallMod(NewMod, false, false);
 			}

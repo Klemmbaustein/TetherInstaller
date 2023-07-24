@@ -11,7 +11,7 @@
 #include "Networking.h"
 #include "Tabs/ModsTab.h"
 
-constexpr const char* MOD_DESCRIPTOR_FILE_FORMAT_VERSION = "v2";
+constexpr const char* MOD_DESCRIPTOR_FILE_FORMAT_VERSION = "v3";
 
 Thunderstore::Ordering Thunderstore::SelectedOrdering = Ordering::Last_Updated;
 std::atomic<bool> Thunderstore::IsDownloading = false;
@@ -21,6 +21,9 @@ std::atomic<bool> Thunderstore::LoadedSelectedMod = false;
 std::atomic<bool> Thunderstore::IsInstallingMod = false;
 std::vector<Thunderstore::Package> Thunderstore::FoundMods;
 Thunderstore::Package Thunderstore::SelectedMod;
+std::atomic<size_t> Thunderstore::CurrentlyLoadedPageID = 0;
+
+#define INSTALL_AS_PACKAGES 1
 
 bool Thunderstore::IsMostRecentFileVersion(std::string VersionString)
 {
@@ -47,6 +50,13 @@ Thunderstore::InstalledModsResult Thunderstore::GetInstalledMods()
 
 			std::ifstream in = std::ifstream(i.path().string());
 			std::stringstream str; str << in.rdbuf();
+			in.close();
+
+			if (str.str().empty())
+			{
+				continue;
+			}
+
 			auto modinfo = json::parse(str.str());
 			Package p;
 
@@ -70,16 +80,28 @@ Thunderstore::InstalledModsResult Thunderstore::GetInstalledMods()
 
 			}
 
-
+			bool AllFilesExist = true;
 			for (auto& i : modinfo.at("mod_files"))
 			{
-				auto file = Game::GamePath + "/R2Northstar/mods/" + i.get<std::string>();
+				auto file = Game::GamePath + "/R2Northstar" + i.get<std::string>();
 				if (std::filesystem::exists(file))
 				{
-					ManagedMods.insert(i.get<std::string>());
+					ManagedMods.insert(i);
+				}
+				else
+				{
+					AllFilesExist = false;
 				}
 			}
-			InstalledMods.push_back(p);
+			if (AllFilesExist)
+			{
+				InstalledMods.push_back(p);
+			}
+			else
+			{
+				Log::Print(std::format("Missing or corrupted mod detected - Removing {} from modlist.", p.Name), Log::Warning);
+				InstallOrUninstallMod(p, false, false);
+			}
 		}
 	}
 
@@ -87,14 +109,17 @@ Thunderstore::InstalledModsResult Thunderstore::GetInstalledMods()
 	{
 		std::filesystem::create_directories(Game::GamePath + "/R2Northstar/mods");
 	}
-
+	if (!std::filesystem::exists(Game::GamePath + "/R2Northstar/packages"))
+	{
+		std::filesystem::create_directories(Game::GamePath + "/R2Northstar/packages");
+	}
 	for (auto& i : std::filesystem::directory_iterator(Game::GamePath + "/R2Northstar/mods"))
 	{
 		std::string ModName = i.path().filename().string();
 		std::string Author = ModName.substr(0, ModName.find_first_of("."));
 		std::string Name = ModName.substr(ModName.find_first_of(".") + 1);
 
-		if (!ManagedMods.contains(ModName) && std::filesystem::is_directory(i) && Author != "Northstar" && Name != "autojoin")
+		if (!ManagedMods.contains("/mods/" + ModName) && std::filesystem::is_directory(i) && Author != "Northstar" && Name != "autojoin")
 		{
 			Package p;
 			p.Name = Name;
@@ -103,6 +128,34 @@ Thunderstore::InstalledModsResult Thunderstore::GetInstalledMods()
 			p.Version = "?";
 			p.IsUnknownLocalMod = true;
 			p.DownloadUrl = i.path().string();
+			UnmanagedMods.push_back(p);
+		}
+	}
+
+	for (auto& i : std::filesystem::directory_iterator(Game::GamePath + "/R2Northstar/packages"))
+	{
+		std::string ModName = i.path().filename().string();
+		std::string Author = ModName.substr(0, ModName.find_first_of("-"));
+		std::string Name = ModName.substr(ModName.find_first_of("-") + 1);
+		std::string Version = Name.substr(Name.find_last_of("-"));
+			
+		Name = Name.substr(0, Name.find_last_of("-"));
+
+		if (!ManagedMods.contains("/packages/" + ModName) && std::filesystem::is_directory(i) && Author != "Northstar" && Name != "autojoin")
+		{
+			std::ifstream DescriptionMarkdown = std::ifstream(i.path().string() + "/README.md");
+			std::stringstream MarkdownStream;
+			MarkdownStream << DescriptionMarkdown.rdbuf();
+			DescriptionMarkdown.close();
+			Package p;
+			p.Name = Name;
+			p.Author = Author;
+			p.Description = MarkdownStream.str();
+			p.Namespace = Author;
+			p.Version = Version;
+			p.IsUnknownLocalMod = true;
+			p.DownloadUrl = i.path().string();
+			p.Img = i.path().string() + "/icon.png";
 			UnmanagedMods.push_back(p);
 		}
 	}
@@ -121,30 +174,57 @@ bool Thunderstore::IsModInstalled(Package m)
 	{
 		return true;
 	}
-	if (!std::filesystem::exists(Game::GamePath + "/R2Northstar/mods"))
+	if (std::filesystem::exists(Game::GamePath + "/R2Northstar/mods"))
 	{
-		return false;
+		for (auto& i : std::filesystem::directory_iterator(Game::GamePath + "/R2Northstar/mods"))
+		{
+			Package fm;
+			std::string FileName = i.path().filename().string();
+
+			if (FileName.find(".") != std::string::npos)
+			{
+				fm.Name = FileName.substr(FileName.find_first_of(".") + 1);
+				fm.Namespace = FileName.substr(0, FileName.find_first_of("."));
+				fm.Author = m.Namespace;
+			}
+			else
+			{
+				fm.Name = FileName;
+			}
+			if ((fm.Namespace == m.Namespace || m.Namespace.empty() || fm.Namespace.empty())
+				&& (fm.Name == m.Name))
+			{
+				return true;
+			}
+		}
 	}
-
-	for (auto& i : std::filesystem::directory_iterator(Game::GamePath + "/R2Northstar/mods"))
+	if (std::filesystem::exists(Game::GamePath + "/R2Northstar/packages"))
 	{
-		Package fm;
-		std::string FileName = i.path().filename().string();
+		for (auto& i : std::filesystem::directory_iterator(Game::GamePath + "/R2Northstar/packages"))
+		{
+			Package FoundMod;
+			std::string FileName = i.path().filename().string();
 
-		if (FileName.find(".") != std::string::npos)
-		{
-			fm.Name = FileName.substr(FileName.find_first_of(".") + 1);
-			fm.Namespace = FileName.substr(0, FileName.find_first_of("."));
-			fm.Author = m.Namespace;
-		}
-		else
-		{
-			fm.Name = FileName;
-		}
-		if ((fm.Namespace == m.Namespace || m.Namespace.empty() || fm.Namespace.empty())
-			&& (fm.Name == m.Name))
-		{
-			return true;
+			if (FileName.find("-") != std::string::npos)
+			{
+				FoundMod.Name = FileName.substr(FileName.find_first_of("-") + 1);
+				FoundMod.Namespace = FileName.substr(0, FileName.find_first_of("-"));
+				FoundMod.Author = m.Namespace;
+
+				FoundMod.Version = FoundMod.Name.substr(FoundMod.Name.find_last_of("-"));
+
+				FoundMod.Name = FoundMod.Name.substr(0, FoundMod.Name.find_last_of("-"));
+
+			}
+			else
+			{
+				FoundMod.Name = FileName;
+			}
+			if ((FoundMod.Namespace == m.Namespace || m.Namespace.empty() || FoundMod.Namespace.empty())
+				&& (FoundMod.Name == m.Name))
+			{
+				return true;
+			}
 		}
 	}
 
@@ -173,7 +253,8 @@ namespace Thunderstore::TSDownloadThunderstoreInfo
 	void DownloadThunderstoreInfoInternal()
 	{
 		using namespace nlohmann;
-
+		
+		size_t ModLoadID = ++CurrentlyLoadedPageID;
 		ShouldStopLoadingImages = true;
 
 		std::transform(Filter.begin(), Filter.end(), Filter.begin(),
@@ -241,7 +322,8 @@ namespace Thunderstore::TSDownloadThunderstoreInfo
 			std::ifstream in = std::ifstream("Data/temp/net/tspage.txt");
 			std::stringstream str; str << in.rdbuf();
 			auto response = json::parse(str.str());
-			FoundMods.clear();
+
+			std::vector<Package> NewFoundMods;
 			size_t Start = ModsTab::ModsPerPage * (Page);
 			size_t FoundCount = 0;
 
@@ -352,11 +434,18 @@ namespace Thunderstore::TSDownloadThunderstoreInfo
 				{
 					continue;
 				}
-				FoundMods.push_back(Mod);
+				NewFoundMods.push_back(Mod);
 			}
 
-			std::vector<Package> ModsCopy = FoundMods;
-			IsDownloading = false;
+			if (ModLoadID == CurrentlyLoadedPageID)
+			{
+				FoundMods = NewFoundMods;
+				IsDownloading = false;
+			}
+			else
+			{
+				return;
+			}
 
 			size_t i = 0;
 			ShouldStopLoadingImages = false;
@@ -368,14 +457,14 @@ namespace Thunderstore::TSDownloadThunderstoreInfo
 				// Windows file size monent
 				if (!std::filesystem::exists(TargetName) || std::filesystem::file_size(TargetName) < 1000)
 				{
-					Networking::Download(Elem.Img, TargetName, "X-CSRFToken: nan");
+					Networking::Download(Elem.Img, TargetName, "X-CSRFToken: ");
 					Elem.Img = TargetName;
 					LoadedImages = true;
 				}
 				Elem.Img = TargetName;
 				if (ShouldStopLoadingImages)
 				{
-					break;
+					return;
 				}
 			}
 		}
@@ -424,6 +513,8 @@ namespace Thunderstore::TSGetModInfoFunc
 	void AsyncGetModInfoInternal()
 	{
 		using namespace nlohmann;
+
+		// To avoid loading a page while another page loads.
 		if (m.UUID.empty())
 		{
 			SelectedMod = m;
@@ -477,6 +568,7 @@ namespace Thunderstore::TSGetModInfoFunc
 			Log::Print("Writing response to Data/temp/invalidresponse.txt", Log::Error);
 			std::filesystem::copy("Data/temp/net/mod.txt", "Data/temp/invalidresponse.txt");
 		}
+
 		SelectedMod = m;
 		LoadedSelectedMod = true;
 	}
@@ -531,7 +623,7 @@ namespace Thunderstore::TSModFunc
 					{
 						for (auto& i : modinfo.at("mod_files"))
 						{
-							auto file = Game::GamePath + "/R2Northstar/mods/" + i.get<std::string>();
+							auto file = Game::GamePath + "/R2Northstar" + i.get<std::string>();
 							if (std::filesystem::exists(file))
 							{
 								std::filesystem::remove_all(file);
@@ -588,8 +680,13 @@ namespace Thunderstore::TSModFunc
 				std::string Image;
 				if (std::filesystem::exists(m.Img))
 				{
-					std::filesystem::copy(m.Img, "Data/var/modinfo/" + m.Namespace + "." + m.Name + ".png");
-					Image = "Data/var/modinfo/" + m.Namespace + "." + m.Name + ".png";
+					std::string ImagePath = "Data/var/modinfo/" + m.Namespace + "." + m.Name + ".png";
+					if (std::filesystem::exists(ImagePath))
+					{
+						std::filesystem::remove(ImagePath);
+					}
+					std::filesystem::copy(m.Img, ImagePath);
+					Image = ImagePath;
 				}
 				else if (!IsTemporary)
 				{
@@ -616,15 +713,27 @@ namespace Thunderstore::TSModFunc
 				return;
 			}
 
-			std::filesystem::copy("Data/temp/mod/mods/", Game::GamePath + "/R2Northstar/mods",
+#if INSTALL_AS_PACKAGES
+			std::string TargetPackage = std::format("{}-{}-{}", m.Author, m.Name, m.Version);
+			std::filesystem::create_directories(Game::GamePath + "/R2Northstar/packages/" + TargetPackage);
+			std::filesystem::copy("Data/temp/mod/", Game::GamePath + "/R2Northstar/packages/" + TargetPackage,
 				std::filesystem::copy_options::overwrite_existing
 				| std::filesystem::copy_options::recursive);
+
+			std::vector<std::string> Files = {"/packages/" + TargetPackage};
+#else
+			std::filesystem::copy("Data/temp/mod/mods/", Game::GamePath + "/R2Northstar/mods",
+				std::filesystem::copy_options::overwrite_existing
+				| std::filesystem::copy_options::recursive); 
 
 			std::vector<std::string> Files;
 			for (auto& i : std::filesystem::directory_iterator("Data/temp/mod/mods"))
 			{
-				Files.push_back(i.path().filename().string());
+				Files.push_back("/mods/" + i.path().filename().string());
 			}
+
+			// TODO: (Or not, since it is now deprecated behavior) Handle plugins
+#endif
 
 			std::filesystem::create_directories("Data/var/modinfo/");
 			std::ofstream out = std::ofstream("Data/var/modinfo/" + m.Namespace + "." + m.Name + ".json");
@@ -632,8 +741,13 @@ namespace Thunderstore::TSModFunc
 			std::string Image;
 			if (std::filesystem::exists(m.Img))
 			{
-				std::filesystem::copy(m.Img, "Data/var/modinfo/" + m.Namespace + "." + m.Name + ".png");
-				Image = "Data/var/modinfo/" + m.Namespace + "." + m.Name + ".png";
+				std::string ImagePath = "Data/var/modinfo/" + m.Namespace + "." + m.Name + ".png";
+				if (std::filesystem::exists(ImagePath))
+				{
+					std::filesystem::remove(ImagePath);
+				}
+				std::filesystem::copy(m.Img, ImagePath);
+				Image = ImagePath;
 			}
 			else
 			{
@@ -658,7 +772,7 @@ namespace Thunderstore::TSModFunc
 		}
 		catch (std::exception& e)
 		{
-			Log::Print(e.what());
+			Log::Print(e.what(), Log::Error);
 		}
 		Thunderstore::LoadedSelectedMod = true;
 		IsInstallingMod = false;
