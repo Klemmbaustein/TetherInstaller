@@ -1,4 +1,4 @@
-Installer
+Tether installer
 ---
 
 MIT License

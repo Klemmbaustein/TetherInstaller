@@ -124,7 +124,7 @@ namespace Installer
 		BackgroundTask::SetStatus("Checking for installer updates");
 		BackgroundTask::SetProgress(0.999);
 
-		std::string Ver = Networking::GetLatestReleaseOf("Klemmbaustein/NorthstarInstaller");
+		std::string Ver = Networking::GetLatestReleaseOf("Klemmbaustein/TetherInstaller");
 		if (Ver.empty())
 		{
 			return;
@@ -150,7 +150,7 @@ namespace Installer
 			return;
 		}
 		BackgroundTask::SetProgress(0.3);
-		Networking::DownloadLatestReleaseOf("Klemmbaustein/NorthstarInstaller");
+		Networking::DownloadLatestReleaseOf("Klemmbaustein/TetherInstaller");
 		Networking::ExtractZip("Data/temp/net/latest.zip", "Data/temp/install");
 
 		system("start update.bat");
