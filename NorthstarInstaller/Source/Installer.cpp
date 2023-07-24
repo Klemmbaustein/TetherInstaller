@@ -35,12 +35,12 @@ namespace Installer
 	UIBackground* TaskBackground = nullptr;
 	UIBackground* TaskProgressBar = nullptr;
 	UIText* TaskNameText = nullptr;
-	const std::string InstallerVersion = "v0.1.6";
+	const std::string InstallerVersion = "v1.0.0";
 	const std::string GithubInstallerVersion = InstallerVersion;
 #if DEBUG
-	const std::string UserAgent = std::format("KlemmNorthstarInstaller/{}-dev", Installer::InstallerVersion);
+	const std::string UserAgent = std::format("TetherNSInstaller/{}-dev", Installer::InstallerVersion);
 #else
-	const std::string UserAgent = std::format("KlemmNorthstarInstaller/{}", Installer::InstallerVersion);
+	const std::string UserAgent = std::format("TetherNSInstaller/{}", Installer::InstallerVersion);
 #endif
 	void GenerateTabs()
 	{
@@ -80,12 +80,6 @@ namespace Installer
 		}
 	}
 
-
-	void UpdateTaskWindow()
-	{
-
-	}
-
 	void CreateTaskWindow()
 	{
 		TaskNameText = new UIText(0.4, 1, "No background task", UI::Text);
@@ -108,9 +102,11 @@ namespace Installer
 			return;
 		}
 
-		if (Latest != Game::GetCurrentVersion())
+		std::string InstalledVersion = Game::GetCurrentVersion();
+
+		if (Latest != InstalledVersion)
 		{
-			Log::Print("Game needs to be updated",  Log::Warning);
+			Log::Print("Game needs to be updated. Installed: " + InstalledVersion + ", latest: " + Latest, Log::Warning);
 			Game::RequiresUpdate = true;
 			BackgroundTask::SetStatus("Update required");
 			BackgroundTask::SetProgress(1);
@@ -166,7 +162,7 @@ float BackgroundFade = 0;
 
 int main(int argc, char** argv)
 {
-	Application::Initialize("Installer", 0);
+	Application::Initialize("Tether installer " + Installer::InstallerVersion, 0);
 	Log::Print("Created app window");
 
 	Networking::Init();
@@ -220,11 +216,7 @@ int main(int argc, char** argv)
 		{
 			BackgroundFade = 0;
 			Installer::TaskProgressBar->SetOpacity(1);
-			if (BackgroundTask::CurrentTaskProgress == 1)
-			{
-				Installer::UpdateTaskWindow();
-			}
-			else
+			if (BackgroundTask::CurrentTaskProgress != 1)
 			{
 				Installer::TaskProgressBar->SetMinSize(Vector2f(0.5 * BackgroundTask::CurrentTaskProgress, 0.05));
 				Installer::TaskProgressBar->IsVisible = true;

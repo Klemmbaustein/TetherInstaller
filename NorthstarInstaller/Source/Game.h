@@ -9,7 +9,6 @@ namespace Game
 	bool IsValidTitanfallLocation(std::filesystem::path p);
 	
 	std::string GetCurrentVersion();
-	void SetCurrentVersion(std::string ver);
 
 	void UpdateGame();
 	void UpdateGameAsync();

@@ -124,26 +124,42 @@ bool Game::IsValidTitanfallLocation(std::filesystem::path p)
 	return std::filesystem::exists(p.string() + "/Titanfall2.exe") && std::filesystem::exists(p.string() + "/gameversion.txt");
 }
 
+#if _WIN32
+int GetFileVersion(const char* filename, char* ver)
+{
+	DWORD dwHandle, sz = GetFileVersionInfoSizeA(filename, &dwHandle);
+	if (0 == sz)
+	{
+		return 1;
+	}
+	char* buf = new char[sz];
+	if (!GetFileVersionInfoA(filename, dwHandle, sz, &buf[0]))
+	{
+		delete[] buf;
+		return 2;
+	}
+	VS_FIXEDFILEINFO* pvi;
+	sz = sizeof(VS_FIXEDFILEINFO);
+	if (!VerQueryValueA(&buf[0], "\\", (LPVOID*)&pvi, (unsigned int*)&sz))
+	{
+		delete[] buf;
+		return 3;
+	}
+	sprintf(ver, "v%d.%d.%d"
+		, pvi->dwProductVersionMS >> 16
+		, pvi->dwFileVersionMS & 0xFFFF
+		, pvi->dwFileVersionLS >> 16
+	);
+	delete[] buf;
+	return 0;
+}
+#endif
+
 std::string Game::GetCurrentVersion()
 {
-	std::ifstream in = std::ifstream("Data/var/version.txt");
-	std::stringstream insstream;
-	insstream << in.rdbuf();
-	in.close();
-	return insstream.str();
-}
-
-void Game::SetCurrentVersion(std::string ver)
-{
-	if (!std::filesystem::exists("Data/var"))
-	{
-		std::filesystem::create_directories("Data/var");
-	}
-	Log::Print("Saving game version to 'Data/var/version.txt'");
-	std::ofstream out = std::ofstream("Data/var/version.txt", std::ios::out);
-	out.exceptions(std::ios::failbit);
-	out << ver;
-	out.close();
+	char Ver[100];
+	GetFileVersion(std::filesystem::path(GamePath + "NorthstarLauncher.exe").string().c_str(), Ver);
+	return Ver;
 }
 
 void Game::UpdateGame()
@@ -172,7 +188,6 @@ void Game::UpdateGame()
 		BackgroundTask::SetProgress(0.9);
 		std::filesystem::remove_all("Data/temp/net");
 		Log::Print("Removed temporary files");
-		Game::SetCurrentVersion(Networking::GetLatestReleaseOf("R2Northstar/Northstar"));
 		Game::RequiresUpdate = false;
 	}
 	catch (std::exception& e)

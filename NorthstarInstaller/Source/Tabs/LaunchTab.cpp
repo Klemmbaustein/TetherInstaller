@@ -110,7 +110,7 @@ void LaunchTab::Tick()
 	{
 		LaunchText->SetText("Downloading mod");
 	}
-	if (Game::RequiresUpdate)
+	else if (Game::RequiresUpdate)
 	{
 		LaunchText->SetText("Update northstar");
 	}

@@ -732,7 +732,7 @@ namespace Thunderstore::TSModFunc
 				Files.push_back("/mods/" + i.path().filename().string());
 			}
 
-			// TODO: (Or not, since it is now deprecated behavior) Handle plugins
+			// TODO: (Or not, since it now is deprecated behavior) Handle plugins
 #endif
 
 			std::filesystem::create_directories("Data/var/modinfo/");
@@ -774,6 +774,7 @@ namespace Thunderstore::TSModFunc
 		{
 			Log::Print(e.what(), Log::Error);
 		}
+		if (m.UUID == SelectedMod.UUID)
 		Thunderstore::LoadedSelectedMod = true;
 		IsInstallingMod = false;
 	}

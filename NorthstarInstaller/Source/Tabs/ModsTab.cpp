@@ -257,8 +257,12 @@ void ModsTab::GenerateModPage()
 		ModButtons.push_back(b);
 	}
 
-	Rows[19]->AddChild(new UIText(0.4, 1, "Pages: ", UI::Text));
 	PageButtons.clear();
+	if (Thunderstore::SelectedOrdering == Thunderstore::Ordering::Installed)
+	{
+		return;
+	}
+	Rows[19]->AddChild(new UIText(0.4, 1, "Pages: ", UI::Text));
 	for (int i = 0; i < 6; i++)
 	{
 		auto b = new UIButton(true, 0, SelectedPage == (i) ? 0.5 : 1, []() {
