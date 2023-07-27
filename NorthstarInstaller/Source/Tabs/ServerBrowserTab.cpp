@@ -78,8 +78,6 @@ std::string GetFile(std::string InFile)
 	return istream.str();
 }
 
-struct opaque;
-
 std::string ToLowerCase(std::string Target)
 {
 	std::transform(Target.begin(), Target.end(), Target.begin(),

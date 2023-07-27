@@ -12,6 +12,8 @@
 #include <thread>
 #include <atomic>
 #include <map>
+#include <regex>
+
 #include "ModsTab.h"
 
 std::string NorthstarLaunchArgs;
@@ -20,7 +22,10 @@ void NorthstarLaunchTask()
 {
 	BackgroundTask::SetStatus("Northstar is running");
 	Log::Print("Game has started");
-	system((Game::GamePath + "/NorthstarLauncher.exe " + NorthstarLaunchArgs + " " + Game::GetLaunchArgs()).c_str());
+
+	std::string UTF8GameDir = std::regex_replace(Game::GamePath, std::regex(" "), "^ ");
+
+	system((UTF8GameDir + "/NorthstarLauncher.exe " + NorthstarLaunchArgs + " " + Game::GetLaunchArgs()).c_str());
 	Log::Print("Game has finished running");
 	ModsTab::CheckForModUpdates();
 }

@@ -243,7 +243,6 @@ What you can do:\n\
 
 
 				system((UTF8GameDir + "\\EA^ Desktop\\EALauncher.exe").c_str());
-				Log::Print("\"" + UTF8GameDir + "\\EALauncher.exe\"");
 			}
 			else
 			{

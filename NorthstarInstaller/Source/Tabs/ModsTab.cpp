@@ -153,7 +153,11 @@ void ModsTab::GenerateModInfo()
 	MarkdownBackground->Align = UIBox::E_REVERSE;
 	ModsScrollBox->AddChild(MarkdownBackground);
 
-	Markdown::RenderMarkdown(Thunderstore::SelectedMod.Description, 1.15, MarkdownBackground, 1, UI::Text);
+	Markdown::MarkdownStyling Style;
+	Style.Text = UI::Text;
+	Style.Width = 1.15;
+
+	Markdown::RenderMarkdown(Thunderstore::SelectedMod.Description, MarkdownBackground, Style);
 }
 
 void ModsTab::GenerateModPage()

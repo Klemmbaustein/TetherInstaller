@@ -18,12 +18,6 @@
 #include "Tabs/ModsTab.h"
 #include "Tabs/ServerBrowserTab.h"
 
-/*
-* 
-* TODO:
-* - Branding
-* 
-*/
 
 namespace Installer
 {
@@ -35,7 +29,7 @@ namespace Installer
 	UIBackground* TaskBackground = nullptr;
 	UIBackground* TaskProgressBar = nullptr;
 	UIText* TaskNameText = nullptr;
-	const std::string InstallerVersion = "v1.0.0";
+	const std::string InstallerVersion = "v1.0.1";
 	const std::string GithubInstallerVersion = InstallerVersion;
 #if DEBUG
 	const std::string UserAgent = std::format("TetherNSInstaller/{}-dev", Installer::InstallerVersion);
@@ -165,8 +159,6 @@ int main(int argc, char** argv)
 	Application::Initialize("Tether installer " + Installer::InstallerVersion, 0);
 	Log::Print("Created app window");
 
-	Networking::Init();
-
 	UI::LoadFonts();
 
 	Vector2f bgCenter = Vector2f(-0.3, 0);
@@ -175,9 +167,17 @@ int main(int argc, char** argv)
 	bg->SetSizeMode(UIBox::E_PIXEL_RELATIVE);
 	bg->SetUseTexture(true, Texture::LoadTexture("Data/Game.png"));
 
+
+	Application::UpdateWindow();
+	bg->SetPosition(Vector2f(0.0) - bg->GetUsedSize() / 2);
+	Application::UpdateWindow();
+
 	Installer::TaskBackground = new UIBackground(false, Vector2f(0.5, 0.85), Vector3f32(0.15), Vector2f(0.5, 0.15));
 	Installer::TaskProgressBar = new UIBackground(false, Vector2f(0.5, 0.985), Vector3f32(1, 0.5, 0), Vector2f(0.5, 0.05));
 	Installer::TaskProgressBar->SetBorder(UIBox::E_ROUNDED, 0.5);
+
+
+	Networking::Init();
 
 	Installer::CreateTaskWindow();
 
