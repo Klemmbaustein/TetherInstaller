@@ -29,7 +29,7 @@ namespace Installer
 	UIBackground* TaskBackground = nullptr;
 	UIBackground* TaskProgressBar = nullptr;
 	UIText* TaskNameText = nullptr;
-	const std::string InstallerVersion = "v1.0.1";
+	const std::string InstallerVersion = "v1.0.2";
 	const std::string GithubInstallerVersion = InstallerVersion;
 #if DEBUG
 	const std::string UserAgent = std::format("TetherNSInstaller/{}-dev", Installer::InstallerVersion);
