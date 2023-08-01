@@ -228,10 +228,10 @@ void GenerateWindowButtons()
 			->SetMinSize(0.05)
 			->SetPadding(0)
 			->SetSizeMode(UIBox::E_PIXEL_RELATIVE)
-			->AddChild((new UIBackground(true, 0, 1, Vector2(0.04)))
+			->AddChild((new UIBackground(true, 0, 1, Vector2(0.03)))
 				->SetUseTexture(true, Installer::WindowButtonsIcons[i])
 				->SetSizeMode(UIBox::E_PIXEL_RELATIVE)
-				->SetPadding(0.01)));
+				->SetPadding(0.02, 0.01, 0.015, 0.015)));
 	}
 }
 
