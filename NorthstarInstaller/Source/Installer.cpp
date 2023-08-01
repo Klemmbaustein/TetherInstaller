@@ -12,6 +12,7 @@
 #include "Networking.h"
 #include "BackgroundTask.h"
 #include "WindowFunctions.h"
+#include "Thunderstore.h"
 
 #include "Tabs/LaunchTab.h"
 #include "Tabs/SettingsTab.h"
@@ -86,6 +87,18 @@ namespace Installer
 		Log::Print("Checking for updates...");
 		BackgroundTask::SetStatus("Checking for updates");
 		BackgroundTask::SetProgress(0.999);
+
+		Thunderstore::Package ReleaseCanidate;
+
+		ReleaseCanidate.Name = "NorthstarReleaseCandidate";
+		ReleaseCanidate.Author = "northstar";
+		ReleaseCanidate.Namespace = "northstar";
+
+		if (Thunderstore::IsModInstalled(ReleaseCanidate))
+		{
+			return;
+		}
+
 		std::string Latest = Networking::GetLatestReleaseOf("R2Northstar/Northstar");
 		
 		if (Latest.empty())
