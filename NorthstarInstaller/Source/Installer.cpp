@@ -22,15 +22,18 @@
 
 namespace Installer
 {
+	UIBox* WindowButtonBox = nullptr;
 	size_t SelectedTab = 0;
 	std::vector<UIButton*> TabButtons;
 	UIBackground* TabBackground;
 	std::vector<UITab*> Tabs;
 
+	std::vector<unsigned int> WindowButtonsIcons;
+
 	UIBackground* TaskBackground = nullptr;
 	UIBackground* TaskProgressBar = nullptr;
 	UIText* TaskNameText = nullptr;
-	const std::string InstallerVersion = "v1.0.2";
+	const std::string InstallerVersion = "v1.1.0";
 	const std::string GithubInstallerVersion = InstallerVersion;
 #if DEBUG
 	const std::string UserAgent = std::format("TetherNSInstaller/{}-dev", Installer::InstallerVersion);
@@ -78,9 +81,10 @@ namespace Installer
 	void CreateTaskWindow()
 	{
 		TaskNameText = new UIText(0.4, 1, "No background task", UI::Text);
-		TaskBackground->AddChild(new UIText(0.3, 0.8, "Background task", UI::Text));
 		TaskBackground->AddChild(TaskNameText);
 	}
+
+	bool UpdateCheckedOnce = false;
 
 	void CheckForUpdates()
 	{
@@ -106,6 +110,14 @@ namespace Installer
 			Log::Print("Could not get latest game version",  Log::Error);
 			BackgroundTask::SetStatus("Could not get latest game version");
 			BackgroundTask::SetProgress(1);
+			if (!UpdateCheckedOnce)
+			{
+				UpdateCheckedOnce = true;
+			}
+			else
+			{
+				Window::ShowPopup("Northstar update", "Could not get latest game version.");
+			}
 			return;
 		}
 
@@ -117,10 +129,26 @@ namespace Installer
 			Game::RequiresUpdate = true;
 			BackgroundTask::SetStatus("Update required");
 			BackgroundTask::SetProgress(1);
+			if (!UpdateCheckedOnce)
+			{
+				UpdateCheckedOnce = true;
+			}
+			else
+			{
+				Window::ShowPopup("Northstar update", "Northstar update required.");
+			}
 			return;
 		}
 		BackgroundTask::SetStatus("No update required");
 		Log::Print("No update required");
+		if (!UpdateCheckedOnce)
+		{
+			UpdateCheckedOnce = true;
+		}
+		else
+		{
+			Window::ShowPopup("Northstar update", "No Northstar update required.");
+		}
 	}
 
 	std::atomic<bool> RequiresUpdate = false;
@@ -165,11 +193,61 @@ namespace Installer
 	}
 }
 
+void GenerateWindowButtons()
+{
+	std::vector<int> Buttons;
+	if (Application::GetFullScreen())
+	{
+		Buttons = { 0, 2, 3 };
+	}
+	else
+	{
+		Buttons = { 0, 1, 3 };
+	}
+	Installer::WindowButtonBox->DeleteChildren();
+	for (int i : Buttons)
+	{
+		Installer::WindowButtonBox->AddChild((new UIButton(true, 0, 0.25, [](int Index) {
+			switch (Index)
+			{
+			case 0:
+				Application::Quit = true;
+				break;
+			case 1:
+			case 2:
+				Application::SetFullScreen(!Application::GetFullScreen());
+				GenerateWindowButtons();
+				break;
+			case 3:
+				Application::Minimize();
+				break;
+			default:
+				break;
+			}
+			}, i))
+			->SetMinSize(0.05)
+			->SetPadding(0)
+			->SetSizeMode(UIBox::E_PIXEL_RELATIVE)
+			->AddChild((new UIBackground(true, 0, 1, Vector2(0.04)))
+				->SetUseTexture(true, Installer::WindowButtonsIcons[i])
+				->SetSizeMode(UIBox::E_PIXEL_RELATIVE)
+				->SetPadding(0.01)));
+	}
+}
+
+
 float BackgroundFade = 0;
 
 int main(int argc, char** argv)
 {
-	Application::Initialize("Tether installer " + Installer::InstallerVersion, 0);
+	Application::Initialize("Tether installer " + Installer::InstallerVersion, Application::BORDERLESS_BIT);
+	Application::SetWindowMovableCallback([]() 
+		{ 
+			return Installer::TabBackground
+				&& Installer::TabBackground->IsBeingHovered()
+			|| (Installer::TaskBackground 
+				&& Installer::TaskBackground->IsBeingHovered()); 
+		});
 	Log::Print("Created app window");
 
 	UI::LoadFonts();
@@ -205,6 +283,14 @@ int main(int argc, char** argv)
 		new SettingsTab(),
 	};
 
+	Installer::WindowButtonsIcons =
+	{
+		Texture::LoadTexture("Data/WindowX.png"),
+		Texture::LoadTexture("Data/WindowResize.png"),
+		Texture::LoadTexture("Data/WindowResize2.png"),
+		Texture::LoadTexture("Data/WindowMin.png"),
+	};
+
 	Installer::TabBackground = new UIBackground(true, Vector2f(-1, 0.85), 0, Vector2f(1.5, 0.15));
 	Installer::TabBackground->SetOpacity(0.3);
 	Log::Print("Loading tab bar...");
@@ -217,6 +303,10 @@ int main(int argc, char** argv)
 
 	Log::Print("Successfully started launcher");
 
+	Installer::WindowButtonBox = (new UIBox(true, Vector2(0.75, 0.94)))
+		->SetMinSize(Vector2(0.25, 0.06));
+	Installer::WindowButtonBox->Align = UIBox::E_REVERSE;
+	GenerateWindowButtons();
 	while (!Application::Quit)
 	{
 		for (auto i : Installer::Tabs)

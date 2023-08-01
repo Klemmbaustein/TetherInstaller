@@ -18,6 +18,9 @@ vec3 sampleUI()
 }
 void main()
 {
+	f_color.xyz = sampleUI();
+	f_color.w = 1;
+
 	if (u_hasWindowBorder)
 	{
 		vec2 EdgeSize = vec2(2.0) / textureSize(u_ui, 0);
@@ -37,10 +40,5 @@ void main()
 		{
 			f_color = vec4(u_borderColor, 1);
 		}
-	}
-	else
-	{
-		f_color.xyz = sampleUI();
-		f_color.w = 1;
 	}
 }
