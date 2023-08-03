@@ -99,7 +99,7 @@ Thunderstore::InstalledModsResult Thunderstore::GetInstalledMods()
 			}
 			else
 			{
-				Log::Print(std::format("Missing or corrupted mod detected - Removing {} from modlist.", p.Name), Log::Warning);
+				Log::Print("Missing or corrupted mod detected - Removing " + p.Name +" from modlist.", Log::Warning);
 				InstallOrUninstallMod(p, false, false);
 			}
 		}
@@ -166,6 +166,10 @@ Thunderstore::InstalledModsResult Thunderstore::GetInstalledMods()
 
 bool Thunderstore::IsModInstalled(Package m)
 {
+	if (!std::filesystem::exists(Game::GamePath))
+	{
+		return false;
+	}
 	// As a failsafe also check for mod files that could've been installed using another method.
 	// This way we hopefully won't install a mod twice. (Oh no)
 	// This won't always work.
@@ -375,7 +379,7 @@ namespace Thunderstore::TSDownloadThunderstoreInfo
 				case Ordering::Most_Downloaded:
 					for (auto& i : response.at(i).at("versions"))
 					{
-						Rating += i.at("downloads");
+						Rating += i.at("downloads").get<size_t>();
 					}
 					SortByLowest = false;
 					break;
@@ -538,7 +542,7 @@ namespace Thunderstore::TSGetModInfoFunc
 
 			for (auto& i : response.at("versions"))
 			{
-				m.Downloads += i.at("downloads");
+				m.Downloads += i.at("downloads").get<size_t>();
 			}
 
 			// I'm using the experimental API anyways because there doesn't seem to be another way to do this.
@@ -714,7 +718,7 @@ namespace Thunderstore::TSModFunc
 			}
 
 #if INSTALL_AS_PACKAGES
-			std::string TargetPackage = std::format("{}-{}-{}", m.Author, m.Name, m.Version);
+			std::string TargetPackage = m.Author + "-" + m.Name + "-" + m.Version;
 			std::filesystem::create_directories(Game::GamePath + "/R2Northstar/packages/" + TargetPackage);
 			std::filesystem::copy("Data/temp/mod/", Game::GamePath + "/R2Northstar/packages/" + TargetPackage,
 				std::filesystem::copy_options::overwrite_existing

@@ -326,7 +326,7 @@ void ServerBrowserTab::DisplayServers()
 		}
 		Name.resize(MaxServerNameSize, ' ');
 
-		std::string PlayerCount = std::format("{}/{}", i.PlayerCount, i.MaxPlayerCount);
+		std::string PlayerCount = std::to_string(i.PlayerCount) + "/" + std::to_string(i.MaxPlayerCount);
 		PlayerCount.resize(7, ' ');
 
 		UIButton* b = new UIButton(true, 0, 1, []() {
@@ -356,7 +356,7 @@ void ServerBrowserTab::DisplayServers()
 		DisplayedServerEntries.push_back(i);
 		ServerBrowserButtons.push_back(b);
 	}
-	PlayerCountText->SetText(std::format("Players in game: {}", TotalPlayers));
+	PlayerCountText->SetText("Players in game: " + std::to_string(TotalPlayers));
 }
 
 void JoinCurrentServer()
@@ -414,7 +414,8 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 	UIText* Descr = new UIText(0.3, 1, e.Description, UI::Text);
 	Descr->Wrap = true;
 	Descr->WrapDistance = 1.6;
-	std::string PlayerCount = std::format("Players: {}/{}", e.PlayerCount, e.MaxPlayerCount);
+	std::string PlayerCount = "Players: " +
+	 std::to_string(e.PlayerCount) + "/" + std::to_string(e.MaxPlayerCount);
 
 	UIText* Title = new UIText(0.5, 1, e.Name, UI::Text);
 	Title->Wrap = true;
@@ -454,9 +455,7 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 				ServerBrowserTab::CurrentServerTab->DisplayServerDescription(ServerBrowserTab::CurrentServerTab->SelectedServer);
 				if (ServerBrowserTab::ShouldLaunchGame) 
 				{ 
-					LOG_PRINTF("Joining server \"{}\" (id: {})",
-						ServerBrowserTab::CurrentServerTab->SelectedServer.Name,
-						ServerBrowserTab::CurrentServerTab->SelectedServer.ServerID);
+					LOG_PRINTF("Joining server \"{}\" (id: {})");
 					LaunchTab::LaunchNorthstar("+AutoJoinServer " + ServerBrowserTab::CurrentServerTab->SelectedServer.ServerID); 
 				}
 			});

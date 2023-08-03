@@ -6,6 +6,7 @@
 #include <sstream>
 #include "Networking.h"
 #include "BackgroundTask.h"
+#include "Tabs/SettingsTab.h"
 
 std::string Game::GamePath;
 bool Game::RequiresUpdate = false;
@@ -157,9 +158,12 @@ int GetFileVersion(const char* filename, char* ver)
 
 std::string Game::GetCurrentVersion()
 {
+#if _WIN32
 	char Ver[100];
 	GetFileVersion(std::filesystem::path(GamePath + "NorthstarLauncher.exe").string().c_str(), Ver);
 	return Ver;
+#endif
+	return "whothefuckknows";
 }
 
 void Game::UpdateGame()

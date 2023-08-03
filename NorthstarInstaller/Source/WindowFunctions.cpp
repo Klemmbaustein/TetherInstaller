@@ -73,4 +73,17 @@ void Window::ShowPopup(std::string Title, std::string Message)
 {
 	MessageBoxA(NULL, Message.c_str(), Title.c_str(), MB_OK);
 }
+#else
+std::string Window::ShowSelectFolderDialog()
+{
+	return "";
+}
+
+Window::PopupReply Window::ShowPopupQuestion(std::string Title, std::string Message)
+{
+	return Window::PopupReply::No;
+}
+void Window::ShowPopup(std::string Title, std::string Message)
+{
+}
 #endif

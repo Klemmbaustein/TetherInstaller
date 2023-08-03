@@ -21,6 +21,7 @@
 
 
 std::string ToLowerCase(std::string str);
+#if _WIN32
 LONG GetStringRegKey(HKEY hKey, const std::wstring& strValueName, std::wstring& strValue, const std::wstring& strDefaultValue);
 bool replace(std::string& str, const std::string& from, const std::string& to) {
 	size_t start_pos = str.find(from);
@@ -29,6 +30,7 @@ bool replace(std::string& str, const std::string& from, const std::string& to) {
 	str.replace(start_pos, from.length(), to);
 	return true;
 }
+#endif
 
 
 
@@ -122,7 +124,7 @@ namespace Networking
 	}
 
 
-	std::string Networking::GetLatestReleaseOf(std::string RepoName)
+	std::string GetLatestReleaseOf(std::string RepoName)
 	{
 		using namespace nlohmann;
 

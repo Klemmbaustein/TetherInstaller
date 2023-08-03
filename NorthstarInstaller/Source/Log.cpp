@@ -1,19 +1,19 @@
 #include "Log.h"
 #include <iostream>
 
-#if _WIN32
-#include <Windows.h>
-#include <wincon.h>
-
-bool IsVerbose = false;
-HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-
 std::string MessageTypeStrings[3] =
 {
 	"[Info]",
 	"[Warning]",
 	"[Error]",
 };
+
+#if _WIN32
+#include <Windows.h>
+#include <wincon.h>
+
+bool IsVerbose = false;
+HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 unsigned int MessageTypeMajorColors[3] =
 {
 	FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED,
@@ -48,5 +48,9 @@ void Log::Print(std::string Message, Severity Type)
 }
 
 #elif __linux__
-//TODO Log on Linux
+void Log::Print(std::string Message, Severity Type)
+{
+	std::cout << MessageTypeStrings[Type];
+	std::cout << ": " << Message << std::endl;
+}
 #endif

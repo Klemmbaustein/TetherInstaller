@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include <format>
+// #include <format>
 
 namespace Log
 {
@@ -16,4 +16,4 @@ namespace Log
 
 	void Print(std::string Message, Severity Type = Info);
 }
-#define LOG_PRINTF(msg, ...) Log::Print(std::format(msg,  __VA_ARGS__))
+#define LOG_PRINTF(msg, ...) Log::Print(msg)
