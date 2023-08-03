@@ -11,6 +11,8 @@ namespace Installer
 
 	extern const std::string UserAgent;
 
+	void GenerateWindowButtons();
+
 	// Name of the github package this installer is from. If the newest package is not this, we should update.
 	extern const std::string GithubInstallerVersion;
 	void GenerateTabs();
