@@ -4,10 +4,10 @@
 #include <fstream>
 #include <sstream>
 
-#include <UI/UIButton.h>
-#include <UI/UIScrollBox.h>
-#include <Rendering/MarkdownRendering.h>
-#include <Rendering/Texture.h>
+#include <KlemmUI/UI/UIButton.h>
+#include <KlemmUI/UI/UIScrollBox.h>
+#include <KlemmUI/Rendering/MarkdownRendering.h>
+#include <KlemmUI/Rendering/Texture.h>
 
 #include "../JSON/json.hpp"
 

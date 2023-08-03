@@ -1,7 +1,7 @@
 #pragma once
 #include "UITab.h"
-#include <UI/UIButton.h>
-#include <UI/UIText.h>
+#include <KlemmUI/UI/UIButton.h>
+#include <KlemmUI/UI/UIText.h>
 
 class LaunchTab : public UITab
 {

@@ -1,6 +1,6 @@
-#include <Application.h>
-#include <UI/UIBackground.h>
-#include <Rendering/Texture.h>
+#include <KlemmUI/Application.h>
+#include <KlemmUI/UI/UIBackground.h>
+#include <KlemmUI/Rendering/Texture.h>
 
 #include <queue>
 #include <fstream>
@@ -23,7 +23,7 @@
 namespace Installer
 {
 	UIBox* WindowButtonBox = nullptr;
-	size_t SelectedTab = 1;
+	size_t SelectedTab = 0;
 	std::vector<UIButton*> TabButtons;
 	UIBackground* TabBackground;
 	std::vector<UITab*> Tabs;
@@ -59,7 +59,7 @@ namespace Installer
 				{
 					for (size_t i = 0; i < TabButtons.size(); i++)
 					{
-						if (TabButtons[i]->GetIsHovered())
+						if (TabButtons.at(i)->GetIsHovered())
 						{
 							SelectedTab = i;
 							GenerateTabs();

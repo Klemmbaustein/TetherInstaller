@@ -1,8 +1,8 @@
 #pragma once
 #include "UITab.h"
-#include <UI/UIBackground.h>
-#include <UI/UITextField.h>
-#include <UI/UIText.h>
+#include <KlemmUI/UI/UIBackground.h>
+#include <KlemmUI/UI/UITextField.h>
+#include <KlemmUI/UI/UIText.h>
 
 #include <map>
 

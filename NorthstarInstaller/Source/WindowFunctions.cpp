@@ -1,4 +1,5 @@
 #include "WindowFunctions.h"
+#include "Log.h"
 #if _WIN32
 #include <Shlobj.h>
 #include <shobjidl.h> 
@@ -85,5 +86,6 @@ Window::PopupReply Window::ShowPopupQuestion(std::string Title, std::string Mess
 }
 void Window::ShowPopup(std::string Title, std::string Message)
 {
+	Log::Print(Title + ": " + Message);
 }
 #endif

@@ -1,7 +1,7 @@
 TARGET_EXEC := TetherInstaller
 
 BUILD_DIR := ./Build
-SRC_DIRS := ./Source /home/jan/code/UISystem/Headers
+SRC_DIRS := ./Source
 
 SRCS := $(shell find $(SRC_DIRS) -name '*.cpp')
 OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
@@ -13,7 +13,7 @@ CPPFLAGS := $(INC_FLAGS) -MMD -MP -Wdelete-incomplete -std=c++2a `sdl2-config --
 
 # Package all C++ object files into a static library
 $(TARGET_EXEC): $(OBJS)
-	$(CXX) $(OBJS) -o $@ -lUISystem -l:libGLEW.a -lcurl -lzip -lGL -L/home/jan/code/UISystem/Build `sdl2-config --cflags --libs`
+	$(CXX) $(OBJS) -o $@ -lKlemmUI -l:libGLEW.a -lcurl -lzip -lGL `sdl2-config --cflags --libs`
 
 # Build C++ object files
 $(BUILD_DIR)/%.cpp.o: %.cpp

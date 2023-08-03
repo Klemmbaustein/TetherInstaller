@@ -1,8 +1,8 @@
 #pragma once
 #include "UITab.h"
-#include <UI/UITextField.h>
-#include <UI/UIBackground.h>
-#include <UI/UIScrollBox.h>
+#include <KlemmUI/UI/UITextField.h>
+#include <KlemmUI/UI/UIBackground.h>
+#include <KlemmUI/UI/UIScrollBox.h>
 
 class SettingsTab : public UITab
 {

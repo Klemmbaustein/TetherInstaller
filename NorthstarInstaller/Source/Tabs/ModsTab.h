@@ -1,10 +1,10 @@
 #pragma once
 #include "UITab.h"
-#include <UI/UIButton.h>
-#include <UI/UIBackground.h>
-#include <UI/UIText.h>
-#include <UI/UIScrollBox.h>
-#include <UI/UITextField.h>
+#include <KlemmUI/UI/UIButton.h>
+#include <KlemmUI/UI/UIBackground.h>
+#include <KlemmUI/UI/UIText.h>
+#include <KlemmUI/UI/UIScrollBox.h>
+#include <KlemmUI/UI/UITextField.h>
 #include <atomic>
 
 class ModsTab : public UITab

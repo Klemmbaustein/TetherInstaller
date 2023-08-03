@@ -4,9 +4,9 @@
 #include <regex>
 #include <iomanip>
 
-#include <Rendering/Texture.h>
-#include <Application.h>
-#include <Rendering/MarkdownRendering.h>
+#include <KlemmUI/Rendering/Texture.h>
+#include <KlemmUI/Application.h>
+#include <KlemmUI/Rendering/MarkdownRendering.h>
 
 #include "../JSON/json.hpp"
 

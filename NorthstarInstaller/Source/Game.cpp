@@ -163,7 +163,7 @@ std::string Game::GetCurrentVersion()
 	GetFileVersion(std::filesystem::path(GamePath + "NorthstarLauncher.exe").string().c_str(), Ver);
 	return Ver;
 #endif
-	return "whothefuckknows";
+	return "Unknown";
 }
 
 void Game::UpdateGame()

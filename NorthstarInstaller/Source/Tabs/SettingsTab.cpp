@@ -1,7 +1,7 @@
 #include "SettingsTab.h"
 
-#include <UI/UIText.h>
-#include <UI/UIButton.h>
+#include <KlemmUI/UI/UIText.h>
+#include <KlemmUI/UI/UIButton.h>
 
 #include <thread>
 #include <sstream>
@@ -48,7 +48,7 @@ void DeleteAllMods()
 		"Northstar.CustomServers",
 		"Northstar.Custom",
 		"Northstar.Client",
-		"Northstar.Coop", // soooooon™
+		"Northstar.Coop", // soooooonï¿½
 
 	};
 
@@ -169,4 +169,9 @@ void SettingsTab::GenerateSettings()
 	AddCategoryHeader("About", SettingsBox);
 	SettingsBox->AddChild(new UIText(0.35, 1, "Installed Northstar version: " + Game::GetCurrentVersion(), UI::Text));
 	SettingsBox->AddChild(new UIText(0.35, 1, "Launcher version: " + Installer::InstallerVersion, UI::Text));
+#if _WIN32
+	SettingsBox->AddChild(new UIText(0.35, 1, "Operating system: Windows", UI::Text));
+#elif __linux__
+	SettingsBox->AddChild(new UIText(0.35, 1, "Operating system: Linux", UI::Text));
+#endif
 }
