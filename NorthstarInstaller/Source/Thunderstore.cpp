@@ -33,6 +33,12 @@ bool Thunderstore::IsMostRecentFileVersion(std::string VersionString)
 Thunderstore::InstalledModsResult Thunderstore::GetInstalledMods()
 {
 	using namespace nlohmann;
+
+	if (!std::filesystem::exists(Game::GamePath))
+	{
+		return Thunderstore::InstalledModsResult();
+	}
+
 	// Mods managed by the installer
 	std::set<std::string> ManagedMods;
 

@@ -23,7 +23,7 @@
 namespace Installer
 {
 	UIBox* WindowButtonBox = nullptr;
-	size_t SelectedTab = 0;
+	size_t SelectedTab = 1;
 	std::vector<UIButton*> TabButtons;
 	UIBackground* TabBackground;
 	std::vector<UITab*> Tabs;
@@ -36,9 +36,9 @@ namespace Installer
 	const std::string InstallerVersion = "v1.1.1";
 	const std::string GithubInstallerVersion = InstallerVersion;
 #if DEBUG
-	const std::string UserAgent = std::format("TetherNSInstaller/{}-dev", Installer::InstallerVersion);
+	const std::string UserAgent = "TetherNSInstaller/" + InstallerVersion + "-dev";
 #else
-	const std::string UserAgent = std::format("TetherNSInstaller/{}", Installer::InstallerVersion);
+	const std::string UserAgent = "TetherNSInstaller/" + Installer::InstallerVersion;
 #endif
 	void GenerateTabs()
 	{
@@ -167,7 +167,7 @@ namespace Installer
 		if (GithubInstallerVersion != Ver)
 		{
 			RequiresUpdate = true;
-			Log::Print(std::format("Launcher requires update. {} -> {}", GithubInstallerVersion, Ver) , Log::Warning);
+			Log::Print("Launcher requires update. " + GithubInstallerVersion + " ->" + Ver , Log::Warning);
 		}
 	}
 	std::queue<void (*)()> LaunchTasks =
@@ -257,7 +257,6 @@ int main(int argc, char** argv)
 	auto bg = new UIBackground(true, 0, 1, Vector2f(2.5 * (16.f/9.f), 2.5));
 	bg->SetSizeMode(UIBox::E_PIXEL_RELATIVE);
 	bg->SetUseTexture(true, Texture::LoadTexture("Data/Game.png"));
-
 
 	Application::UpdateWindow();
 	bg->SetPosition(Vector2f(0.0) - bg->GetUsedSize() / 2);
