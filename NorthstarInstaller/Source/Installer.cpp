@@ -33,7 +33,7 @@ namespace Installer
 	UIBackground* TaskBackground = nullptr;
 	UIBackground* TaskProgressBar = nullptr;
 	UIText* TaskNameText = nullptr;
-	const std::string InstallerVersion = "v1.1.0";
+	const std::string InstallerVersion = "v1.1.1";
 	const std::string GithubInstallerVersion = InstallerVersion;
 #if DEBUG
 	const std::string UserAgent = std::format("TetherNSInstaller/{}-dev", Installer::InstallerVersion);
@@ -193,7 +193,7 @@ namespace Installer
 	}
 }
 
-void GenerateWindowButtons()
+void Installer::GenerateWindowButtons()
 {
 	std::vector<int> Buttons;
 	if (Application::GetFullScreen())
@@ -204,10 +204,10 @@ void GenerateWindowButtons()
 	{
 		Buttons = { 0, 1, 3 };
 	}
-	Installer::WindowButtonBox->DeleteChildren();
+	WindowButtonBox->DeleteChildren();
 	for (int i : Buttons)
 	{
-		Installer::WindowButtonBox->AddChild((new UIButton(true, 0, 0.25, [](int Index) {
+		WindowButtonBox->AddChild((new UIButton(true, 0, 0.25, [](int Index) {
 			switch (Index)
 			{
 			case 0:
@@ -229,7 +229,7 @@ void GenerateWindowButtons()
 			->SetPadding(0)
 			->SetSizeMode(UIBox::E_PIXEL_RELATIVE)
 			->AddChild((new UIBackground(true, 0, 1, Vector2(0.03)))
-				->SetUseTexture(true, Installer::WindowButtonsIcons[i])
+				->SetUseTexture(true, WindowButtonsIcons[i])
 				->SetSizeMode(UIBox::E_PIXEL_RELATIVE)
 				->SetPadding(0.02, 0.01, 0.015, 0.015)));
 	}
@@ -306,7 +306,9 @@ int main(int argc, char** argv)
 	Installer::WindowButtonBox = (new UIBox(true, Vector2(0.75, 0.94)))
 		->SetMinSize(Vector2(0.25, 0.06));
 	Installer::WindowButtonBox->Align = UIBox::E_REVERSE;
-	GenerateWindowButtons();
+	Installer::GenerateWindowButtons();
+	float PrevAspect = Application::AspectRatio;
+
 	while (!Application::Quit)
 	{
 		for (auto i : Installer::Tabs)
@@ -338,6 +340,12 @@ int main(int argc, char** argv)
 		{
 			Installer::TaskProgressBar->IsVisible = false;
 			Installer::TaskNameText->SetText("No background task");
+		}
+
+		if (Application::AspectRatio != PrevAspect)
+		{
+			PrevAspect = Application::AspectRatio;
+			Installer::GenerateWindowButtons();
 		}
 
 		if (!BackgroundTask::IsRunningTask && !Installer::LaunchTasks.empty())
