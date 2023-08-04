@@ -32,15 +32,10 @@
 *.app
 
 # Visual studio files
-*.sln
-*.vcxproj
 *.user
 *.filters
 /.vs
 x64
-
-# nlohman JSON
-json
 
 # launcher files
 temp

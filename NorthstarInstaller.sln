@@ -1,0 +1,47 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33627.172
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NorthstarInstaller", "NorthstarInstaller\NorthstarInstaller.vcxproj", "{C099AAEB-2340-45E1-A860-BD24183F9893}"
+	ProjectSection(ProjectDependencies) = postProject
+		{99324208-6A16-49B7-B98B-15B1935810B0} = {99324208-6A16-49B7-B98B-15B1935810B0}
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5831024F-6555-4F2F-9017-A8AA7AB2059B}"
+	ProjectSection(SolutionItems) = preProject
+		Setup.ps1 = Setup.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dependencies", "Dependencies", "{1E28D6DD-7759-4981-8E38-9F5042C0EC17}"
+	ProjectSection(SolutionItems) = preProject
+		json\single_include\nlohmann\json.hpp = json\single_include\nlohmann\json.hpp
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KlemmUI", "KlemmUI\KlemmUI.vcxproj", "{99324208-6A16-49B7-B98B-15B1935810B0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Dev|x64 = Dev|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C099AAEB-2340-45E1-A860-BD24183F9893}.Dev|x64.ActiveCfg = Dev|x64
+		{C099AAEB-2340-45E1-A860-BD24183F9893}.Dev|x64.Build.0 = Dev|x64
+		{C099AAEB-2340-45E1-A860-BD24183F9893}.Release|x64.ActiveCfg = Release|x64
+		{C099AAEB-2340-45E1-A860-BD24183F9893}.Release|x64.Build.0 = Release|x64
+		{99324208-6A16-49B7-B98B-15B1935810B0}.Dev|x64.ActiveCfg = Release|x64
+		{99324208-6A16-49B7-B98B-15B1935810B0}.Dev|x64.Build.0 = Release|x64
+		{99324208-6A16-49B7-B98B-15B1935810B0}.Release|x64.ActiveCfg = Release|x64
+		{99324208-6A16-49B7-B98B-15B1935810B0}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{99324208-6A16-49B7-B98B-15B1935810B0} = {1E28D6DD-7759-4981-8E38-9F5042C0EC17}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {18CF1644-0694-4AB8-8BC7-27DE9443C8A9}
+	EndGlobalSection
+EndGlobal

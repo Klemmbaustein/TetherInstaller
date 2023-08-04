@@ -9,7 +9,7 @@
 #include <KlemmUI/Rendering/MarkdownRendering.h>
 #include <KlemmUI/Rendering/Texture.h>
 
-#include "../JSON/json.hpp"
+#include "nlohmann/json.hpp"
 
 #include "../Networking.h"
 #include "../Installer.h"

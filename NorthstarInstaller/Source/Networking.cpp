@@ -1,7 +1,7 @@
 #include "Networking.h"
 
 #include <curl/curl.h>
-#include "JSON/json.hpp"
+#include "nlohmann/json.hpp"
 #include <zip.h>
 
 #include "Log.h"
