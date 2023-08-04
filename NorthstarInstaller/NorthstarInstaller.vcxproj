@@ -137,6 +137,7 @@
     <None Include="..\README.md" />
     <None Include="Data\autojoin\mod.json" />
     <None Include="Data\autojoin\mod\scripts\vscripts\autoJoinServer.gnut" />
+    <None Include="makefile" />
     <None Include="update.bat" />
   </ItemGroup>
   <ItemGroup>

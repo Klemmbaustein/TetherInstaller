@@ -112,6 +112,7 @@
       <Filter>autoJoinServer</Filter>
     </None>
     <None Include="update.bat" />
+    <None Include="makefile" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="installer.rc" />
