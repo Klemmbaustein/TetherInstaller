@@ -9,7 +9,7 @@ if (!(Test-Path -Path SDL\VisualC\SDL\x64\Release))
 {
 	cd KlemmUI/
 	./Setup.ps1
-	cp SDL\VisualC\SDL\x64\Release\SDL2.dll ..\TetherInstaller\SDL2.dll
+	cp SDL\VisualC\SDL\x64\Release\SDL2.dll ..\TetherInstaller\
 	cd ..
 }
 cd curl
