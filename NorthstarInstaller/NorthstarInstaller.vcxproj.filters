@@ -1,0 +1,122 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Source\Installer.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Log.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\UIDef.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Tabs\UITab.cpp">
+      <Filter>Source\Tabs</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Tabs\LaunchTab.cpp">
+      <Filter>Source\Tabs</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Tabs\SettingsTab.cpp">
+      <Filter>Source\Tabs</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Networking.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Tabs\ModsTab.cpp">
+      <Filter>Source\Tabs</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Thunderstore.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\BackgroundTask.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\WindowFunctions.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Tabs\ServerBrowserTab.cpp">
+      <Filter>Source\Tabs</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\miniz\miniz.cpp">
+      <Filter>Dependencies</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source">
+      <UniqueIdentifier>{1c934ca5-5a83-4a85-8ab1-c4f8f522bdeb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tabs">
+      <UniqueIdentifier>{b23fc56e-f9d5-4cde-a36e-704e8b01e033}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="autoJoinServer">
+      <UniqueIdentifier>{b1af7e59-0e3a-472c-ac50-abc99e4d5162}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies">
+      <UniqueIdentifier>{28571b60-eb39-4988-8cff-17af0f939d96}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Source\Game.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Log.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\UIDef.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Tabs\UITab.h">
+      <Filter>Source\Tabs</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Tabs\LaunchTab.h">
+      <Filter>Source\Tabs</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Tabs\SettingsTab.h">
+      <Filter>Source\Tabs</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Installer.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Networking.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Tabs\ModsTab.h">
+      <Filter>Source\Tabs</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Thunderstore.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\BackgroundTask.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\WindowFunctions.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Tabs\ServerBrowserTab.h">
+      <Filter>Source\Tabs</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\miniz\miniz.h">
+      <Filter>Dependencies</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\README.md" />
+    <None Include="..\.gitignore" />
+    <None Include="Data\autojoin\mod\scripts\vscripts\autoJoinServer.gnut">
+      <Filter>autoJoinServer</Filter>
+    </None>
+    <None Include="Data\autojoin\mod.json">
+      <Filter>autoJoinServer</Filter>
+    </None>
+    <None Include="update.bat" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="installer.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\LICENSE.txt" />
+  </ItemGroup>
+</Project>

@@ -33,7 +33,6 @@
 
 # Visual studio files
 *.user
-*.filters
 /.vs
 x64
 
