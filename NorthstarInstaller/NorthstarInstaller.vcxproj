@@ -104,7 +104,7 @@
     <ClCompile Include="Source\Installer.cpp" />
     <ClCompile Include="Source\Game.cpp" />
     <ClCompile Include="Source\Log.cpp" />
-    <ClCompile Include="Source\miniz\miniz.c" />
+    <ClCompile Include="Source\miniz\miniz.cpp" />
     <ClCompile Include="Source\Networking.cpp" />
     <ClCompile Include="Source\Tabs\LaunchTab.cpp" />
     <ClCompile Include="Source\Tabs\ModsTab.cpp" />
