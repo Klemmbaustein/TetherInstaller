@@ -2,7 +2,7 @@
 
 The Tether installer is an auto updater and mod manager for the
 [Northstar modding framework for Titanfall 2](https://github.com/R2Northstar/Northstar).
-It is made using [my C++ UI library](https://github.com/Klemmbaustein/UISystem)
+It is made using [KlemmUI](https://github.com/Klemmbaustein/KLemmUI)
 and is avaliable for Windows.
 
 ## FAQ
