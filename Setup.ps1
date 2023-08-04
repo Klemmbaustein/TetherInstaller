@@ -9,9 +9,10 @@ if (!(Test-Path -Path SDL\VisualC\SDL\x64\Release))
 {
 	cd KlemmUI/
 	./Setup.ps1
-	cp SDL\VisualC\SDL\x64\Release\SDL2.dll ..\TetherInstaller\SDL2.dll
 	cd ..
 }
+cp KlemmUI\SDL\VisualC\SDL\x64\Release\SDL2.dll NorthstarInstaller
+
 cd curl
 cmake -DCURL_USE_SCHANNEL=on -DBUILD_SHARED_LIBS=off -DCMAKE_C_COMPILER=cl -B Build
 
