@@ -15,6 +15,7 @@
     <ProjectGuid>{c099aaeb-2340-45e1-a860-bd24183f9893}</ProjectGuid>
     <RootNamespace>NorthstarInstaller</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>TetherInstaller</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
