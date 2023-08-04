@@ -1,3 +1,6 @@
 [submodule "KlemmUI"]
 	path = KlemmUI
 	url = https://github.com/Klemmbaustein/KlemmUI.git
+[submodule "json"]
+	path = json
+	url = https://github.com/nlohmann/json.git
