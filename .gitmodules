@@ -1,6 +1,3 @@
-[submodule "TetherInstaller"]
-	path = TetherInstaller
-	url = https://github.com/Klemmbaustein/TetherInstaller.git
 [submodule "KlemmUI"]
 	path = KlemmUI
 	url = https://github.com/Klemmbaustein/KlemmUI.git
