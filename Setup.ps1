@@ -5,7 +5,7 @@ if (!(Test-Path -Path KlemmUI/SDL/include))
 	exit
 }
 
-if (!(Test-Path -Path KlemmUI/lib/Release))
+if (!(Test-Path -Path SDL\VisualC\SDL\x64\Release))
 {
 	cd KlemmUI/
 	./Setup.ps1
