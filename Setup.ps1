@@ -4,7 +4,17 @@ if (!(Test-Path -Path KlemmUI/SDL/include))
 	echo "SDL directory seems to be empty or missing. Verify you have cloned the repo with submodules or run 'git submodule update --init --recursive'"
 	exit
 }
-cd KlemmUI/
-./Setup.ps1
-msbuild /p:Configuration=Release
-cd ..
+
+if (!(Test-Path -Path KlemmUI/lib/Release))
+{
+	cd KlemmUI/
+	./Setup.ps1
+	cd ..
+}
+cd curl
+cmake -DCURL_USE_SCHANNEL=on -DBUILD_SHARED_LIBS=off -DCMAKE_C_COMPILER=cl -B Build
+
+cd Build
+msbuild.exe lib/libcurl_static.vcxproj /p:Configuration=Release /p:Platform=x64
+
+cd ../..

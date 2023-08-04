@@ -1,8 +1,9 @@
 #include "Networking.h"
 
+#define CURL_STATICLIB 1
 #include <curl/curl.h>
 #include "nlohmann/json.hpp"
-#include <zip.h>
+#include "miniz/miniz.h"
 
 #include "Log.h"
 #include "Installer.h"
@@ -17,6 +18,10 @@
 #if _WIN32
 #include <wtsapi32.h>
 #pragma comment(lib, "Wtsapi32.lib")
+#pragma comment(lib, "wldap32.lib" )
+#pragma comment(lib, "crypt32.lib" )
+#pragma comment(lib, "Ws2_32.lib")
+
 #endif
 
 
@@ -29,6 +34,7 @@ bool replace(std::string& str, const std::string& from, const std::string& to) {
 		return false;
 	str.replace(start_pos, from.length(), to);
 	return true;
+	CURL_STATICLIB;
 }
 #endif
 
@@ -265,42 +271,36 @@ What you can do:\n\
 	}
 	void ExtractZip(std::string File, std::string TargetFolder)
 	{
-		int err = 0;
-		zip* z = zip_open(File.c_str(), 0, &err);
 		std::string TargetDir = TargetFolder + "/";
 
-		struct zip_stat* finfo = NULL;
-		finfo = (struct zip_stat*)calloc(256, sizeof(int));
-		zip_stat_init(finfo);
-		zip_file_t* fd = NULL;
-		char* txt = NULL;
-		int count = 0;
-		while ((zip_stat_index(z, count, 0, finfo)) == 0) {
+		mz_zip_archive archive;
 
-			// allocate room for the entire file contents.
-			txt = (char*)calloc(finfo->size + 1, sizeof(char));
-			fd = zip_fopen_index(
-				z, count, 0); // opens file at count index
-			// reads from fd finfo->size
-			// bytes into txt buffer.
-			zip_fread(fd, txt, finfo->size);
+		memset(&archive, 0, sizeof(mz_zip_archive));
 
-			// Let's hope i'll never have to compile this on linux.
-			size_t slash = std::string(finfo->name).find_last_of("/\\");
-			if (slash != std::string::npos)
-			{
-				std::filesystem::create_directories(TargetDir + std::string(finfo->name).substr(0, slash));
-			}
-			std::ofstream(TargetDir + std::string(finfo->name), std::ios::out | std::ios::binary).write(txt, finfo->size);
+		mz_zip_reader_init_file(&archive, File.c_str(), 0);
 
-			// frees allocated buffer, will
-			// reallocate on next iteration of loop.
-			free(txt);
-			zip_fclose(fd);
-			// increase index by 1 and the loop will
-			// stop when files are not found.
-			count++;
+		const int FileCount = mz_zip_reader_get_num_files(&archive);
+
+		if (FileCount <= 0)
+			return;
+
+
+		mz_zip_archive_file_stat stats;
+
+		for (int i = 0; i < FileCount; i++)
+		{
+			memset(&stats, 0, sizeof(mz_zip_archive_file_stat));
+			mz_zip_reader_file_stat(&archive, i, &stats);
+
+			const bool IsDirectory = mz_zip_reader_is_file_a_directory(&archive, i);
+
+			if (IsDirectory)
+				std::filesystem::create_directory(TargetDir + stats.m_filename);
+			else
+				mz_zip_reader_extract_to_file(&archive, i, (TargetDir + stats.m_filename).c_str(), 0);
 		}
-		zip_close(z);
+
+		mz_zip_reader_end(&archive);
+
 	}
 }

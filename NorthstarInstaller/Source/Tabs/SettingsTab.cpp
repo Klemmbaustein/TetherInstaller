@@ -5,7 +5,6 @@
 
 #include <thread>
 #include <sstream>
-#include <zip.h>
 #include <fstream>
 #include <stdlib.h>
 #include <filesystem>
