@@ -115,7 +115,10 @@
 */
 #pragma once
 
-
+// do this little silly thing so github won't display this as a C repo
+namespace
+{
+}
 
 /* Defines to completely disable specific portions of miniz.c: 
    If all macros here are defined the only functionality remaining will be CRC-32 and adler-32. */

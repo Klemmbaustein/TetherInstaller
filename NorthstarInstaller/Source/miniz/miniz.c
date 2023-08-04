@@ -25,6 +25,10 @@
  *
  **************************************************************************/
 
+ // do this little silly thing so github won't display this as a C repo
+namespace
+{
+}
 
 
 typedef unsigned char mz_validate_uint16[sizeof(mz_uint16) == 2 ? 1 : -1];
