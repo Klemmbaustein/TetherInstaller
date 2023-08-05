@@ -6,14 +6,14 @@ SRC_DIRS := ./Source
 SRCS := $(shell find $(SRC_DIRS) -name '*.cpp')
 OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
 DEPS := $(OBJS:.o=.d)
-INC_DIRS := $(SRC_DIRS) ./json/single_include
+INC_DIRS := $(SRC_DIRS) ../json/single_include
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
 CPPFLAGS := $(INC_FLAGS) -MMD -MP -Wdelete-incomplete -std=c++2a `sdl2-config --cflags --libs`
 
 # Package all C++ object files into a static library
 $(TARGET_EXEC): $(OBJS)
-	$(CXX) $(OBJS) -o $@ -lKlemmUI -l:libGLEW.a -lcurl -lzip -lGL `sdl2-config --cflags --libs`
+	$(CXX) $(OBJS) -o $@ -lKlemmUI -l:libGLEW.a -lcurl -lGL `sdl2-config --cflags --libs`
 
 # Build C++ object files
 $(BUILD_DIR)/%.cpp.o: %.cpp
