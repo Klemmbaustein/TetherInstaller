@@ -287,6 +287,8 @@ What you can do:\n\
 
 		mz_zip_archive_file_stat stats;
 
+		Log::Print("Extracting zip...");
+
 		for (int i = 0; i < FileCount; i++)
 		{
 			memset(&stats, 0, sizeof(mz_zip_archive_file_stat));
@@ -294,10 +296,13 @@ What you can do:\n\
 
 			const bool IsDirectory = mz_zip_reader_is_file_a_directory(&archive, i);
 
-			if (IsDirectory)
-				std::filesystem::create_directory(TargetDir + stats.m_filename);
-			else
-				mz_zip_reader_extract_to_file(&archive, i, (TargetDir + stats.m_filename).c_str(), 0);
+			Log::Print("Found: " + std::string(stats.m_filename));
+
+			std::string TargetFileDir = TargetDir + stats.m_filename;
+			TargetFileDir = TargetFileDir.substr(0, TargetFileDir.find_last_of("\\/"));
+			std::filesystem::create_directories(TargetFileDir);
+
+			mz_zip_reader_extract_to_file(&archive, i, (TargetDir + stats.m_filename).c_str(), 0);
 		}
 
 		mz_zip_reader_end(&archive);

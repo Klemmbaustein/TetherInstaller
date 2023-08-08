@@ -252,6 +252,24 @@ int main(int argc, char** argv)
 
 	UI::LoadFonts();
 
+	Log::Print("Cleaning up temp directory");
+	{
+		std::vector<std::string> TargetDirs = 
+		{
+			"Data/temp/mod",
+			"Data/temp/net/tspage.txt",
+			"Data/temp/net/allmods.json",
+			"Data/temp/net/servers.json"
+		};
+
+		for (const auto& i : TargetDirs)
+		{
+			if (std::filesystem::exists(i))
+			{
+				std::filesystem::remove_all(i);
+			}
+		}
+	}
 	Vector2f bgCenter = Vector2f(-0.3, 0);
 
 	auto bg = new UIBackground(true, 0, 1, Vector2f(2.5 * (16.f/9.f), 2.5));
