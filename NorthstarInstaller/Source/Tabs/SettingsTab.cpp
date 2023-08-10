@@ -33,7 +33,9 @@ SettingsTab::SettingsTab()
 		->SetPadding(0));
 	SettingsBackground->Align = UIBox::E_REVERSE;
 	SettingsBackground->AddChild(new UIText(0.8, 1, "Settings", UI::Text));
-	SettingsBox = new UIScrollBox(false, 0, 10);
+	SettingsBox = new UIScrollBox(false, 0, true);
+	SettingsBox->SetMinSize(Vector2f(0, 1.65));
+	SettingsBox->SetMaxSize(Vector2f(2, 1.65));
 	SettingsBox->Align = UIBox::E_REVERSE;
 	SettingsBackground->AddChild(SettingsBox);
 	GenerateSettings();

@@ -230,17 +230,17 @@ ServerBrowserTab::ServerBrowserTab()
 	ServerSearchBox->SetHintText("Search");
 	ServerBackground->AddChild(ServerSearchBox);
 
-	ServerBox = new UIScrollBox(false, 0, 10);
+	ServerBox = new UIScrollBox(false, 0, true);
 	ServerBox->Align = UIBox::E_REVERSE;
 	ServerBackground->AddChild(new UIBackground(true, 0, 1, Vector2f(1.46, 0.005)));
 	ServerBackground->AddChild((new UIText(0.25, 1, "Region     Name                                      Players", UI::MonoText))->SetPadding(0.05, 0, 0.02, 0.02));
 	ServerBackground->AddChild((new UIBox(true, 0))
 		->SetPadding(0)
 		->AddChild(ServerBox
-			->SetMaxSize(Vector2f(0.825, 1.5))
-			->SetMinSize(Vector2f(0.825, 1.5)))
+			->SetMaxSize(Vector2f(0.825, 1.4))
+			->SetMinSize(Vector2f(0.825, 1.4)))
 		->AddChild(ServerDescriptionBox
-			->SetMinSize(Vector2f(0.3, 1.5))));
+			->SetMinSize(Vector2f(0.3, 1.4))));
 	ServerDescriptionBox->Align = UIBox::E_REVERSE;
 	new BackgroundTask(LoadServers, []() {CurrentServerTab->DisplayServers(); });
 }
@@ -366,16 +366,6 @@ void JoinCurrentServer()
 
 void ServerBrowserTab::Tick()
 {
-	if (ServerListBox)
-	{
-		ServerBox->SetMaxScroll(std::max(ServerListBox->GetUsedSize().Y * 10 - 10.0f, 0.0));
-	}
-	else
-	{
-		ServerBox->SetMaxScroll(0);
-		ServerBox->GetScrollObject()->Percentage = 0;
-	}
-
 	if (!ServerDescriptionText)
 		return;
 

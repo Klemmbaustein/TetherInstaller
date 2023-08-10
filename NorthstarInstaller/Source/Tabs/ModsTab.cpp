@@ -49,7 +49,6 @@ void ModsTab::GenerateModInfo()
 
 	ModsScrollBox->GetScrollObject()->Percentage = 0;
 	ModButtons.clear();
-	ModsScrollBox->SetMaxScroll(50);
 	ModsScrollBox->DeleteChildren();
 
 	ModsScrollBox->AddChild((new UIButton(true, 0, 1, []() {CurrentModsTab->GenerateModPage(); }))
@@ -155,7 +154,7 @@ void ModsTab::GenerateModInfo()
 
 	Markdown::MarkdownStyling Style;
 	Style.Text = UI::Text;
-	Style.Width = 1.15;
+	Style.Width = 1.1;
 
 	Markdown::RenderMarkdown(Thunderstore::SelectedMod.Description, MarkdownBackground, Style);
 }
@@ -165,7 +164,6 @@ void ModsTab::GenerateModPage()
 	UpdateClickedCategoryButton();
 	ModImages.clear();
 	ModsScrollBox->GetScrollObject()->Percentage = 0;
-	ModsScrollBox->SetMaxScroll(10);
 	ModsScrollBox->DeleteChildren();
 
 	ClearLoadedTextures();
@@ -408,7 +406,7 @@ ModsTab::ModsTab()
 	ModsBackground->AddChild(TitleBox);
 	TitleBox->SetPadding(0);
 	TitleBox->AddChild((new UIText(0.8, 1, "Mods", UI::Text))->SetPadding(0.01, 0.01, 0.01, 0.05));
-	ModsScrollBox = new UIScrollBox(false, 0, 25);
+	ModsScrollBox = new UIScrollBox(false, 0, true);
 	ModsScrollBox->Align = UIBox::E_REVERSE;
 
 	ModsScrollBox->SetMinSize(Vector2f(1.15, 1.7));

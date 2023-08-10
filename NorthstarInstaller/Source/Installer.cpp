@@ -33,7 +33,7 @@ namespace Installer
 	UIBackground* TaskBackground = nullptr;
 	UIBackground* TaskProgressBar = nullptr;
 	UIText* TaskNameText = nullptr;
-	const std::string InstallerVersion = "v1.1.2";
+	const std::string InstallerVersion = "v1.1.4";
 	const std::string GithubInstallerVersion = InstallerVersion;
 #if DEBUG
 	const std::string UserAgent = "TetherNSInstaller/" + InstallerVersion + "-dev";
@@ -188,7 +188,7 @@ namespace Installer
 		Networking::DownloadLatestReleaseOf("Klemmbaustein/TetherInstaller");
 		Networking::ExtractZip("Data/temp/net/latest.zip", "Data/temp/install");
 
-		system("start update.bat");
+		//system("start update.bat");
 		exit(0);
 	}
 }
@@ -372,6 +372,7 @@ int main(int argc, char** argv)
 		}
 
 		Application::UpdateWindow();
+		Application::SetActiveMouseCursor(Application::GetMouseCursorFromHoveredButtons());
 		if (Application::Quit && BackgroundTask::IsRunningTask)
 		{
 			Application::Quit = false;
