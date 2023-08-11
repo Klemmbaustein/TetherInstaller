@@ -22,7 +22,7 @@ SettingsTab::SettingsTab()
 	CurrentSettingsTab = this;
 	Name = "Settings";
 
-	Background->Align = UIBox::E_CENTERED;
+	Background->BoxAlign = UIBox::Align::Centered;
 	Background->SetHorizontal(true);
 
 	SettingsBackground = new UIBackground(false, 0, 0, Vector2f(0.8, 1.85));
@@ -31,12 +31,12 @@ SettingsTab::SettingsTab()
 		->AddChild((new UIBackground(true, 0, 1, Vector2f(0.8, 0.005)))
 			->SetPadding(0))
 		->SetPadding(0));
-	SettingsBackground->Align = UIBox::E_REVERSE;
+	SettingsBackground->BoxAlign = UIBox::Align::Reverse;
 	SettingsBackground->AddChild(new UIText(0.8, 1, "Settings", UI::Text));
 	SettingsBox = new UIScrollBox(false, 0, true);
 	SettingsBox->SetMinSize(Vector2f(0, 1.65));
 	SettingsBox->SetMaxSize(Vector2f(2, 1.65));
-	SettingsBox->Align = UIBox::E_REVERSE;
+	SettingsBox->BoxAlign = UIBox::Align::Reverse;
 	SettingsBackground->AddChild(SettingsBox);
 	GenerateSettings();
 }

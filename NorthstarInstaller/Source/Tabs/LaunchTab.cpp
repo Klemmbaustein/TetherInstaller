@@ -76,10 +76,9 @@ LaunchTab::LaunchTab()
 {
 	Name = "Play";
 	Log::Print("Loading launch tab...");
-	Background->Align = UIBox::E_DEFAULT;
-
+	Background->BoxAlign = UIBox::Align::Default;
 	auto TextBox = (new UIBackground(true, 0, 0, 0))->SetOpacity(0.3);
-	TextBox->Align = UIBox::E_CENTERED;
+	TextBox->BoxAlign = UIBox::Align::Centered;
 
 	LaunchButton = new UIButton(true, 0, 1, LaunchNorthstar);
 	LaunchText = new UIText(0.7, 0, "Launch", UI::Text);
@@ -89,7 +88,7 @@ LaunchTab::LaunchTab()
 		->SetPadding(0)
 		->AddChild(LaunchButton
 			->SetPadding(0.03)
-			->SetBorder(UIBox::E_ROUNDED, 1)
+			->SetBorder(UIBox::BorderType::Rounded, 1)
 			->AddChild(LaunchText)));
 
 

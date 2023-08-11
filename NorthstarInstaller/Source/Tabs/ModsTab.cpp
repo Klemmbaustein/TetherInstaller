@@ -113,7 +113,7 @@ void ModsTab::GenerateModInfo()
 		->AddChild((new UIBackground(true, 0, 1, Vector2(0.35)))
 			->SetUseTexture(true, Texture::LoadTexture(Thunderstore::SelectedMod.Img))
 			->SetPadding(0.02, 0.02, 0.1, 0.02)
-			->SetSizeMode(UIBox::E_PIXEL_RELATIVE)));
+			->SetSizeMode(UIBox::SizeMode::PixelRelative)));
 
 
 
@@ -122,7 +122,7 @@ void ModsTab::GenerateModInfo()
 	if (Thunderstore::SelectedMod.IsDeprecated)
 	{
 		ModsScrollBox->AddChild((new UIBackground(false, 0, Vector3f32(1, 0.5, 0), Vector2(1.15, 0.1)))
-			->SetBorder(UIBox::E_DARKENED_EDGE, 0.2)
+			->SetBorder(UIBox::BorderType::DarkenedEdge, 0.2)
 			->AddChild((new UIText(0.3, 0, "Deprecated mods are no longer supported and might have issues.", UI::Text))
 				->SetPadding(0, 0.01, 0.01, 0.01))
 			->AddChild((new UIText(0.4, 0, "This mod is deprecated", UI::Text))
@@ -133,7 +133,7 @@ void ModsTab::GenerateModInfo()
 	if (Thunderstore::SelectedMod.Name == "NorthstarReleaseCandidate")
 	{
 		ModsScrollBox->AddChild((new UIBackground(false, 0, Vector3f32(0, 0.5, 1), Vector2(1.15, 0.1)))
-			->SetBorder(UIBox::E_DARKENED_EDGE, 0.2)
+			->SetBorder(UIBox::BorderType::DarkenedEdge, 0.2)
 			->AddChild((new UIBox(true, 0))
 				->SetPadding(0)
 				->AddChild((new UIButton(true, 0, 1, []() {system("start https://discord.com/channels/920776187884732556/951461326478262292"); }))
@@ -149,7 +149,7 @@ void ModsTab::GenerateModInfo()
 
 	UIBox* MarkdownBackground = new UIBox(false, 0);
 	MarkdownBackground->SetPadding(0);
-	MarkdownBackground->Align = UIBox::E_REVERSE;
+	MarkdownBackground->BoxAlign = UIBox::Align::Reverse;
 	ModsScrollBox->AddChild(MarkdownBackground);
 
 	Markdown::MarkdownStyling Style;
@@ -228,7 +228,7 @@ void ModsTab::GenerateModPage()
 
 		b->SetMinSize(Vector2f(0, 0.34));
 		b->SetMaxSize(Vector2f(1, 0.34));
-		b->Align = UIBox::E_REVERSE;
+		b->BoxAlign = UIBox::Align::Reverse;
 		b->SetPadding(0.005 * Application::AspectRatio, 0.005 * Application::AspectRatio, 0.005, 0.005);
 		unsigned int tex = 0;
 		if (UseTexture)
@@ -238,11 +238,11 @@ void ModsTab::GenerateModPage()
 		}
 		auto NameText = new UIText(0.225, 0, i.Name, UI::Text);
 		Rows[it++ / SlotsPerRow]->AddChild(b
-			->SetBorder(UIBox::E_ROUNDED, 0.5)
+			->SetBorder(UIBox::BorderType::Rounded, 0.5)
 			->AddChild(Image
 				->SetUseTexture(UseTexture, tex)
 				->SetPadding(0)
-				->SetSizeMode(UIBox::E_PIXEL_RELATIVE))
+				->SetSizeMode(UIBox::SizeMode::PixelRelative))
 			->AddChild(NameText
 					->SetPadding(0.005)));
 
@@ -251,7 +251,7 @@ void ModsTab::GenerateModPage()
 
 		if (!UseTexture)
 		{
-			Image->Align = UIBox::E_CENTERED;
+			Image->BoxAlign = UIBox::Align::Centered;
 			Image->SetColor(0.1);
 			Image->AddChild(new UIText(0.4, 1, i.IsUnknownLocalMod ? " Unknown" : (i.IsNSFW ? "    NSFW" : (i.IsTemporary ? "Temporary" : "Loading...")), UI::Text));
 		}
@@ -279,7 +279,7 @@ void ModsTab::GenerateModPage()
 			} });
 		Rows[19]->AddChild(b
 			->SetPadding(0.005)
-			->SetBorder(UIBox::E_ROUNDED, 0.25)
+			->SetBorder(UIBox::BorderType::Rounded, 0.25)
 			->AddChild(new UIText(0.4, 0, std::to_string(i + 1), UI::MonoText)));
 		PageButtons.push_back(b);
 	}
@@ -390,7 +390,7 @@ ModsTab::ModsTab()
 	CurrentModsTab = this;
 	Name = "Mods";
 
-	Background->Align = UIBox::E_CENTERED;
+	Background->BoxAlign = UIBox::Align::Centered;
 	Background->SetHorizontal(true);
 
 	ModsBackground = new UIBackground(false, 0, 0, Vector2f(1.2, 1.85));
@@ -400,14 +400,14 @@ ModsTab::ModsTab()
 		->AddChild((new UIBackground(true, 0, 1, Vector2f(1.2, 0.005)))
 			->SetPadding(0))
 		->SetPadding(0));
-	ModsBackground->Align = UIBox::E_REVERSE;
+	ModsBackground->BoxAlign = UIBox::Align::Reverse;
 
 	auto TitleBox = new UIBox(true, 0);
 	ModsBackground->AddChild(TitleBox);
 	TitleBox->SetPadding(0);
 	TitleBox->AddChild((new UIText(0.8, 1, "Mods", UI::Text))->SetPadding(0.01, 0.01, 0.01, 0.05));
 	ModsScrollBox = new UIScrollBox(false, 0, true);
-	ModsScrollBox->Align = UIBox::E_REVERSE;
+	ModsScrollBox->BoxAlign = UIBox::Align::Reverse;
 
 	ModsScrollBox->SetMinSize(Vector2f(1.15, 1.7));
 	ModsScrollBox->SetMaxSize(Vector2f(1.15, 1.7));
@@ -431,7 +431,7 @@ ModsTab::ModsTab()
 			});
 
 		TitleBox->AddChild(b
-			->SetBorder(UIBox::E_ROUNDED, 0.25)
+			->SetBorder(UIBox::BorderType::Rounded, 0.25)
 			->SetPadding(0, 0.025, 0.001, 0.001)
 			->AddChild(new UIText(0.3, 0, i.Name, UI::Text)));
 

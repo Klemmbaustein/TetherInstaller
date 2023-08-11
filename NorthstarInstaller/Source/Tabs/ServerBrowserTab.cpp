@@ -201,7 +201,7 @@ ServerBrowserTab::ServerBrowserTab()
 	CurrentServerTab = this;
 	Name = "Servers";
 
-	Background->Align = UIBox::E_CENTERED;
+	Background->BoxAlign = UIBox::Align::Centered;
 	Background->SetHorizontal(true);
 
 	ServerBackground = new UIBackground(false, 0, 0, Vector2f(1.5, 1.85));
@@ -211,7 +211,7 @@ ServerBrowserTab::ServerBrowserTab()
 		->AddChild((new UIBackground(true, 0, 1, Vector2f(1.5, 0.005)))
 			->SetPadding(0))
 		->SetPadding(0));
-	ServerBackground->Align = UIBox::E_REVERSE;
+	ServerBackground->BoxAlign = UIBox::Align::Reverse;
 	ServerBackground->AddChild(new UIText(0.8, 1, "Server browser", UI::Text));
 	
 	ServerBackground->AddChild((new UIBox(true, 0))
@@ -231,7 +231,7 @@ ServerBrowserTab::ServerBrowserTab()
 	ServerBackground->AddChild(ServerSearchBox);
 
 	ServerBox = new UIScrollBox(false, 0, true);
-	ServerBox->Align = UIBox::E_REVERSE;
+	ServerBox->BoxAlign = UIBox::Align::Reverse;
 	ServerBackground->AddChild(new UIBackground(true, 0, 1, Vector2f(1.46, 0.005)));
 	ServerBackground->AddChild((new UIText(0.25, 1, "Region     Name                                      Players", UI::MonoText))->SetPadding(0.05, 0, 0.02, 0.02));
 	ServerBackground->AddChild((new UIBox(true, 0))
@@ -241,7 +241,7 @@ ServerBrowserTab::ServerBrowserTab()
 			->SetMinSize(Vector2f(0.825, 1.4)))
 		->AddChild(ServerDescriptionBox
 			->SetMinSize(Vector2f(0.3, 1.4))));
-	ServerDescriptionBox->Align = UIBox::E_REVERSE;
+	ServerDescriptionBox->BoxAlign = UIBox::Align::Reverse;
 	new BackgroundTask(LoadServers, []() {CurrentServerTab->DisplayServers(); });
 }
 
@@ -256,7 +256,7 @@ void ServerBrowserTab::DisplayServers()
 	ServerListBox = new UIBox(false, 0);
 	ServerBox->AddChild(ServerListBox
 		->SetPadding(0));
-	ServerListBox->Align = UIBox::E_REVERSE;
+	ServerListBox->BoxAlign = UIBox::Align::Reverse;
 
 	std::string Filter = ServerSearchBox->GetText();
 	std::transform(Filter.begin(), Filter.end(), Filter.begin(),
@@ -420,7 +420,7 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 	ServerDescriptionBox->AddChild(new UIBackground(true, 0, 1, Vector2f(0.6, 0.005)));
 
 	auto MapDescr = new UIBox(false, 0);
-	MapDescr->Align = UIBox::E_REVERSE;
+	MapDescr->BoxAlign = UIBox::Align::Reverse;
 	MapDescr->SetPadding(0);
 	MapDescr->SetMinSize(9 * 0.025);
 
@@ -428,7 +428,7 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 	ServerDescriptionBox->AddChild((new UIBox(true, 0))
 		->AddChild((new UIBackground(true, 0, 1, Vector2f(16, 9) * 0.025))
 			->SetUseTexture(true, GetMapTexture(e.Map))
-			->SetSizeMode(UIBox::E_PIXEL_RELATIVE))
+			->SetSizeMode(UIBox::SizeMode::PixelRelative))
 		->AddChild(MapDescr
 			->AddChild((new UIText(0.5, 1, e.MapName, UI::Text))
 				->SetPadding(0, 0, 0.01, 0.01))
@@ -450,7 +450,7 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 				}
 			});
 			}))
-			->SetBorder(UIBox::E_ROUNDED, 0.5)
+			->SetBorder(UIBox::BorderType::Rounded, 0.5)
 			->AddChild(ServerDescriptionText)));
 
 	ServerDescriptionBox->AddChild(new UIText(0.5, 1, "Mods: ", UI::Text));

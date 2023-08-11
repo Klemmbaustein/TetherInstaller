@@ -4,7 +4,7 @@
 UITab::UITab()
 {
 	Background = new UIBox(false, Vector2f(-1, -1));
-	Background->Align = UIBox::E_REVERSE;
+	Background->BoxAlign = UIBox::Align::Reverse;
 	Background->SetMinSize(Vector2f(2, 1.8));
 	Background->SetMaxSize(Vector2f(2, 1.8));
 }

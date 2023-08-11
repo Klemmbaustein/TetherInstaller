@@ -13,4 +13,5 @@ namespace Window
 
 	PopupReply ShowPopupQuestion(std::string Title, std::string Message);
 	void ShowPopup(std::string Title, std::string Message);
+	void ShowPopupError(std::string Message);
 }
