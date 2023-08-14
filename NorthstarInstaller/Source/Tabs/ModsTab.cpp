@@ -108,10 +108,12 @@ void ModsTab::GenerateModInfo()
 				: (IsInstalled ? "Uninstall" : (Game::GamePath.empty() ? "Install (No game path!)" : "Install")),
 				UI::Text)));
 
-	bool IsEnabled = Thunderstore::GetModEnabled(Thunderstore::SelectedMod);
+	bool IsEnabled = false; 
 
 	if (IsInstalled)
 	{
+		IsEnabled = Thunderstore::GetModEnabled(Thunderstore::SelectedMod); 
+		
 		ModActionsBox->AddChild((new UIButton(true, 0, 1, []() {
 				Thunderstore::SetModEnabled(Thunderstore::SelectedMod, !Thunderstore::GetModEnabled(Thunderstore::SelectedMod));
 				CurrentModsTab->GenerateModInfo();

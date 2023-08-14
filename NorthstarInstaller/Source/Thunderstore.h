@@ -24,7 +24,7 @@ namespace Thunderstore
 		bool IsUnknownLocalMod = false;
 		bool IsNSFW = false;
 		bool IsTemporary = false;
-		bool IsPackage = false;
+		bool IsPackage = true;
 	};
 
 	bool IsMostRecentFileVersion(std::string VersionString);

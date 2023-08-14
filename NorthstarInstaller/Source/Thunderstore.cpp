@@ -610,16 +610,33 @@ void Thunderstore::SetModEnabled(Package m, bool IsEnabled)
 		in.close();
 		json EnabledMods = json::parse(str.str());
 
+
 		for (const auto& i : TargetMods)
 		{
 			if (EnabledMods.contains(i))
 			{
+				if (IsEnabled)
+				{
+					Log::Print("Enabled existing key: " + i);
+				}
+				else
+				{
+					Log::Print("Disabled existing key: " + i);
+				}
 				EnabledMods.at(i) = IsEnabled;
 			}
 			else
 			{
 				try
 				{
+					if (IsEnabled)
+					{
+						Log::Print("Enabled new key: " + i);
+					}
+					else
+					{
+						Log::Print("Disabled new key: " + i);
+					}
 					EnabledMods.update({ { i, IsEnabled } });
 				}
 				catch (std::exception& e)
@@ -859,6 +876,7 @@ namespace Thunderstore::TSModFunc
 
 			out << descr.dump();
 			out.close();
+			Thunderstore::SetModEnabled(m, true);
 		}
 		catch (std::exception& e)
 		{
@@ -909,13 +927,14 @@ std::vector<std::string> Thunderstore::GetLocalModNames(Package m)
 			}
 			catch (std::exception& e)
 			{
-				Log::Print("Error while parsing " + i + ": " + std::string(e.what()));
+				Log::Print("Error while parsing " + ModJson + ": " + std::string(e.what()));
 			}
 		}
 	}
+
 	return ModNames;
 }
-
+std::string ToLowerCase(std::string Target);
 std::vector<std::string> Thunderstore::GetLocalMods(Package m)
 {
 	using namespace nlohmann;
@@ -923,8 +942,22 @@ std::vector<std::string> Thunderstore::GetLocalMods(Package m)
 	try
 	{
 		std::vector<std::string> TargetMods;
+
 		auto InfoFile = "Data/var/modinfo/" + m.Namespace + "." + m.Name + ".json";
 		std::string TargetPackage = Game::GamePath + "/R2Northstar/packages/" + m.Author + "-" + m.Name + "-" + m.Version;
+
+		if (!std::filesystem::exists(TargetPackage))
+		{
+			for (auto& i : std::filesystem::directory_iterator(Game::GamePath + "/R2Northstar/packages"))
+			{
+				if (ToLowerCase(m.Name).find(ToLowerCase(i.path().string())) != std::string::npos
+					|| ToLowerCase(i.path().string()).find(ToLowerCase(m.Name)) != std::string::npos)
+				{
+					TargetPackage = i.path().string();
+				}
+			}
+		}
+
 		if (std::filesystem::exists(InfoFile))
 		{
 			std::ifstream in = std::ifstream(InfoFile);
@@ -936,32 +969,24 @@ std::vector<std::string> Thunderstore::GetLocalMods(Package m)
 
 			for (const auto& i : InfoJson.at("mod_files"))
 			{
-				TargetMods.push_back(Game::GamePath + "/R2Northstar" + i.get<std::string>());
-			}
-			return TargetMods;
-		}
-
-		if (m.IsPackage)
-		{
-			if (std::filesystem::exists(TargetPackage + "/mods"))
-			{
-				for (auto& i : std::filesystem::directory_iterator(TargetPackage + "/mods"))
+				if (i.get<std::string>().substr(0, 4) == "mods/")
 				{
-					TargetMods.push_back(i.path().string());
+					TargetMods.push_back(Game::GamePath + "/R2Northstar" + i.get<std::string>());
+				}
+				else
+				{
+					TargetPackage = Game::GamePath + "/R2Northstar" + i.get<std::string>();
 				}
 			}
-			else
-			{
-				throw 0;
-			}
 		}
-		else
+
+		if (!m.IsPackage)
 		{
 			std::vector<std::string> PossibleModPaths =
 			{
-				Game::GamePath + "/R2Northstar/mods" + m.Name,
-				Game::GamePath + "/R2Northstar/mods" + m.Namespace + "." + m.Name,
-				Game::GamePath + "/R2Northstar/mods" + m.Author + "." + m.Name
+				Game::GamePath + "/R2Northstar/mods/" + m.Name,
+				Game::GamePath + "/R2Northstar/mods/" + m.Namespace + "." + m.Name,
+				Game::GamePath + "/R2Northstar/mods/" + m.Author + "." + m.Name
 			};
 
 			for (const auto& i : PossibleModPaths)
@@ -972,6 +997,17 @@ std::vector<std::string> Thunderstore::GetLocalMods(Package m)
 				}
 			}
 		}
+		else
+		{
+			if (std::filesystem::exists(TargetPackage + "/mods"))
+			{
+				for (auto& i : std::filesystem::directory_iterator(TargetPackage + "/mods"))
+				{
+					TargetMods.push_back(i.path().string());
+				}
+			}
+
+		}		
 		return TargetMods;
 	}
 	catch (std::exception& e)

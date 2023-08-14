@@ -19,6 +19,7 @@
 #include "../WindowFunctions.h"
 #include "../Game.h"
 
+
 bool ServerBrowserTab::ShouldLaunchGame;
 ServerBrowserTab* ServerBrowserTab::CurrentServerTab = nullptr;
 std::vector<ServerBrowserTab::ServerEntry> ServerBrowserTab::Servers;
@@ -131,6 +132,10 @@ bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
 		BackgroundTask::SetProgress(Progress - 0.001);
 		if (Thunderstore::IsModInstalled(m))
 		{
+			if (m.Author != "Northstar")
+			{
+				Thunderstore::SetModEnabled(m, true);
+			}
 			continue;
 		}
 
