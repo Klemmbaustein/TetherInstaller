@@ -146,7 +146,7 @@ Thunderstore::InstalledModsResult Thunderstore::GetInstalledMods()
 		std::string ModName = i.path().filename().string();
 		std::string Author = ModName.substr(0, ModName.find_first_of("-"));
 		std::string Name = ModName.substr(ModName.find_first_of("-") + 1);
-		std::string Version = Name.substr(Name.find_last_of("-"));
+		std::string Version = Name.substr(Name.find_last_of("-") + 1);
 			
 		Name = Name.substr(0, Name.find_last_of("-"));
 
@@ -225,7 +225,7 @@ bool Thunderstore::IsModInstalled(Package m)
 				FoundMod.Namespace = FileName.substr(0, FileName.find_first_of("-"));
 				FoundMod.Author = m.Namespace;
 
-				FoundMod.Version = FoundMod.Name.substr(FoundMod.Name.find_last_of("-"));
+				FoundMod.Version = FoundMod.Name.substr(FoundMod.Name.find_last_of("-") + 1);
 
 				FoundMod.Name = FoundMod.Name.substr(0, FoundMod.Name.find_last_of("-"));
 
@@ -594,7 +594,14 @@ void Thunderstore::SetModEnabled(Package m, bool IsEnabled)
 
 	std::string EnabledModsJson = Game::GamePath + "/R2Northstar/enabledmods.json";
 
-	if (std::filesystem::exists(EnabledModsJson) && !std::filesystem::is_empty(EnabledModsJson))
+	if (std::filesystem::exists(EnabledModsJson) && std::filesystem::is_empty(EnabledModsJson))
+	{
+		std::ofstream out = std::ofstream(EnabledModsJson);
+		out << "{}";
+		out.close();
+	}
+
+	if (std::filesystem::exists(EnabledModsJson))
 	{
 		std::vector<std::string> TargetMods = GetLocalModNames(m);
 		std::ifstream in = std::ifstream(EnabledModsJson);
@@ -627,6 +634,7 @@ void Thunderstore::SetModEnabled(Package m, bool IsEnabled)
 		out << EnabledMods.dump();
 		out.close();
 	}
+
 }
 
 bool Thunderstore::GetModEnabled(Package m)
@@ -930,7 +938,7 @@ std::vector<std::string> Thunderstore::GetLocalMods(Package m)
 			{
 				TargetMods.push_back(Game::GamePath + "/R2Northstar" + i.get<std::string>());
 			}
-
+			return TargetMods;
 		}
 
 		if (m.IsPackage)
@@ -941,6 +949,10 @@ std::vector<std::string> Thunderstore::GetLocalMods(Package m)
 				{
 					TargetMods.push_back(i.path().string());
 				}
+			}
+			else
+			{
+				throw 0;
 			}
 		}
 		else
