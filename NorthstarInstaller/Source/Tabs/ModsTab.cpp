@@ -68,44 +68,14 @@ void ModsTab::GenerateModInfo()
 			+ " | Ratings: ???";
 	}
 
+	UIBox* ModActionsBox = new UIBox(true, 0);
+
 	ModsScrollBox->AddChild((new UIBox(true, 0))
 		->SetPadding(0)
 		->AddChild((new UIBox(false, 0))
 			->SetPadding(0)
 
-			->AddChild((new UIBox(true, 0))
-
-				->AddChild((new UIButton(true, 0, 1, []() {
-						if (Thunderstore::SelectedMod.IsUnknownLocalMod)
-						{
-							std::filesystem::remove_all(Thunderstore::SelectedMod.DownloadUrl);
-							Thunderstore::FoundMods = Thunderstore::GetInstalledMods().Combined();
-							Thunderstore::LoadedSelectedMod = true;
-							return;
-						}
-						new BackgroundTask([]() {
-							BackgroundTask::SetStatus("Installing mod");
-								Thunderstore::InstallOrUninstallMod(Thunderstore::SelectedMod, false, false);
-							},
-							[]() {
-								Thunderstore::LoadedSelectedMod = true;
-							});
-					}))
-					->SetPadding(0.01, 0.07, 0.01, 0.01)
-					->AddChild(new UIText(0.4, 0, 
-						(Thunderstore::IsInstallingMod) ?
-							"Installing..."
-							: (IsInstalled ? "Uninstall" : (Game::GamePath.empty() ? "Install (No game path!)" : "Install")),
-						UI::Text)))
-
-				->AddChild((new UIButton(true, 0, 1, []() {
-							system(("start https://northstar.thunderstore.io/package/"
-								+ Thunderstore::SelectedMod.Namespace
-								+ "/"
-								+ Thunderstore::SelectedMod.Name).c_str());
-					}))
-					->SetPadding(0.01, 0.07, 0.01, 0.01)
-					->AddChild(new UIText(0.4, 0, "Open In Browser", UI::Text))))
+			->AddChild(ModActionsBox)
 
 			->AddChild(new UIText(0.4, 1, DescriptionText, UI::Text))
 			->AddChild(new UIText(0.7, 1, Thunderstore::SelectedMod.Name + (IsInstalled ? " (Installed)" : ""), UI::Text)))
@@ -115,13 +85,57 @@ void ModsTab::GenerateModInfo()
 			->SetPadding(0.02, 0.02, 0.1, 0.02)
 			->SetSizeMode(UIBox::SizeMode::PixelRelative)));
 
+	ModActionsBox->AddChild((new UIButton(true, 0, 1, []() {
+		if (Thunderstore::SelectedMod.IsUnknownLocalMod)
+		{
+			std::filesystem::remove_all(Thunderstore::SelectedMod.DownloadUrl);
+			Thunderstore::FoundMods = Thunderstore::GetInstalledMods().Combined();
+			Thunderstore::LoadedSelectedMod = true;
+			return;
+		}
+		new BackgroundTask([]() {
+			BackgroundTask::SetStatus("Installing mod");
+			Thunderstore::InstallOrUninstallMod(Thunderstore::SelectedMod, false, false);
+			},
+			[]() {
+				Thunderstore::LoadedSelectedMod = true;
+			});
+		}))
+		->SetPadding(0.01, 0.07, 0.01, 0.01)
+			->AddChild(new UIText(0.4, 0,
+				(Thunderstore::IsInstallingMod) ?
+				"Installing..."
+				: (IsInstalled ? "Uninstall" : (Game::GamePath.empty() ? "Install (No game path!)" : "Install")),
+				UI::Text)));
 
+	bool IsEnabled = Thunderstore::GetModEnabled(Thunderstore::SelectedMod);
+
+	if (IsInstalled)
+	{
+		ModActionsBox->AddChild((new UIButton(true, 0, 1, []() {
+				Thunderstore::SetModEnabled(Thunderstore::SelectedMod, !Thunderstore::GetModEnabled(Thunderstore::SelectedMod));
+				CurrentModsTab->GenerateModInfo();
+			}))
+			->SetPadding(0.01, 0.07, 0.01, 0.01)
+				->AddChild(new UIText(0.4, 0, IsEnabled ? "Disable" : "Enable", UI::Text)));
+	}
+	else
+	{
+		ModActionsBox->AddChild((new UIButton(true, 0, 1, []() {
+			system(("start https://northstar.thunderstore.io/package/"
+				+ Thunderstore::SelectedMod.Namespace
+				+ "/"
+				+ Thunderstore::SelectedMod.Name).c_str());
+			}))
+			->SetPadding(0.01, 0.07, 0.01, 0.01)
+				->AddChild(new UIText(0.4, 0, "Open In Browser", UI::Text)));
+	}
 
 	ModsScrollBox->AddChild((new UIBackground(true, 0, 1, Vector2f(1.15, 0.005)))
 		->SetPadding(0, 0.05, 0, 0));
 	if (Thunderstore::SelectedMod.IsDeprecated)
 	{
-		ModsScrollBox->AddChild((new UIBackground(false, 0, Vector3f32(1, 0.5, 0), Vector2(1.15, 0.1)))
+		ModsScrollBox->AddChild((new UIBackground(false, 0, Vector3f32(1, 0.5, 0), Vector2f(1.15, 0.1)))
 			->SetBorder(UIBox::BorderType::DarkenedEdge, 0.2)
 			->AddChild((new UIText(0.3, 0, "Deprecated mods are no longer supported and might have issues.", UI::Text))
 				->SetPadding(0, 0.01, 0.01, 0.01))
@@ -130,9 +144,29 @@ void ModsTab::GenerateModInfo()
 			->SetPadding(0.0, 0.03, 0, 0));
 	}
 
+	if (IsInstalled)
+	{
+		if (IsEnabled)
+		{
+			ModsScrollBox->AddChild((new UIBackground(false, 0, Vector3f32(0, 1, 0.5), Vector2f(1.15, 0)))
+				->SetBorder(UIBox::BorderType::DarkenedEdge, 0.2)
+				->AddChild((new UIText(0.3, 0, "This mod is enabled.", UI::Text))
+					->SetPadding(0.005, 0.005, 0.01, 0.01))
+				->SetPadding(0.0, 0.03, 0, 0));
+		}
+		else
+		{
+			ModsScrollBox->AddChild((new UIBackground(false, 0, Vector3f32(1, 0.5, 0), Vector2f(1.15, 0)))
+				->SetBorder(UIBox::BorderType::DarkenedEdge, 0.2)
+				->AddChild((new UIText(0.3, 0, "This mod is disabled.", UI::Text))
+					->SetPadding(0.005, 0.005, 0.01, 0.01))
+				->SetPadding(0.0, 0.03, 0, 0));
+		}
+	}
+
 	if (Thunderstore::SelectedMod.Name == "NorthstarReleaseCandidate")
 	{
-		ModsScrollBox->AddChild((new UIBackground(false, 0, Vector3f32(0, 0.5, 1), Vector2(1.15, 0.1)))
+		ModsScrollBox->AddChild((new UIBackground(false, 0, Vector3f32(0, 0.5, 1), Vector2f(1.15, 0.1)))
 			->SetBorder(UIBox::BorderType::DarkenedEdge, 0.2)
 			->AddChild((new UIBox(true, 0))
 				->SetPadding(0)

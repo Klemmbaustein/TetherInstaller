@@ -10,6 +10,7 @@
 #include "BackgroundTask.h"
 #include "Networking.h"
 #include "Tabs/ModsTab.h"
+#include "WindowFunctions.h"
 
 constexpr const char* MOD_DESCRIPTOR_FILE_FORMAT_VERSION = "v3";
 
@@ -77,6 +78,7 @@ Thunderstore::InstalledModsResult Thunderstore::GetInstalledMods()
 				p.UUID = modinfo.at("UUID");
 				p.FileVersion = modinfo.at("file_format_version");
 				p.IsTemporary = modinfo.at("is_temporary");
+				p.IsPackage = INSTALL_AS_PACKAGES;
 			}
 			catch (std::exception& e)
 			{
@@ -132,6 +134,7 @@ Thunderstore::InstalledModsResult Thunderstore::GetInstalledMods()
 			p.Author = Author;
 			p.Namespace = Author;
 			p.Version = "?";
+			p.IsPackage = false;
 			p.IsUnknownLocalMod = true;
 			p.DownloadUrl = i.path().string();
 			UnmanagedMods.push_back(p);
@@ -158,6 +161,7 @@ Thunderstore::InstalledModsResult Thunderstore::GetInstalledMods()
 			p.Author = Author;
 			p.Description = MarkdownStream.str();
 			p.Namespace = Author;
+			p.IsPackage = true;
 			p.Version = Version;
 			p.IsUnknownLocalMod = true;
 			p.DownloadUrl = i.path().string();
@@ -584,6 +588,74 @@ namespace Thunderstore::TSGetModInfoFunc
 	}
 }
 
+void Thunderstore::SetModEnabled(Package m, bool IsEnabled)
+{
+	using namespace nlohmann;
+
+	std::string EnabledModsJson = Game::GamePath + "/R2Northstar/enabledmods.json";
+
+	if (std::filesystem::exists(EnabledModsJson) && !std::filesystem::is_empty(EnabledModsJson))
+	{
+		std::vector<std::string> TargetMods = GetLocalModNames(m);
+		std::ifstream in = std::ifstream(EnabledModsJson);
+		std::stringstream str;
+		str << in.rdbuf();
+		in.close();
+		json EnabledMods = json::parse(str.str());
+
+		for (const auto& i : TargetMods)
+		{
+			if (EnabledMods.contains(i))
+			{
+				EnabledMods.at(i) = IsEnabled;
+			}
+			else
+			{
+				try
+				{
+					EnabledMods.update({ { i, IsEnabled } });
+				}
+				catch (std::exception& e)
+				{
+					Log::Print(e.what());
+				}
+
+			}
+		}
+
+		std::ofstream out = std::ofstream(EnabledModsJson);
+		out << EnabledMods.dump();
+		out.close();
+	}
+}
+
+bool Thunderstore::GetModEnabled(Package m)
+{
+	using namespace nlohmann;
+	std::string EnabledModsJson = Game::GamePath + "/R2Northstar/enabledmods.json";
+
+	if (std::filesystem::exists(EnabledModsJson) && !std::filesystem::is_empty(EnabledModsJson))
+	{
+		bool AllModsEnabled = true;
+		std::vector<std::string> TargetMods = GetLocalModNames(m);
+		std::ifstream in = std::ifstream(EnabledModsJson);
+		std::stringstream str;
+		str << in.rdbuf();
+		in.close();
+		json EnabledMods = json::parse(str.str());
+
+		for (const auto& i : TargetMods)
+		{
+			if (EnabledMods.contains(i) && !EnabledMods.at(i))
+			{
+				AllModsEnabled = false;
+			}
+		}
+		return AllModsEnabled;
+	}
+	return false;
+}
+
 void Thunderstore::GetModInfo(Package m, bool Async)
 {
 	TSGetModInfoFunc::m = m;
@@ -805,3 +877,95 @@ void Thunderstore::InstallOrUninstallMod(Package m, bool IsTemporary, bool Async
 		TSModFunc::InstallOrUninstallMod();
 	}
 }
+
+std::vector<std::string> Thunderstore::GetLocalModNames(Package m)
+{
+	using namespace nlohmann;
+
+	auto Mods = GetLocalMods(m);
+
+	std::vector<std::string> ModNames;
+	for (auto& i : Mods)
+	{
+		std::string ModJson = i + "/mod.json";
+		if (std::filesystem::exists(ModJson))
+		{
+			try
+			{
+				std::ifstream in = std::ifstream(ModJson);
+				std::stringstream str;
+				str << in.rdbuf();
+				json InfoJson = json::parse(str.str());
+				in.close();
+				ModNames.push_back(InfoJson.at("Name"));
+			}
+			catch (std::exception& e)
+			{
+				Log::Print("Error while parsing " + i + ": " + std::string(e.what()));
+			}
+		}
+	}
+	return ModNames;
+}
+
+std::vector<std::string> Thunderstore::GetLocalMods(Package m)
+{
+	using namespace nlohmann;
+	// Mh yes, packages made everything so much easier.
+	try
+	{
+		std::vector<std::string> TargetMods;
+		auto InfoFile = "Data/var/modinfo/" + m.Namespace + "." + m.Name + ".json";
+		std::string TargetPackage = Game::GamePath + "/R2Northstar/packages/" + m.Author + "-" + m.Name + "-" + m.Version;
+		if (std::filesystem::exists(InfoFile))
+		{
+			std::ifstream in = std::ifstream(InfoFile);
+			std::stringstream str;
+			str << in.rdbuf();
+			json InfoJson = json::parse(str.str());
+			in.close();
+
+
+			for (const auto& i : InfoJson.at("mod_files"))
+			{
+				TargetMods.push_back(Game::GamePath + "/R2Northstar" + i.get<std::string>());
+			}
+
+		}
+
+		if (m.IsPackage)
+		{
+			if (std::filesystem::exists(TargetPackage + "/mods"))
+			{
+				for (auto& i : std::filesystem::directory_iterator(TargetPackage + "/mods"))
+				{
+					TargetMods.push_back(i.path().string());
+				}
+			}
+		}
+		else
+		{
+			std::vector<std::string> PossibleModPaths =
+			{
+				Game::GamePath + "/R2Northstar/mods" + m.Name,
+				Game::GamePath + "/R2Northstar/mods" + m.Namespace + "." + m.Name,
+				Game::GamePath + "/R2Northstar/mods" + m.Author + "." + m.Name
+			};
+
+			for (const auto& i : PossibleModPaths)
+			{
+				if (std::filesystem::exists(i))
+				{
+					TargetMods = { i };
+				}
+			}
+		}
+		return TargetMods;
+	}
+	catch (std::exception& e)
+	{
+		Log::Print(e.what());
+		return std::vector<std::string>();
+	}
+}
+
