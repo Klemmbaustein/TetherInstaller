@@ -207,7 +207,6 @@ void Installer::GenerateWindowButtons()
 {
 	std::vector<int> Buttons;
 	if (Application::GetFullScreen())
-	if (Application::GetFullScreen())
 	{
 		Buttons = { 0, 2, 3 };
 	}
