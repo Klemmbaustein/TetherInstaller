@@ -384,7 +384,7 @@ int main(int argc, char** argv)
 		else if (BackgroundFade < 1)
 		{
 			TaskProgressBar->SetMinSize(Vector2f(0.5, 0.05));
-			BackgroundFade += Application::DeltaTime;
+			BackgroundFade += Application::DeltaTime * 2;
 			TaskProgressBar->SetOpacity(1 - BackgroundFade);
 			TaskProgressBar->IsVisible = true;
 			TaskNameText->SetText(BackgroundTask::CurrentTaskStatus);
