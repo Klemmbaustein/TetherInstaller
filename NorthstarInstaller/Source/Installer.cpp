@@ -79,11 +79,11 @@ namespace Installer
 				});
 			Button->BoxAlign = UIBox::Align::Centered;
 			TabBackground->AddChild(Button
-				->SetBorder(UIBox::BorderType::Rounded, 0.5)
-				->SetPadding(0.02)
 				->SetSizeMode(UIBox::SizeMode::PixelRelative)
 				->SetMinSize(Vector2f(0.4, 0))
-				->AddChild(new UIText(0.6, 0, Tabs[i]->Name, UI::Text)));
+				->SetPadding(0.01, 0.01, 0.01, 0)
+				->AddChild((new UIText(0.5, 0, Tabs[i]->Name, UI::Text))
+					->SetPadding(0.025, 0.025, 0, 0)));
 			TabButtons.push_back(Button);
 		}
 	}
@@ -117,8 +117,8 @@ namespace Installer
 		
 		if (Latest.empty())
 		{
-			Log::Print("Could not get latest game version",  Log::Error);
-			BackgroundTask::SetStatus("Could not get latest game version");
+			Log::Print("Could not get the latest game version",  Log::Error);
+			BackgroundTask::SetStatus("Could not get the latest game version");
 			BackgroundTask::SetProgress(1);
 			if (!UpdateCheckedOnce)
 			{
@@ -126,7 +126,7 @@ namespace Installer
 			}
 			else
 			{
-				Window::ShowPopup("Northstar update", "Could not get latest game version.");
+				Window::ShowPopupError("Could not get the latest game version. Possible rate limit.");
 			}
 			return;
 		}
@@ -198,7 +198,7 @@ namespace Installer
 		Networking::DownloadLatestReleaseOf("Klemmbaustein/TetherInstaller");
 		Networking::ExtractZip("Data/temp/net/latest.zip", "Data/temp/install");
 
-		//system("start update.bat");
+		system("start update.bat");
 		exit(0);
 	}
 }
@@ -206,6 +206,7 @@ namespace Installer
 void Installer::GenerateWindowButtons()
 {
 	std::vector<int> Buttons;
+	if (Application::GetFullScreen())
 	if (Application::GetFullScreen())
 	{
 		Buttons = { 0, 2, 3 };
@@ -261,7 +262,7 @@ int main(int argc, char** argv)
 
 	Application::SetErrorMessageCallback([](std::string Message)
 		{
-			Window::ShowPopupError(Message);
+			Window::ShowPopupError("-- Internal UI Error --\n\n" + Message);
 		});
 	Application::Initialize("Tether installer " + Installer::InstallerVersion, Application::BORDERLESS_BIT);
 	Application::SetWindowMovableCallback([]() 
@@ -273,12 +274,19 @@ int main(int argc, char** argv)
 		});
 	Log::Print("Created app window");
 
-	TabStyles[0]->Color = Vector3f32(0.8f);
-	TabStyles[0]->HoveredColor = Vector3f32(0.6f, 0.7f, 0.8f);
-	TabStyles[0]->PressedColor = Vector3f32(0.2f, 0.4f, 1.0f);
-	TabStyles[1]->Color = Vector3f32(0.2f, 0.4f, 1.0f);
-	TabStyles[1]->HoveredColor = Vector3f32(0.2f, 0.4f, 1.0f);
-	TabStyles[1]->PressedColor = Vector3f32(0.2f, 0.4f, 1.0f);
+	TabStyles[0]->Color			= Vector3f32(1.0f, 1.0f, 1.0f);
+	TabStyles[0]->HoveredColor	= Vector3f32(0.6f, 0.7f, 1.0f);
+	TabStyles[0]->PressedColor	= Vector3f32(0.3f, 0.5f, 1.0f);
+	TabStyles[0]->SetPadding(0.005);
+	TabStyles[0]->Border = UIBox::BorderType::Rounded;
+	TabStyles[0]->BorderSize = 0.4;
+
+	TabStyles[1]->Color			= Vector3f32(0.3f, 0.5f, 1.0f);
+	TabStyles[1]->HoveredColor	= Vector3f32(0.3f, 0.5f, 1.0f);
+	TabStyles[1]->PressedColor	= Vector3f32(0.3f, 0.5f, 1.0f);
+	TabStyles[1]->SetPadding(0.005);
+	TabStyles[1]->Border = UIBox::BorderType::Rounded;
+	TabStyles[1]->BorderSize = 0.4;
 
 	UI::LoadFonts();
 
@@ -301,7 +309,6 @@ int main(int argc, char** argv)
 		}
 	}
 	Vector2f bgCenter = Vector2f(-0.3, 0);
-
 	auto bg = new UIBackground(true, 0, 1, Vector2f(2.5 * (16.f/9.f), 2.5));
 	bg->SetSizeMode(UIBox::SizeMode::PixelRelative);
 	bg->SetUseTexture(true, Texture::LoadTexture("Data/Game.png"));

@@ -91,7 +91,10 @@ bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
 
 	BackgroundTask::SetStatus("Loading required mods");
 
-	Networking::Download("https://thunderstore.io/c/northstar/api/v1/package/", "Data/temp/net/allmods.json", "User-Agent: " + Installer::UserAgent);
+	Networking::Download(
+		"https://thunderstore.io/c/northstar/api/v1/package/",
+		"Data/temp/net/allmods.json",
+		"User-Agent: " + Installer::UserAgent);
 
 	json Response = json::parse(GetFile("Data/temp/net/allmods.json"));
 
@@ -233,7 +236,12 @@ ServerBrowserTab::ServerBrowserTab()
 	ServerBox = new UIScrollBox(false, 0, true);
 	ServerBox->BoxAlign = UIBox::Align::Reverse;
 	ServerBackground->AddChild(new UIBackground(true, 0, 1, Vector2f(1.46, 0.005)));
-	ServerBackground->AddChild((new UIText(0.25, 1, "Region     Name                                      Players", UI::MonoText))->SetPadding(0.05, 0, 0.02, 0.02));
+	ServerBackground->AddChild((new UIText(0.25,
+		1,
+		"Region     Name                                      Players",
+		UI::MonoText))
+		->SetPadding(0.05, 0, 0.02, 0.02));
+
 	ServerBackground->AddChild((new UIBox(true, 0))
 		->SetPadding(0)
 		->AddChild(ServerBox
@@ -329,24 +337,26 @@ void ServerBrowserTab::DisplayServers()
 		std::string PlayerCount = std::to_string(i.PlayerCount) + "/" + std::to_string(i.MaxPlayerCount);
 		PlayerCount.resize(7, ' ');
 
-		UIButton* b = new UIButton(true, 0, 1, []() {
+		UIButton* b = new UIButton(true, 0, Installer::TabStyles[0], []() {
 			for (size_t i = 0; i < CurrentServerTab->ServerBrowserButtons.size(); i++)
 			{
 				if (CurrentServerTab->ServerBrowserButtons[i]->IsBeingHovered())
 				{
-					CurrentServerTab->ServerBrowserButtons[i]->SetColor(Vector3f32(0.5, 0.6, 1));
+					Installer::TabStyles[1]->ApplyTo(CurrentServerTab->ServerBrowserButtons[i]);
+					CurrentServerTab->ServerBrowserButtons[i]->SetMinSize(Vector2f(0.8, 0));
 					CurrentServerTab->DisplayServerDescription(CurrentServerTab->DisplayedServerEntries[i]);
 				}
 				else
 				{
-					CurrentServerTab->ServerBrowserButtons[i]->SetColor(1);
+					Installer::TabStyles[0]->ApplyTo(CurrentServerTab->ServerBrowserButtons[i]);
+					CurrentServerTab->ServerBrowserButtons[i]->SetMinSize(Vector2f(0.8, 0));
 				}
 			}
 			});
 
 		ServerListBox->AddChild(b
-			->SetPadding(0.005)
 			->SetMinSize(Vector2f(0.8, 0))
+			->SetPadding(0.005)
 			->AddChild((new UIText(0.25, { 
 				TextSegment(Region, 0.25),
 				TextSegment(" " + Name + "  ", 0),
