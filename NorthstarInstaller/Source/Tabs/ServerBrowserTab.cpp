@@ -18,13 +18,15 @@
 #include "../Thunderstore.h"
 #include "../WindowFunctions.h"
 #include "../Game.h"
+#include "ProfileTab.h"
 
 
 bool ServerBrowserTab::ShouldLaunchGame;
 ServerBrowserTab* ServerBrowserTab::CurrentServerTab = nullptr;
 std::vector<ServerBrowserTab::ServerEntry> ServerBrowserTab::Servers;
 constexpr unsigned int MaxServerNameSize = 40;
-const std::map<std::string, std::string> KNOWN_GAMEMODES = {
+const std::map<std::string, std::string> KNOWN_GAMEMODES = 
+{
 	std::pair("private_match", "Private Match"),
 	std::pair("aitdm" , "Attrition"),
 	std::pair("at" , "Bounty Hunt"),
@@ -86,6 +88,12 @@ std::string ToLowerCase(std::string Target)
 	return Target;
 }
 
+std::string RemoveSpaces(std::string Target)
+{
+	Target.erase(remove(Target.begin(), Target.end(), ' '), Target.end());
+	return Target;
+}
+
 bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
 {
 	using namespace nlohmann;
@@ -102,12 +110,12 @@ bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
 	std::vector<ServerBrowserTab::ServerEntry::ServerMod> FailedMods;
 
 
-	if (std::filesystem::exists(Game::GamePath + "/R2Northstar/mods/autojoin"))
+	if (std::filesystem::exists(ProfileTab::CurrentProfile.Path + "/mods/autojoin"))
 	{
-		std::filesystem::remove_all(Game::GamePath + "/R2Northstar/mods/autojoin");
+		std::filesystem::remove_all(ProfileTab::CurrentProfile.Path + "/mods/autojoin");
 	}
 
-	std::filesystem::copy("Data/autojoin", Game::GamePath + "/R2Northstar/mods/autojoin",
+	std::filesystem::copy("Data/autojoin", ProfileTab::CurrentProfile.Path + "/mods/autojoin",
 		std::filesystem::copy_options::recursive);
 
 	float Progress = 0;
@@ -138,18 +146,27 @@ bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
 			}
 			continue;
 		}
-
-
+		
+		Thunderstore::Package ClosestMod;
+		size_t ClosestModScore = SIZE_MAX;
+		size_t Age = 0;
 		for (auto& item : Response)
 		{
-			if (ToLowerCase(m.Name).find(ToLowerCase(item.at("name"))) != std::string::npos
-				|| ToLowerCase(item.at("name")).find(ToLowerCase(m.Name)) != std::string::npos)
+			if (RemoveSpaces(ToLowerCase(m.Name)).find(RemoveSpaces(ToLowerCase(item.at("name")))) != std::string::npos
+				|| RemoveSpaces(ToLowerCase(item.at("name"))).find(RemoveSpaces(ToLowerCase(m.Name))) != std::string::npos)
 			{
 				if (item.at("is_deprecated"))
 				{
 					continue;
 				}
 
+				size_t NewScore = std::llabs(m.Name.size() - item.at("name").get<std::string>().size()) + Age++;
+				
+				if (ClosestModScore <= NewScore)
+				{
+					continue;
+				}
+				ClosestModScore = NewScore;
 				m.Author = item.at("owner");
 				m.Namespace = item.at("owner");
 				m.Name = item.at("name");
@@ -157,15 +174,19 @@ bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
 				m.Version = item.at("versions")[0].at("version_number");
 				m.DownloadUrl = item.at("versions")[0].at("download_url");
 
-				LOG_PRINTF("Need to install mod {}.{} with UUID of {}",
+				LOG_PRINTF("Found possible canidate: {}.{} with UUID of {}. Score: {}.",
 					item.at("owner").get<std::string>(), 
 					item.at("name").get<std::string>(), 
-					item.at("uuid4").get<std::string>());
-
-				BackgroundTask::SetStatus("Installing " + m.Name);
-				Thunderstore::InstallOrUninstallMod(m, true, false);
-				HasInstalledMod = true;
+					item.at("uuid4").get<std::string>(),
+					NewScore);
 			}
+
+		}
+		if (ClosestModScore != SIZE_MAX)
+		{
+			BackgroundTask::SetStatus("Installing " + m.Name);
+			Thunderstore::InstallOrUninstallMod(m, true, false);
+			HasInstalledMod = true;
 		}
 		if (!HasInstalledMod)
 		{
@@ -460,7 +481,9 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 				ServerBrowserTab::CurrentServerTab->DisplayServerDescription(ServerBrowserTab::CurrentServerTab->SelectedServer);
 				if (ServerBrowserTab::ShouldLaunchGame) 
 				{ 
-					LOG_PRINTF("Joining server \"{}\" (id: {})");
+					LOG_PRINTF("Joining server \"{}\" (id: {})",
+						ServerBrowserTab::CurrentServerTab->SelectedServer.Name,
+						ServerBrowserTab::CurrentServerTab->SelectedServer.ServerID);
 					LaunchTab::LaunchNorthstar("+AutoJoinServer " + ServerBrowserTab::CurrentServerTab->SelectedServer.ServerID); 
 				}
 			});

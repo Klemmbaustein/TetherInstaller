@@ -17,6 +17,7 @@
 #include "Tabs/LaunchTab.h"
 #include "Tabs/SettingsTab.h"
 #include "Tabs/ModsTab.h"
+#include "Tabs/ProfileTab.h"
 #include "Tabs/ServerBrowserTab.h"
 
 /*
@@ -80,7 +81,7 @@ namespace Installer
 			Button->BoxAlign = UIBox::Align::Centered;
 			TabBackground->AddChild(Button
 				->SetSizeMode(UIBox::SizeMode::PixelRelative)
-				->SetMinSize(Vector2f(0.4, 0))
+				->SetMinSize(Vector2f(0.3, 0))
 				->SetPadding(0.01, 0.01, 0.01, 0)
 				->AddChild((new UIText(0.5, 0, Tabs[i]->Name, UI::Text))
 					->SetPadding(0.025, 0.025, 0, 0)));
@@ -333,6 +334,7 @@ int main(int argc, char** argv)
 		new LaunchTab(),
 		new ServerBrowserTab(),
 		new ModsTab(),
+		new ProfileTab(),
 		new SettingsTab(),
 	};
 
@@ -349,9 +351,9 @@ int main(int argc, char** argv)
 	Log::Print("Loading tab bar...");
 	GenerateTabs();
 
-	if (std::filesystem::exists(Game::GamePath + "R2Northstar/mods/autojoin"))
+	if (std::filesystem::exists(ProfileTab::CurrentProfile.Path + "/mods/autojoin"))
 	{
-		std::filesystem::remove_all(Game::GamePath + "R2Northstar/mods/autojoin");
+		std::filesystem::remove_all(ProfileTab::CurrentProfile.Path + "/mods/autojoin");
 	}
 
 	Log::Print("Successfully started launcher");

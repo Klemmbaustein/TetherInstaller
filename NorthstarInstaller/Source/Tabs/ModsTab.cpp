@@ -241,7 +241,7 @@ void ModsTab::GenerateModPage()
 	for (const auto& i : Thunderstore::FoundMods)
 	{
 		bool UseTexture = std::filesystem::exists(i.Img) && !i.IsNSFW;
-		UIBackground* Image = new UIBackground(false, 0, 1, Vector2(0.25));
+		UIBackground* Image = new UIBackground(false, 0, 1, Vector2f(0.25));
 		UIButton* b = new UIButton(false, 0, 1, []() {
 			for (size_t i = 0; i < ModButtons.size(); i++)
 			{
@@ -261,6 +261,13 @@ void ModsTab::GenerateModPage()
 				}
 			}
 			});
+
+		if (Thunderstore::SelectedOrdering == Thunderstore::Ordering::Installed && !Thunderstore::GetModEnabled(i))
+		{
+			b->SetColor(Vector3f32(1, 0.75, 0));
+			b->SetHoveredColor(Vector3f32(1, 0.75, 0) * 0.75f);
+			b->SetPressedColor(Vector3f32(1, 0.75, 0) * 0.5f);
+		}
 
 		b->SetMinSize(Vector2f(0, 0.34));
 		b->SetMaxSize(Vector2f(1, 0.34));
@@ -331,6 +338,12 @@ void ModsTab::ShowLoadingText()
 	UpdateClickedCategoryButton();
 }
 
+void ModsTab::Reload()
+{
+	CurrentModsTab->ShowLoadingText();
+	CurrentModsTab->LoadedModList = false;
+}
+
 void ModsTab::UpdateClickedCategoryButton()
 {
 	for (size_t i = 0; i < CategoryButtons.size(); i++)
@@ -378,17 +391,25 @@ void ModsTab::CheckForModUpdates()
 	size_t it = 0;
 	for (const auto& m : Mods)
 	{
-		Networking::Download("https://thunderstore.io/api/experimental/frontend/c/northstar/p/" + m.Namespace + "/" + m.Name, "Data/temp/net/mod.txt", "");
+		if (m.UUID.empty())
+		{
+			Thunderstore::InstallOrUninstallMod(m, false, false);
+			continue;
+		}
+		Networking::Download("https://thunderstore.io/c/northstar/api/v1/package/" + m.UUID,
+			"Data/temp/net/mod.json",
+			"UserAgent: " + Installer::UserAgent);
 		float Progress = 0;
 		try
 		{
-			std::ifstream in = std::ifstream("Data/temp/net/mod.txt");
+			std::ifstream in = std::ifstream("Data/temp/net/mod.json");
 			std::stringstream str; str << in.rdbuf();
 			json response = json::parse(str.str());
 			if (m.Version != response.at("versions")[0].at("version_number") || !Thunderstore::IsMostRecentFileVersion(m.FileVersion))
 			{
 				Log::Print("Mod '" + m.Name + "' is outdated!", Log::Warning);
 				Log::Print(response.at("versions")[0].at("version_number").get<std::string>() + " != " + m.Version, Log::Warning);
+
 				// Uninstall mod, then install mod again.
 				Thunderstore::Package NewMod = m;
 				NewMod.DownloadUrl = response.at("download_url");
@@ -412,8 +433,17 @@ void ModsTab::CheckForModUpdates()
 			Log::Print(e.what(), Log::Error);
 
 			Log::Print("Writing response to Data/temp/invalidresponse.txt", Log::Error);
-			std::filesystem::copy("Data/temp/net/mod.txt", "Data/temp/invalidresponse.txt");
+			if (std::filesystem::exists("Data/temp/net/mod.json"))
+			{
+				if (std::filesystem::exists("Data/temp/invalidresponse.txt"))
+				{
+					std::filesystem::remove("Data/temp/invalidresponse.txt");
+				}
+				std::filesystem::copy("Data/temp/net/mod.json", "Data/temp/invalidresponse.txt");
+			}
 		}
+		std::filesystem::remove("Data/temp/net/mod.json");
+
 		Progress += (float)it / (float)Mods.size();
 		BackgroundTask::SetProgress(std::min(0.95f, Progress));
 		it++;

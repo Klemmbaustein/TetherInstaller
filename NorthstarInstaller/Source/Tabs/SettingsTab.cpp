@@ -15,6 +15,7 @@
 #include "../Installer.h"
 #include "../BackgroundTask.h"
 #include "../WindowFunctions.h"
+#include "ProfileTab.h"
 
 SettingsTab* SettingsTab::CurrentSettingsTab = nullptr;
 SettingsTab::SettingsTab()
@@ -49,16 +50,15 @@ void DeleteAllMods()
 		"Northstar.CustomServers",
 		"Northstar.Custom",
 		"Northstar.Client",
-		"Northstar.Coop", // soooooon�
-
+		"Northstar.Coop", // soooooon
 	};
 
-	for (const auto& m : std::filesystem::directory_iterator(Game::GamePath + "/R2Northstar/mods/"))
+	for (const auto& m : std::filesystem::directory_iterator(ProfileTab::CurrentProfile.Path + "/mods/"))
 	{
-		if (CoreModNames.find(m.path().filename().string()) == CoreModNames.end() && std::filesystem::is_directory(m))
+		if (CoreModNames.find(m.path().filename().u8string()) == CoreModNames.end() && std::filesystem::is_directory(m))
 		{
 			std::filesystem::remove_all(m);
-			Log::Print("Removing mod: " + m.path().filename().string(),  Log::Warning);
+			Log::Print("Removing mod: " + m.path().filename().u8string(),  Log::Warning);
 		}
 	}
 	std::filesystem::remove_all("Data/var/modinfo");
@@ -124,23 +124,38 @@ void SettingsTab::GenerateSettings()
 
 		SettingsBox->AddChild((new UIButton(true, 0, 1, []() 
 			{
-			system(("cd " + Game::GamePath + "\\R2Northstar\\logs && explorer .").c_str());
+				if (!std::filesystem::exists(ProfileTab::CurrentProfile.Path + "/logs"))
+				{
+					Window::ShowPopupError("Log folder does not exist.");
+					return;
+				}
+				system(("cd " + ProfileTab::CurrentProfile.Path + "\\logs && explorer .").c_str());
 			}))
 			->AddChild(new UIText(0.35, 0, "Open log folder", UI::Text)));
 
 		SettingsBox->AddChild((new UIButton(true, 0, 1, []() 
 			{
-				std::filesystem::directory_entry LatestLog;
-				for (auto& i : std::filesystem::directory_iterator(Game::GamePath + "\\R2Northstar\\logs"))
+				if (!std::filesystem::exists(ProfileTab::CurrentProfile.Path + "/logs"))
 				{
-					if (i.path().extension().string() == ".txt"
+					Window::ShowPopupError("Log folder does not exist.");
+					return;
+				}
+				std::filesystem::directory_entry LatestLog;
+				for (auto& i : std::filesystem::directory_iterator(ProfileTab::CurrentProfile.Path + "/logs"))
+				{
+					if (i.path().extension().u8string() == ".txt"
 						&& (!LatestLog.exists() 
 							|| i.last_write_time() > LatestLog.last_write_time()))
 					{
 						LatestLog = i;
 					}
 				}
-				system(("start \"\" \"" + LatestLog.path().string() + "\"").c_str());
+				if (!std::filesystem::exists(LatestLog))
+				{
+					Window::ShowPopupError("Could not find a log file.");
+					return;
+				}
+				system(("start \"\" \"" + LatestLog.path().u8string() + "\"").c_str());
 			}))
 			->AddChild(new UIText(0.35, 0, "View latest log", UI::Text)));
 

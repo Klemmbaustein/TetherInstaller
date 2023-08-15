@@ -1,4 +1,5 @@
 #include "LaunchTab.h"
+#include "ProfileTab.h"
 #include <KlemmUI/UI/UIText.h>
 #include <KlemmUI/UI/UIBackground.h>
 
@@ -25,7 +26,13 @@ void NorthstarLaunchTask()
 
 	std::string UTF8GameDir = std::regex_replace(Game::GamePath, std::regex(" "), "^ ");
 
-	system((UTF8GameDir + "/NorthstarLauncher.exe " + NorthstarLaunchArgs + " " + Game::GetLaunchArgs()).c_str());
+	system((UTF8GameDir + "/NorthstarLauncher.exe "
+		+ "-profile=\""
+		+ ProfileTab::CurrentProfile.Path 
+		+ "\"" 
+		+ NorthstarLaunchArgs 
+		+ " " 
+		+ Game::GetLaunchArgs()).c_str());
 	Log::Print("Game has finished running");
 	ModsTab::CheckForModUpdates();
 }

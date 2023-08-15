@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-// #include <format>
+#include <version>
 
 namespace Log
 {
@@ -16,4 +16,10 @@ namespace Log
 
 	void Print(std::string Message, Severity Type = Info);
 }
+
+#if __cpp_lib_format >= 202207L
+#include <format>
+#define LOG_PRINTF(msg, ...) Log::Print(std::format(msg, __VA_ARGS__))
+#else
 #define LOG_PRINTF(msg, ...) Log::Print(msg)
+#endif

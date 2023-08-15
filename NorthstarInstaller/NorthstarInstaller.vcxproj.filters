@@ -43,6 +43,9 @@
     <ClCompile Include="Source\miniz\miniz.cpp">
       <Filter>Dependencies</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Tabs\ProfileTab.cpp">
+      <Filter>Source\Tabs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -100,6 +103,9 @@
     </ClInclude>
     <ClInclude Include="Source\miniz\miniz.h">
       <Filter>Dependencies</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Tabs\ProfileTab.h">
+      <Filter>Source\Tabs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

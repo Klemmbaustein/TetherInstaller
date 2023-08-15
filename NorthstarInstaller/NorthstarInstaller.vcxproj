@@ -72,6 +72,8 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <AdditionalOptions>/Zc:char8_t- %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -91,6 +93,8 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <AdditionalOptions>/Zc:char8_t- %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -109,6 +113,7 @@
     <ClCompile Include="Source\Networking.cpp" />
     <ClCompile Include="Source\Tabs\LaunchTab.cpp" />
     <ClCompile Include="Source\Tabs\ModsTab.cpp" />
+    <ClCompile Include="Source\Tabs\ProfileTab.cpp" />
     <ClCompile Include="Source\Tabs\ServerBrowserTab.cpp" />
     <ClCompile Include="Source\Tabs\SettingsTab.cpp" />
     <ClCompile Include="Source\Tabs\UITab.cpp" />
@@ -125,6 +130,7 @@
     <ClInclude Include="Source\Log.h" />
     <ClInclude Include="Source\Tabs\LaunchTab.h" />
     <ClInclude Include="Source\Tabs\ModsTab.h" />
+    <ClInclude Include="Source\Tabs\ProfileTab.h" />
     <ClInclude Include="Source\Tabs\ServerBrowserTab.h" />
     <ClInclude Include="Source\Tabs\SettingsTab.h" />
     <ClInclude Include="Source\Tabs\UITab.h" />
