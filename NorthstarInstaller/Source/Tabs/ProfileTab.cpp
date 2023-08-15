@@ -89,6 +89,7 @@ ProfileTab::ProfileTab()
 					CurrentProfileTab->CreateNewProfile(CurrentProfileTab->NewProfileTextField->GetText()); 
 				}))
 				->SetMinSize(Vector2f(0, 0.055))
+				->SetBorder(UIBox::BorderType::Rounded, 0.5)
 				->AddChild((new UIText(0.3, 0, "Create", UI::Text))
 					->SetPadding(0.02))))
 		->AddChild(new UIText(0.4, 1, "New profile", UI::Text)));
@@ -253,7 +254,7 @@ void ProfileTab::DisplayProfileInfo()
 
 	if (CurrentProfile.DisplayName != "R2Northstar")
 	{
-		ProfileInfoBox->AddChild((new UIButton(true, 0, 1, []()
+		ProfileInfoBox->AddChild((new UIButton(true, 0, Vector3f32(1, 0.5, 0), []()
 			{
 				if (Window::ShowPopupQuestion("Delete profile",
 				"Are you sure you want to delete the profile \"" + CurrentProfile.DisplayName + "\"?")
@@ -274,7 +275,9 @@ void ProfileTab::DisplayProfileInfo()
 				}
 			}))
 			->SetPadding(0.1, 0, 0.01, 0.01)
-			->AddChild(new UIText(0.3, 0, "Delete profile", UI::Text)));
+			->SetBorder(UIBox::BorderType::Rounded, 0.5)
+			->AddChild((new UIText(0.25, 0, "Delete profile", UI::Text))
+				->SetPadding(0.015)));
 	}
 }
 
