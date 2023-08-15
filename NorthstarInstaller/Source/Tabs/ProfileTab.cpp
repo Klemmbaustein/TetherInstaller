@@ -53,10 +53,10 @@ ProfileTab::ProfileTab()
 	Background->BoxAlign = UIBox::Align::Centered;
 	Background->SetHorizontal(true);
 
-	ProfileBackground = new UIBackground(false, 0, 0, Vector2f(1.3, 1.85));
+	ProfileBackground = new UIBackground(false, 0, 0, Vector2f(1.5, 1.85));
 	Background->AddChild(ProfileBackground
 		->SetOpacity(0.6)
-		->AddChild((new UIBackground(true, 0, 1, Vector2f(1.3, 0.005)))
+		->AddChild((new UIBackground(true, 0, 1, Vector2f(1.5, 0.005)))
 			->SetPadding(0))
 		->SetPadding(0));
 	ProfileBackground->BoxAlign = UIBox::Align::Reverse;
@@ -76,17 +76,23 @@ ProfileTab::ProfileTab()
 
 	NewProfileTextField = new UITextField(true, 0, 0, UI::Text, nullptr);
 
-	ProfileBackground->AddChild((new UIBox(true, 0))
-		->AddChild(NewProfileTextField
-			->SetTextSize(0.3)
-			->SetHintText("New profile name")
-			->SetMinSize(Vector2f(0.6, 0.05)))
-		->AddChild((new UIButton(true, 0, Vector3f32(0, 0.5, 1), []()
-			{
-				CurrentProfileTab->CreateNewProfile(CurrentProfileTab->NewProfileTextField->GetText()); 
-			}))
-			->AddChild(new UIText(0.3, 0, "New Profile", UI::Text))));
-
+	ProfileBackground->AddChild((new UIBackground(false, 0, 0))
+		->SetOpacity(0.5)
+		->AddChild((new UIBox(true, 0))
+			->AddChild(NewProfileTextField
+				->SetTextSize(0.3)
+				->SetHintText("New profile name")
+				->SetPadding(0.01, 0.02, 0.01, 0.01)
+				->SetMinSize(Vector2f(0.6, 0.055)))
+			->AddChild((new UIButton(true, 0, Vector3f32(0, 0.5, 1), []()
+				{
+					CurrentProfileTab->CreateNewProfile(CurrentProfileTab->NewProfileTextField->GetText()); 
+				}))
+				->SetMinSize(Vector2f(0, 0.055))
+				->AddChild((new UIText(0.3, 0, "Create", UI::Text))
+					->SetPadding(0.02))))
+		->AddChild(new UIText(0.4, 1, "New profile", UI::Text)));
+		
 	CurrentProfileTab = this;
 
 	DetectProfiles();
