@@ -44,7 +44,7 @@ namespace Installer
 	UIBackground* TaskBackground = nullptr;
 	UIBackground* TaskProgressBar = nullptr;
 	UIText* TaskNameText = nullptr;
-	const std::string InstallerVersion = "v1.2.0";
+	const std::string InstallerVersion = "v1.2.1";
 	const std::string GithubInstallerVersion = InstallerVersion;
 #if DEBUG
 	const std::string UserAgent = "TetherNSInstaller/" + InstallerVersion + "-dev";
@@ -259,6 +259,12 @@ float BackgroundFade = 0;
 int main(int argc, char** argv)
 {
 	using namespace Installer;
+
+	if (!std::filesystem::exists("Shaders/postprocess.vert"))
+	{
+		std::string ProgramLocation = argv[0];
+		std::filesystem::current_path(ProgramLocation.substr(0, ProgramLocation.find_last_of("/\\")));
+	}
 
 	Application::SetErrorMessageCallback([](std::string Message)
 		{
