@@ -100,10 +100,18 @@ void ModsTab::GenerateModInfo()
 						UI::Text)))
 
 				->AddChild((new UIButton(true, 0, 1, []() {
+#if _WIN32
 							system(("start https://northstar.thunderstore.io/package/"
 								+ Thunderstore::SelectedMod.Namespace
 								+ "/"
 								+ Thunderstore::SelectedMod.Name).c_str());
+#else
+							system(("xdg-open https://northstar.thunderstore.io/package/"
+								+ Thunderstore::SelectedMod.Namespace
+								+ "/"
+								+ Thunderstore::SelectedMod.Name).c_str());
+
+#endif
 					}))
 					->SetPadding(0.01, 0.07, 0.01, 0.01)
 					->AddChild(new UIText(0.4, 0, "Open In Browser", UI::Text))))

@@ -605,6 +605,12 @@ namespace Thunderstore::TSModFunc
 	void InstallOrUninstallMod()
 	{
 		using namespace nlohmann;
+
+		if (!std::filesystem::exists(Game::GamePath))
+		{
+			return;
+		}
+
 		try
 		{
 			IsInstallingMod = true;
