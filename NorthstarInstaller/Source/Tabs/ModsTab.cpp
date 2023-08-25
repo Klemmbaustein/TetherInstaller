@@ -49,7 +49,6 @@ void ModsTab::GenerateModInfo()
 
 	ModsScrollBox->GetScrollObject()->Percentage = 0;
 	ModButtons.clear();
-	ModsScrollBox->SetMaxScroll(50);
 	ModsScrollBox->DeleteChildren();
 
 	ModsScrollBox->AddChild((new UIButton(true, 0, 1, []() {CurrentModsTab->GenerateModPage(); }))
@@ -69,12 +68,22 @@ void ModsTab::GenerateModInfo()
 			+ " | Ratings: ???";
 	}
 
+	UIBox* ModActionsBox = new UIBox(true, 0);
+
 	ModsScrollBox->AddChild((new UIBox(true, 0))
 		->SetPadding(0)
 		->AddChild((new UIBox(false, 0))
 			->SetPadding(0)
 
-			->AddChild((new UIBox(true, 0))
+			->AddChild(ModActionsBox)
+
+			->AddChild(new UIText(0.4, 1, DescriptionText, UI::Text))
+			->AddChild(new UIText(0.7, 1, Thunderstore::SelectedMod.Name + (IsInstalled ? " (Installed)" : ""), UI::Text)))
+
+		->AddChild((new UIBackground(true, 0, 1, Vector2(0.35)))
+			->SetUseTexture(true, Texture::LoadTexture(Thunderstore::SelectedMod.Img))
+			->SetPadding(0.02, 0.02, 0.1, 0.02)
+			->SetSizeMode(UIBox::SizeMode::PixelRelative)));
 
 				->AddChild((new UIButton(true, 0, 1, []() {
 						if (Thunderstore::SelectedMod.IsUnknownLocalMod)
@@ -100,18 +109,10 @@ void ModsTab::GenerateModInfo()
 						UI::Text)))
 
 				->AddChild((new UIButton(true, 0, 1, []() {
-#if _WIN32
 							system(("start https://northstar.thunderstore.io/package/"
 								+ Thunderstore::SelectedMod.Namespace
 								+ "/"
 								+ Thunderstore::SelectedMod.Name).c_str());
-#else
-							system(("xdg-open https://northstar.thunderstore.io/package/"
-								+ Thunderstore::SelectedMod.Namespace
-								+ "/"
-								+ Thunderstore::SelectedMod.Name).c_str());
-
-#endif
 					}))
 					->SetPadding(0.01, 0.07, 0.01, 0.01)
 					->AddChild(new UIText(0.4, 0, "Open In Browser", UI::Text))))
@@ -130,8 +131,8 @@ void ModsTab::GenerateModInfo()
 		->SetPadding(0, 0.05, 0, 0));
 	if (Thunderstore::SelectedMod.IsDeprecated)
 	{
-		ModsScrollBox->AddChild((new UIBackground(false, 0, Vector3f32(1, 0.5, 0), Vector2(1.15, 0.1)))
-			->SetBorder(UIBox::E_DARKENED_EDGE, 0.2)
+		ModsScrollBox->AddChild((new UIBackground(false, 0, Vector3f32(1, 0.5, 0), Vector2f(1.15, 0.1)))
+			->SetBorder(UIBox::BorderType::DarkenedEdge, 0.2)
 			->AddChild((new UIText(0.3, 0, "Deprecated mods are no longer supported and might have issues.", UI::Text))
 				->SetPadding(0, 0.01, 0.01, 0.01))
 			->AddChild((new UIText(0.4, 0, "This mod is deprecated", UI::Text))
@@ -139,10 +140,30 @@ void ModsTab::GenerateModInfo()
 			->SetPadding(0.0, 0.03, 0, 0));
 	}
 
+	if (IsInstalled)
+	{
+		if (IsEnabled)
+		{
+			ModsScrollBox->AddChild((new UIBackground(false, 0, Vector3f32(0, 1, 0.5), Vector2f(1.15, 0)))
+				->SetBorder(UIBox::BorderType::DarkenedEdge, 0.2)
+				->AddChild((new UIText(0.3, 0, "This mod is enabled.", UI::Text))
+					->SetPadding(0.005, 0.005, 0.01, 0.01))
+				->SetPadding(0.0, 0.03, 0, 0));
+		}
+		else
+		{
+			ModsScrollBox->AddChild((new UIBackground(false, 0, Vector3f32(1, 0.5, 0), Vector2f(1.15, 0)))
+				->SetBorder(UIBox::BorderType::DarkenedEdge, 0.2)
+				->AddChild((new UIText(0.3, 0, "This mod is disabled.", UI::Text))
+					->SetPadding(0.005, 0.005, 0.01, 0.01))
+				->SetPadding(0.0, 0.03, 0, 0));
+		}
+	}
+
 	if (Thunderstore::SelectedMod.Name == "NorthstarReleaseCandidate")
 	{
-		ModsScrollBox->AddChild((new UIBackground(false, 0, Vector3f32(0, 0.5, 1), Vector2(1.15, 0.1)))
-			->SetBorder(UIBox::E_DARKENED_EDGE, 0.2)
+		ModsScrollBox->AddChild((new UIBackground(false, 0, Vector3f32(0, 0.5, 1), Vector2f(1.15, 0.1)))
+			->SetBorder(UIBox::BorderType::DarkenedEdge, 0.2)
 			->AddChild((new UIBox(true, 0))
 				->SetPadding(0)
 				->AddChild((new UIButton(true, 0, 1, []() {system("start https://discord.com/channels/920776187884732556/951461326478262292"); }))
@@ -158,12 +179,12 @@ void ModsTab::GenerateModInfo()
 
 	UIBox* MarkdownBackground = new UIBox(false, 0);
 	MarkdownBackground->SetPadding(0);
-	MarkdownBackground->Align = UIBox::E_REVERSE;
+	MarkdownBackground->BoxAlign = UIBox::Align::Reverse;
 	ModsScrollBox->AddChild(MarkdownBackground);
 
 	Markdown::MarkdownStyling Style;
 	Style.Text = UI::Text;
-	Style.Width = 1.15;
+	Style.Width = 1.1;
 
 	Markdown::RenderMarkdown(Thunderstore::SelectedMod.Description, MarkdownBackground, Style);
 }
@@ -173,7 +194,6 @@ void ModsTab::GenerateModPage()
 	UpdateClickedCategoryButton();
 	ModImages.clear();
 	ModsScrollBox->GetScrollObject()->Percentage = 0;
-	ModsScrollBox->SetMaxScroll(10);
 	ModsScrollBox->DeleteChildren();
 
 	ClearLoadedTextures();
@@ -215,7 +235,7 @@ void ModsTab::GenerateModPage()
 	for (const auto& i : Thunderstore::FoundMods)
 	{
 		bool UseTexture = std::filesystem::exists(i.Img) && !i.IsNSFW;
-		UIBackground* Image = new UIBackground(false, 0, 1, Vector2(0.25));
+		UIBackground* Image = new UIBackground(false, 0, 1, Vector2f(0.25));
 		UIButton* b = new UIButton(false, 0, 1, []() {
 			for (size_t i = 0; i < ModButtons.size(); i++)
 			{
@@ -236,9 +256,16 @@ void ModsTab::GenerateModPage()
 			}
 			});
 
+		if (Thunderstore::SelectedOrdering == Thunderstore::Ordering::Installed && !Thunderstore::GetModEnabled(i))
+		{
+			b->SetColor(Vector3f32(1, 0.75, 0));
+			b->SetHoveredColor(Vector3f32(1, 0.75, 0) * 0.75f);
+			b->SetPressedColor(Vector3f32(1, 0.75, 0) * 0.5f);
+		}
+
 		b->SetMinSize(Vector2f(0, 0.34));
 		b->SetMaxSize(Vector2f(1, 0.34));
-		b->Align = UIBox::E_REVERSE;
+		b->BoxAlign = UIBox::Align::Reverse;
 		b->SetPadding(0.005 * Application::AspectRatio, 0.005 * Application::AspectRatio, 0.005, 0.005);
 		unsigned int tex = 0;
 		if (UseTexture)
@@ -248,11 +275,11 @@ void ModsTab::GenerateModPage()
 		}
 		auto NameText = new UIText(0.225, 0, i.Name, UI::Text);
 		Rows[it++ / SlotsPerRow]->AddChild(b
-			->SetBorder(UIBox::E_ROUNDED, 0.5)
+			->SetBorder(UIBox::BorderType::Rounded, 0.5)
 			->AddChild(Image
 				->SetUseTexture(UseTexture, tex)
 				->SetPadding(0)
-				->SetSizeMode(UIBox::E_PIXEL_RELATIVE))
+				->SetSizeMode(UIBox::SizeMode::PixelRelative))
 			->AddChild(NameText
 					->SetPadding(0.005)));
 
@@ -261,7 +288,7 @@ void ModsTab::GenerateModPage()
 
 		if (!UseTexture)
 		{
-			Image->Align = UIBox::E_CENTERED;
+			Image->BoxAlign = UIBox::Align::Centered;
 			Image->SetColor(0.1);
 			Image->AddChild(new UIText(0.4, 1, i.IsUnknownLocalMod ? " Unknown" : (i.IsNSFW ? "    NSFW" : (i.IsTemporary ? "Temporary" : "Loading...")), UI::Text));
 		}
@@ -289,7 +316,7 @@ void ModsTab::GenerateModPage()
 			} });
 		Rows[19]->AddChild(b
 			->SetPadding(0.005)
-			->SetBorder(UIBox::E_ROUNDED, 0.25)
+			->SetBorder(UIBox::BorderType::Rounded, 0.25)
 			->AddChild(new UIText(0.4, 0, std::to_string(i + 1), UI::MonoText)));
 		PageButtons.push_back(b);
 	}
@@ -303,6 +330,12 @@ void ModsTab::ShowLoadingText()
 	ModsScrollBox->DeleteChildren();
 	ModsScrollBox->AddChild((new UIText(0.5, 1, "Loading...", UI::Text))->SetPadding(0.5));
 	UpdateClickedCategoryButton();
+}
+
+void ModsTab::Reload()
+{
+	CurrentModsTab->ShowLoadingText();
+	CurrentModsTab->LoadedModList = false;
 }
 
 void ModsTab::UpdateClickedCategoryButton()
@@ -352,17 +385,25 @@ void ModsTab::CheckForModUpdates()
 	size_t it = 0;
 	for (const auto& m : Mods)
 	{
-		Networking::Download("https://thunderstore.io/api/experimental/frontend/c/northstar/p/" + m.Namespace + "/" + m.Name, "Data/temp/net/mod.txt", "");
+		if (m.UUID.empty())
+		{
+			Thunderstore::InstallOrUninstallMod(m, false, false);
+			continue;
+		}
+		Networking::Download("https://thunderstore.io/c/northstar/api/v1/package/" + m.UUID,
+			"Data/temp/net/mod.json",
+			"UserAgent: " + Installer::UserAgent);
 		float Progress = 0;
 		try
 		{
-			std::ifstream in = std::ifstream("Data/temp/net/mod.txt");
+			std::ifstream in = std::ifstream("Data/temp/net/mod.json");
 			std::stringstream str; str << in.rdbuf();
 			json response = json::parse(str.str());
 			if (m.Version != response.at("versions")[0].at("version_number") || !Thunderstore::IsMostRecentFileVersion(m.FileVersion))
 			{
 				Log::Print("Mod '" + m.Name + "' is outdated!", Log::Warning);
 				Log::Print(response.at("versions")[0].at("version_number").get<std::string>() + " != " + m.Version, Log::Warning);
+
 				// Uninstall mod, then install mod again.
 				Thunderstore::Package NewMod = m;
 				NewMod.DownloadUrl = response.at("download_url");
@@ -386,8 +427,17 @@ void ModsTab::CheckForModUpdates()
 			Log::Print(e.what(), Log::Error);
 
 			Log::Print("Writing response to Data/temp/invalidresponse.txt", Log::Error);
-			std::filesystem::copy("Data/temp/net/mod.txt", "Data/temp/invalidresponse.txt");
+			if (std::filesystem::exists("Data/temp/net/mod.json"))
+			{
+				if (std::filesystem::exists("Data/temp/invalidresponse.txt"))
+				{
+					std::filesystem::remove("Data/temp/invalidresponse.txt");
+				}
+				std::filesystem::copy("Data/temp/net/mod.json", "Data/temp/invalidresponse.txt");
+			}
 		}
+		std::filesystem::remove("Data/temp/net/mod.json");
+
 		Progress += (float)it / (float)Mods.size();
 		BackgroundTask::SetProgress(std::min(0.95f, Progress));
 		it++;
@@ -400,7 +450,7 @@ ModsTab::ModsTab()
 	CurrentModsTab = this;
 	Name = "Mods";
 
-	Background->Align = UIBox::E_CENTERED;
+	Background->BoxAlign = UIBox::Align::Centered;
 	Background->SetHorizontal(true);
 
 	ModsBackground = new UIBackground(false, 0, 0, Vector2f(1.2, 1.85));
@@ -410,14 +460,14 @@ ModsTab::ModsTab()
 		->AddChild((new UIBackground(true, 0, 1, Vector2f(1.2, 0.005)))
 			->SetPadding(0))
 		->SetPadding(0));
-	ModsBackground->Align = UIBox::E_REVERSE;
+	ModsBackground->BoxAlign = UIBox::Align::Reverse;
 
 	auto TitleBox = new UIBox(true, 0);
 	ModsBackground->AddChild(TitleBox);
 	TitleBox->SetPadding(0);
 	TitleBox->AddChild((new UIText(0.8, 1, "Mods", UI::Text))->SetPadding(0.01, 0.01, 0.01, 0.05));
-	ModsScrollBox = new UIScrollBox(false, 0, 25);
-	ModsScrollBox->Align = UIBox::E_REVERSE;
+	ModsScrollBox = new UIScrollBox(false, 0, true);
+	ModsScrollBox->BoxAlign = UIBox::Align::Reverse;
 
 	ModsScrollBox->SetMinSize(Vector2f(1.15, 1.7));
 	ModsScrollBox->SetMaxSize(Vector2f(1.15, 1.7));
@@ -441,7 +491,7 @@ ModsTab::ModsTab()
 			});
 
 		TitleBox->AddChild(b
-			->SetBorder(UIBox::E_ROUNDED, 0.25)
+			->SetBorder(UIBox::BorderType::Rounded, 0.25)
 			->SetPadding(0, 0.025, 0.001, 0.001)
 			->AddChild(new UIText(0.3, 0, i.Name, UI::Text)));
 

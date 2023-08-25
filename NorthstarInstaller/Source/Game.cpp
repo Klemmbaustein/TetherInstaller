@@ -122,11 +122,11 @@ void Game::SaveGameDir(std::string FoundGameDir)
 
 bool Game::IsValidTitanfallLocation(std::filesystem::path p)
 {
-	return std::filesystem::exists(p.string() + "/Titanfall2.exe") && std::filesystem::exists(p.string() + "/gameversion.txt");
+	return std::filesystem::exists(p.u8string() + "/Titanfall2.exe") && std::filesystem::exists(p.u8string() + "/gameversion.txt");
 }
 
 #if _WIN32
-int GetFileVersion(const char* filename, char* ver)
+int Game::GetFileVersion(const char* filename, char* ver)
 {
 	DWORD dwHandle, sz = GetFileVersionInfoSizeA(filename, &dwHandle);
 	if (0 == sz)
@@ -160,7 +160,7 @@ std::string Game::GetCurrentVersion()
 {
 #if _WIN32
 	char Ver[100];
-	GetFileVersion(std::filesystem::path(GamePath + "NorthstarLauncher.exe").string().c_str(), Ver);
+	GetFileVersion(std::filesystem::path(GamePath + "NorthstarLauncher.exe").u8string().c_str(), Ver);
 	return Ver;
 #endif
 	return "Unknown";
@@ -180,7 +180,7 @@ void Game::UpdateGame()
 		// Remove core mods before installing them again
 		for (auto& i : std::filesystem::directory_iterator(Game::GamePath + "/R2Northstar/mods"))
 		{
-			std::string File = i.path().filename().string();
+			std::string File = i.path().filename().u8string();
 			std::string Author = File.substr(0, File.find_first_of("."));
 			if (Author == "Northstar")
 			{

@@ -18,12 +18,15 @@
 #include "../Thunderstore.h"
 #include "../WindowFunctions.h"
 #include "../Game.h"
+#include "ProfileTab.h"
+
 
 bool ServerBrowserTab::ShouldLaunchGame;
 ServerBrowserTab* ServerBrowserTab::CurrentServerTab = nullptr;
 std::vector<ServerBrowserTab::ServerEntry> ServerBrowserTab::Servers;
 constexpr unsigned int MaxServerNameSize = 40;
-const std::map<std::string, std::string> KNOWN_GAMEMODES = {
+const std::map<std::string, std::string> KNOWN_GAMEMODES = 
+{
 	std::pair("private_match", "Private Match"),
 	std::pair("aitdm" , "Attrition"),
 	std::pair("at" , "Bounty Hunt"),
@@ -85,25 +88,34 @@ std::string ToLowerCase(std::string Target)
 	return Target;
 }
 
+std::string RemoveSpaces(std::string Target)
+{
+	Target.erase(remove(Target.begin(), Target.end(), ' '), Target.end());
+	return Target;
+}
+
 bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
 {
 	using namespace nlohmann;
 
 	BackgroundTask::SetStatus("Loading required mods");
 
-	Networking::Download("https://thunderstore.io/c/northstar/api/v1/package/", "Data/temp/net/allmods.json", "User-Agent: " + Installer::UserAgent);
+	Networking::Download(
+		"https://thunderstore.io/c/northstar/api/v1/package/",
+		"Data/temp/net/allmods.json",
+		"User-Agent: " + Installer::UserAgent);
 
 	json Response = json::parse(GetFile("Data/temp/net/allmods.json"));
 
 	std::vector<ServerBrowserTab::ServerEntry::ServerMod> FailedMods;
 
 
-	if (std::filesystem::exists(Game::GamePath + "/R2Northstar/mods/autojoin"))
+	if (std::filesystem::exists(ProfileTab::CurrentProfile.Path + "/mods/autojoin"))
 	{
-		std::filesystem::remove_all(Game::GamePath + "/R2Northstar/mods/autojoin");
+		std::filesystem::remove_all(ProfileTab::CurrentProfile.Path + "/mods/autojoin");
 	}
 
-	std::filesystem::copy("Data/autojoin", Game::GamePath + "/R2Northstar/mods/autojoin",
+	std::filesystem::copy("Data/autojoin", ProfileTab::CurrentProfile.Path + "/mods/autojoin",
 		std::filesystem::copy_options::recursive);
 
 	float Progress = 0;
@@ -128,20 +140,33 @@ bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
 		BackgroundTask::SetProgress(Progress - 0.001);
 		if (Thunderstore::IsModInstalled(m))
 		{
+			if (m.Author != "Northstar")
+			{
+				Thunderstore::SetModEnabled(m, true);
+			}
 			continue;
 		}
-
-
+		
+		Thunderstore::Package ClosestMod;
+		size_t ClosestModScore = SIZE_MAX;
+		size_t Age = 0;
 		for (auto& item : Response)
 		{
-			if (ToLowerCase(m.Name).find(ToLowerCase(item.at("name"))) != std::string::npos
-				|| ToLowerCase(item.at("name")).find(ToLowerCase(m.Name)) != std::string::npos)
+			if (RemoveSpaces(ToLowerCase(m.Name)).find(RemoveSpaces(ToLowerCase(item.at("name")))) != std::string::npos
+				|| RemoveSpaces(ToLowerCase(item.at("name"))).find(RemoveSpaces(ToLowerCase(m.Name))) != std::string::npos)
 			{
 				if (item.at("is_deprecated"))
 				{
 					continue;
 				}
 
+				size_t NewScore = std::llabs(m.Name.size() - item.at("name").get<std::string>().size()) + Age++;
+				
+				if (ClosestModScore <= NewScore)
+				{
+					continue;
+				}
+				ClosestModScore = NewScore;
 				m.Author = item.at("owner");
 				m.Namespace = item.at("owner");
 				m.Name = item.at("name");
@@ -149,15 +174,19 @@ bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
 				m.Version = item.at("versions")[0].at("version_number");
 				m.DownloadUrl = item.at("versions")[0].at("download_url");
 
-				LOG_PRINTF("Need to install mod {}.{} with UUID of {}",
+				LOG_PRINTF("Found possible canidate: {}.{} with UUID of {}. Score: {}.",
 					item.at("owner").get<std::string>(), 
 					item.at("name").get<std::string>(), 
-					item.at("uuid4").get<std::string>());
-
-				BackgroundTask::SetStatus("Installing " + m.Name);
-				Thunderstore::InstallOrUninstallMod(m, true, false);
-				HasInstalledMod = true;
+					item.at("uuid4").get<std::string>(),
+					NewScore);
 			}
+
+		}
+		if (ClosestModScore != SIZE_MAX)
+		{
+			BackgroundTask::SetStatus("Installing " + m.Name);
+			Thunderstore::InstallOrUninstallMod(m, true, false);
+			HasInstalledMod = true;
 		}
 		if (!HasInstalledMod)
 		{
@@ -201,7 +230,7 @@ ServerBrowserTab::ServerBrowserTab()
 	CurrentServerTab = this;
 	Name = "Servers";
 
-	Background->Align = UIBox::E_CENTERED;
+	Background->BoxAlign = UIBox::Align::Centered;
 	Background->SetHorizontal(true);
 
 	ServerBackground = new UIBackground(false, 0, 0, Vector2f(1.5, 1.85));
@@ -211,7 +240,7 @@ ServerBrowserTab::ServerBrowserTab()
 		->AddChild((new UIBackground(true, 0, 1, Vector2f(1.5, 0.005)))
 			->SetPadding(0))
 		->SetPadding(0));
-	ServerBackground->Align = UIBox::E_REVERSE;
+	ServerBackground->BoxAlign = UIBox::Align::Reverse;
 	ServerBackground->AddChild(new UIText(0.8, 1, "Server browser", UI::Text));
 	
 	ServerBackground->AddChild((new UIBox(true, 0))
@@ -230,18 +259,23 @@ ServerBrowserTab::ServerBrowserTab()
 	ServerSearchBox->SetHintText("Search");
 	ServerBackground->AddChild(ServerSearchBox);
 
-	ServerBox = new UIScrollBox(false, 0, 10);
-	ServerBox->Align = UIBox::E_REVERSE;
+	ServerBox = new UIScrollBox(false, 0, true);
+	ServerBox->BoxAlign = UIBox::Align::Reverse;
 	ServerBackground->AddChild(new UIBackground(true, 0, 1, Vector2f(1.46, 0.005)));
-	ServerBackground->AddChild((new UIText(0.25, 1, "Region     Name                                      Players", UI::MonoText))->SetPadding(0.05, 0, 0.02, 0.02));
+	ServerBackground->AddChild((new UIText(0.25,
+		1,
+		"Region     Name                                      Players",
+		UI::MonoText))
+		->SetPadding(0.05, 0, 0.02, 0.02));
+
 	ServerBackground->AddChild((new UIBox(true, 0))
 		->SetPadding(0)
 		->AddChild(ServerBox
-			->SetMaxSize(Vector2f(0.825, 1.5))
-			->SetMinSize(Vector2f(0.825, 1.5)))
+			->SetMaxSize(Vector2f(0.825, 1.4))
+			->SetMinSize(Vector2f(0.825, 1.4)))
 		->AddChild(ServerDescriptionBox
-			->SetMinSize(Vector2f(0.3, 1.5))));
-	ServerDescriptionBox->Align = UIBox::E_REVERSE;
+			->SetMinSize(Vector2f(0.3, 1.4))));
+	ServerDescriptionBox->BoxAlign = UIBox::Align::Reverse;
 	new BackgroundTask(LoadServers, []() {CurrentServerTab->DisplayServers(); });
 }
 
@@ -256,7 +290,7 @@ void ServerBrowserTab::DisplayServers()
 	ServerListBox = new UIBox(false, 0);
 	ServerBox->AddChild(ServerListBox
 		->SetPadding(0));
-	ServerListBox->Align = UIBox::E_REVERSE;
+	ServerListBox->BoxAlign = UIBox::Align::Reverse;
 
 	std::string Filter = ServerSearchBox->GetText();
 	std::transform(Filter.begin(), Filter.end(), Filter.begin(),
@@ -329,24 +363,26 @@ void ServerBrowserTab::DisplayServers()
 		std::string PlayerCount = std::to_string(i.PlayerCount) + "/" + std::to_string(i.MaxPlayerCount);
 		PlayerCount.resize(7, ' ');
 
-		UIButton* b = new UIButton(true, 0, 1, []() {
+		UIButton* b = new UIButton(true, 0, Installer::TabStyles[0], []() {
 			for (size_t i = 0; i < CurrentServerTab->ServerBrowserButtons.size(); i++)
 			{
 				if (CurrentServerTab->ServerBrowserButtons[i]->IsBeingHovered())
 				{
-					CurrentServerTab->ServerBrowserButtons[i]->SetColor(Vector3f32(0.5, 0.6, 1));
+					Installer::TabStyles[1]->ApplyTo(CurrentServerTab->ServerBrowserButtons[i]);
+					CurrentServerTab->ServerBrowserButtons[i]->SetMinSize(Vector2f(0.8, 0));
 					CurrentServerTab->DisplayServerDescription(CurrentServerTab->DisplayedServerEntries[i]);
 				}
 				else
 				{
-					CurrentServerTab->ServerBrowserButtons[i]->SetColor(1);
+					Installer::TabStyles[0]->ApplyTo(CurrentServerTab->ServerBrowserButtons[i]);
+					CurrentServerTab->ServerBrowserButtons[i]->SetMinSize(Vector2f(0.8, 0));
 				}
 			}
 			});
 
 		ServerListBox->AddChild(b
-			->SetPadding(0.005)
 			->SetMinSize(Vector2f(0.8, 0))
+			->SetPadding(0.005)
 			->AddChild((new UIText(0.25, { 
 				TextSegment(Region, 0.25),
 				TextSegment(" " + Name + "  ", 0),
@@ -366,16 +402,6 @@ void JoinCurrentServer()
 
 void ServerBrowserTab::Tick()
 {
-	if (ServerListBox)
-	{
-		ServerBox->SetMaxScroll(std::max(ServerListBox->GetUsedSize().Y * 10 - 10.0f, 0.0));
-	}
-	else
-	{
-		ServerBox->SetMaxScroll(0);
-		ServerBox->GetScrollObject()->Percentage = 0;
-	}
-
 	if (!ServerDescriptionText)
 		return;
 
@@ -430,7 +456,7 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 	ServerDescriptionBox->AddChild(new UIBackground(true, 0, 1, Vector2f(0.6, 0.005)));
 
 	auto MapDescr = new UIBox(false, 0);
-	MapDescr->Align = UIBox::E_REVERSE;
+	MapDescr->BoxAlign = UIBox::Align::Reverse;
 	MapDescr->SetPadding(0);
 	MapDescr->SetMinSize(9 * 0.025);
 
@@ -438,7 +464,7 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 	ServerDescriptionBox->AddChild((new UIBox(true, 0))
 		->AddChild((new UIBackground(true, 0, 1, Vector2f(16, 9) * 0.025))
 			->SetUseTexture(true, GetMapTexture(e.Map))
-			->SetSizeMode(UIBox::E_PIXEL_RELATIVE))
+			->SetSizeMode(UIBox::SizeMode::PixelRelative))
 		->AddChild(MapDescr
 			->AddChild((new UIText(0.5, 1, e.MapName, UI::Text))
 				->SetPadding(0, 0, 0.01, 0.01))
@@ -455,12 +481,14 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 				ServerBrowserTab::CurrentServerTab->DisplayServerDescription(ServerBrowserTab::CurrentServerTab->SelectedServer);
 				if (ServerBrowserTab::ShouldLaunchGame) 
 				{ 
-					LOG_PRINTF("Joining server \"{}\" (id: {})");
+					LOG_PRINTF("Joining server \"{}\" (id: {})",
+						ServerBrowserTab::CurrentServerTab->SelectedServer.Name,
+						ServerBrowserTab::CurrentServerTab->SelectedServer.ServerID);
 					LaunchTab::LaunchNorthstar("+AutoJoinServer " + ServerBrowserTab::CurrentServerTab->SelectedServer.ServerID); 
 				}
 			});
 			}))
-			->SetBorder(UIBox::E_ROUNDED, 0.5)
+			->SetBorder(UIBox::BorderType::Rounded, 0.5)
 			->AddChild(ServerDescriptionText)));
 
 	ServerDescriptionBox->AddChild(new UIText(0.5, 1, "Mods: ", UI::Text));

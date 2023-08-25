@@ -30,6 +30,7 @@ public:
 	void GenerateModPage();
 	void GenerateModImages();
 	void ShowLoadingText();
+	static void Reload();
 	void UpdateClickedCategoryButton();
 
 	static int GetModsPerPage(float Aspect);

@@ -12,6 +12,7 @@ namespace Game
 
 	void UpdateGame();
 	void UpdateGameAsync();
+	int GetFileVersion(const char* filename, char* ver);
 
 	std::string GetLaunchArgs();
 	void SetLaunchArgs(std::string NewArgs);

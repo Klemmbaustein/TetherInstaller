@@ -24,6 +24,7 @@ namespace Thunderstore
 		bool IsUnknownLocalMod = false;
 		bool IsNSFW = false;
 		bool IsTemporary = false;
+		bool IsPackage = true;
 	};
 
 	bool IsMostRecentFileVersion(std::string VersionString);
@@ -85,10 +86,22 @@ namespace Thunderstore
 	// TODO: Extract other elements of the mod. (Plugins, ...)
 	void InstallOrUninstallMod(Package m, bool IsTemporary, bool Async);
 
+
+
+	// Returns the mod names of an installed mod package. Can be /mods or /packages
+	std::vector<std::string> GetLocalModNames(Package m);
+
+	// Returns all paths that are a mod from an installed package.
+	// For example: GlitchOverhaul package -> [Titanfall2]/R2Northstar/packages/S2Mods-GlitchOverhaul-1.2.11/mods/*
+	std::vector<std::string> GetLocalMods(Package m);
+
 	namespace TSModFunc
 	{
 		void InstallOrUninstallMod();
 	}
+
+	void SetModEnabled(Package m, bool IsEnabled);
+	bool GetModEnabled(Package m);
 
 	// Sets the Thunderstore::SelectedMod variable to a more detailed version of the given package.
 	void GetModInfo(Package m, bool Async);

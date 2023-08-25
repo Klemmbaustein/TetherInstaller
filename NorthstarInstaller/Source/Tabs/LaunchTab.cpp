@@ -1,4 +1,5 @@
 #include "LaunchTab.h"
+#include "ProfileTab.h"
 #include <KlemmUI/UI/UIText.h>
 #include <KlemmUI/UI/UIBackground.h>
 
@@ -25,7 +26,12 @@ void NorthstarLaunchTask()
 
 	std::string UTF8GameDir = std::regex_replace(Game::GamePath, std::regex(" "), "^ ");
 
-	system((UTF8GameDir + "/NorthstarLauncher.exe " + NorthstarLaunchArgs + " " + Game::GetLaunchArgs()).c_str());
+	system((UTF8GameDir + "/NorthstarLauncher.exe -profile=\""
+		+ ProfileTab::CurrentProfile.Path 
+		+ "\" "
+		+ NorthstarLaunchArgs 
+		+ " " 
+		+ Game::GetLaunchArgs()).c_str());
 	Log::Print("Game has finished running");
 	ModsTab::CheckForModUpdates();
 }
@@ -76,10 +82,9 @@ LaunchTab::LaunchTab()
 {
 	Name = "Play";
 	Log::Print("Loading launch tab...");
-	Background->Align = UIBox::E_DEFAULT;
-
+	Background->BoxAlign = UIBox::Align::Default;
 	auto TextBox = (new UIBackground(true, 0, 0, 0))->SetOpacity(0.3);
-	TextBox->Align = UIBox::E_CENTERED;
+	TextBox->BoxAlign = UIBox::Align::Centered;
 
 	LaunchButton = new UIButton(true, 0, 1, LaunchNorthstar);
 	LaunchText = new UIText(0.7, 0, "Launch", UI::Text);
@@ -89,7 +94,7 @@ LaunchTab::LaunchTab()
 		->SetPadding(0)
 		->AddChild(LaunchButton
 			->SetPadding(0.03)
-			->SetBorder(UIBox::E_ROUNDED, 1)
+			->SetBorder(UIBox::BorderType::Rounded, 1)
 			->AddChild(LaunchText)));
 
 

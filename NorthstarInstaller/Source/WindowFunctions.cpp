@@ -74,6 +74,10 @@ void Window::ShowPopup(std::string Title, std::string Message)
 {
 	MessageBoxA(NULL, Message.c_str(), Title.c_str(), MB_OK);
 }
+void Window::ShowPopupError(std::string Message)
+{
+	MessageBoxA(NULL, Message.c_str(), "Tether Installer Error", MB_OK | MB_ICONERROR);
+}
 #else
 std::string Window::ShowSelectFolderDialog()
 {
