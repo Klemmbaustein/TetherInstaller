@@ -371,7 +371,7 @@ void ServerBrowserTab::DisplayServers()
 		Region.resize(10, ' ');
 		if (Name.size() > MaxServerNameSize)
 		{
-			Name = Name.substr(0, MaxServerNameSize - 3) + "...";
+			Name = Name.substr(0, MaxServerNameSize - 3u) + "...";
 		}
 		Name.resize(MaxServerNameSize, ' ');
 
