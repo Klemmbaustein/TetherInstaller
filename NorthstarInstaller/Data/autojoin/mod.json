@@ -1,8 +1,8 @@
 {
   "Name": "AutoJoin",
   "Description": "Automatically join a server through the command line",
-  "LoadPriority": 0,
-  "Version": "1.0.2",
+  "LoadPriority": 2,
+  "Version": "1.0.3",
   "Scripts": [
 	{
 	  "Path": "autoJoinServer.gnut",

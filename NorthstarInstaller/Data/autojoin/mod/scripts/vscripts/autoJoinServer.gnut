@@ -2,30 +2,30 @@ global function joinFromConvar
 
 void function joinFromConvar()
 {
-    thread joinFromConvarThread()
+	thread joinFromConvarThread()
 }
 
 bool function ShouldWeConnect()
 {
-    string Serv
+	string Serv
 	try
-    {
-    Serv = GetConVarString("autoJoinServer")
-    }
-    catch(a)
-    {
-        print("autoJoinServer is not set, or is not a string")
-        print(a)
-        return false
-    }
+	{
+	Serv = GetConVarString("autoJoinServer")
+	}
+	catch(a)
+	{
+		print("autoJoinServer is not set, or is not a string")
+		print(a)
+		return false
+	}
 
-    if( Serv == "none" )
-    {
+	if( Serv == "none" )
+	{
 		print("autoJoinServer is set to none")
 		return false
-    }
-    if( Serv == "" )
-    {
+	}
+	if( Serv == "" )
+	{
 		print("autoJoinServer is set to an empty string")
 		return false
 	}
@@ -45,6 +45,24 @@ void function DisplayLoadingDialog(string Title, string Description)
 	AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
 
 	OpenDialog( dialogData )
+
+	print( "Displaying loading dialog: " + Title )
+}
+
+void function DisplayErrorDialog(string Description)
+{		DialogData dialogData
+		dialogData.header = "#ERROR"
+		dialogData.message = Description
+		dialogData.image = $"ui/menu/common/dialog_error"
+
+		#if PC_PROG
+			AddDialogButton( dialogData, "#DISMISS" )
+
+			AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
+		#endif // PC_PROG
+		AddDialogFooter( dialogData, "#B_BUTTON_DISMISS_RUI" )
+
+		OpenDialog( dialogData )
 }
 
 void function joinFromConvarThread()
@@ -62,7 +80,7 @@ void function joinFromConvarThread()
 	}
 	DisplayLoadingDialog("#CONNECTING", "#DIALOG_AUTHENTICATING_MASTERSERVER");
 
-    while ( GetConVarInt( "ns_has_agreed_to_send_token" ) != NS_AGREED_TO_SEND_TOKEN || time + 15.0 > Time() )
+	while ( GetConVarInt( "ns_has_agreed_to_send_token" ) != NS_AGREED_TO_SEND_TOKEN || time + 15.0 > Time() )
 	{
 		if ( ( NSIsMasterServerAuthenticated() && IsStryderAuthenticated() ) || GetConVarBool( "ns_auth_allow_insecure" ) )
 			break
@@ -72,28 +90,35 @@ void function joinFromConvarThread()
 
 
 
-    connectFromConvar()
+	connectFromConvar()
 }
 
 void function connectFromConvar()
 {
-   	DisplayLoadingDialog("#CONNECTING", "Connecting to server");
+	if (GetConVarInt("ns_has_agreed_to_send_token") != 1)
+	{
+		DisplayErrorDialog("You haven't agreed to send your origin token. Please enable it in the mod menu and retry.")
+		return
+	}
+
+	DisplayLoadingDialog("#CONNECTING", "Connecting to server");
 	string Serv
-    try
-    {
-    Serv = GetConVarString("autoJoinServer")
-    }
-    catch(a)
-    {
-        print("autoJoinServer is not set, or is not a string")
-        print(a)
-        return
-    }
+	try
+	{
+		Serv = GetConVarString("autoJoinServer")
+	}
+	catch(a)
+	{
+		print("autoJoinServer is not set, or is not a string")
+		print(a)
+		return
+	}
 
 	NSRequestServerList()
 
 	while ( NSIsRequestingServerList() )
 	{
+		print( "Wating for NSIsRequestingServerList()" )
 		WaitFrame() 
 	}
 	
@@ -116,6 +141,7 @@ void function connectFromConvar()
 
 	if (!FoundServer)
 	{
+		print( "Could not find server with UUID " + Serv )
 		return
 	}
 
@@ -226,25 +252,14 @@ void function connectFromConvar()
 		// only actually reload if we need to since the uiscript reset on reload lags hard
 		if ( modsChanged )
 			ReloadMods()
+
+		TriggerConnectToServerCallbacks( server )
 		NSConnectToAuthedServer()
 	}
 	else
 	{
 		string reason = NSGetAuthFailReason()
-
-		DialogData dialogData
-		dialogData.header = "#ERROR"
-		dialogData.message = reason
-		dialogData.image = $"ui/menu/common/dialog_error"
-
-		#if PC_PROG
-			AddDialogButton( dialogData, "#DISMISS" )
-
-			AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
-		#endif // PC_PROG
-		AddDialogFooter( dialogData, "#B_BUTTON_DISMISS_RUI" )
-
-		OpenDialog( dialogData )
+		DisplayErrorDialog(reason)
 	}
 	SetConVarString( "autoJoinServer", "" )
 }

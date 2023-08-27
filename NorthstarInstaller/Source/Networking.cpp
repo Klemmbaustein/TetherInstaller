@@ -252,14 +252,6 @@ What you can do:\n\
 
 				system((UTF8GameDir + "\\EA^ Desktop\\EALauncher.exe").c_str());
 			}
-			else
-			{
-				Window::ShowPopup("EA app", "EA app could not be found!\nMake sure you have the EA app installed.");
-			}
-		}
-		else
-		{
-			Window::ShowPopup("EA app", "EA app could not be found!\nMake sure you have the EA app installed.");
 		}
 #endif
 	}

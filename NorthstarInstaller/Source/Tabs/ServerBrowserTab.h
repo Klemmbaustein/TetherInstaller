@@ -55,6 +55,8 @@ public:
 	{
 	};
 
+	bool IsInstalledAsServerMod(std::string Name);
+
 	static inline const std::map<std::string, std::string> MapNames = {
 		std::pair("mp_angel_city", "Angel City"),
 		std::pair("mp_black_water_canal" , "Black Water Canal"),

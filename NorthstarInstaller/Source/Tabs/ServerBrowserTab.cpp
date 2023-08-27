@@ -279,6 +279,21 @@ ServerBrowserTab::ServerBrowserTab()
 	new BackgroundTask(LoadServers, []() {CurrentServerTab->DisplayServers(); });
 }
 
+bool ServerBrowserTab::IsInstalledAsServerMod(std::string Name)
+{
+	auto Mods = Thunderstore::GetInstalledMods().Combined();
+	for (auto& i : Mods)
+	{
+		if (RemoveSpaces(ToLowerCase(i.Name)).find(RemoveSpaces(ToLowerCase(Name))) != std::string::npos
+			|| RemoveSpaces(ToLowerCase(Name)).find(RemoveSpaces(ToLowerCase(i.Name))) != std::string::npos)
+		{
+			return true;
+		}
+
+	}
+	return false;
+}
+
 void ServerBrowserTab::DisplayServers()
 {
 	DisplayServerDescription(ServerEntry());
@@ -392,6 +407,12 @@ void ServerBrowserTab::DisplayServers()
 		DisplayedServerEntries.push_back(i);
 		ServerBrowserButtons.push_back(b);
 	}
+
+	if (ServerBrowserButtons.empty())
+	{
+		ServerListBox->AddChild(new UIText(0.3, 1, "No servers found", UI::Text));
+	}
+
 	PlayerCountText->SetText("Players in game: " + std::to_string(TotalPlayers));
 }
 
@@ -510,7 +531,7 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 
 		std::string ModName = " - " + i.ModName;
 
-		if (Thunderstore::IsModInstalled(m))
+		if (IsInstalledAsServerMod(m.Name) || Thunderstore::IsModInstalled(m))
 		{
 			ModName.append(" (installed)");
 		}
