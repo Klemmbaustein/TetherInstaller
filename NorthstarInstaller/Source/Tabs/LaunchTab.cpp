@@ -27,7 +27,7 @@ void NorthstarLaunchTask()
 	std::string UTF8GameDir = std::regex_replace(Game::GamePath, std::regex(" "), "^ ");
 
 	system((UTF8GameDir + "/NorthstarLauncher.exe -profile=\""
-		+ ProfileTab::CurrentProfile.Path 
+		+ ProfileTab::CurrentProfile.DisplayName 
 		+ "\" "
 		+ NorthstarLaunchArgs 
 		+ " " 

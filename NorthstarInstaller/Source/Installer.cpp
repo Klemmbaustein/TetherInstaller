@@ -80,7 +80,7 @@ namespace Installer
 				});
 			Button->BoxAlign = UIBox::Align::Centered;
 			TabBackground->AddChild(Button
-				->SetSizeMode(UIBox::SizeMode::PixelRelative)
+				->SetSizeMode(UIBox::SizeMode::AspectRelative)
 				->SetMinSize(Vector2f(0.3, 0))
 				->SetPadding(0.01, 0.01, 0.01, 0)
 				->AddChild((new UIText(0.5, 0, Tabs[i]->Name, UI::Text))
@@ -245,10 +245,10 @@ void Installer::GenerateWindowButtons()
 			->SetPressedColor(HoveredColor * 0.5)
 			->SetMinSize(0.05)
 			->SetPadding(0)
-			->SetSizeMode(UIBox::SizeMode::PixelRelative)
+			->SetSizeMode(UIBox::SizeMode::AspectRelative)
 			->AddChild((new UIBackground(true, 0, 1, Vector2(0.03)))
 				->SetUseTexture(true, WindowButtonsIcons[i])
-				->SetSizeMode(UIBox::SizeMode::PixelRelative)
+				->SetSizeMode(UIBox::SizeMode::AspectRelative)
 				->SetPadding(0.02, 0.01, 0.015, 0.015)));
 	}
 }
@@ -316,7 +316,7 @@ int main(int argc, char** argv)
 	}
 	Vector2f bgCenter = Vector2f(-0.3, 0);
 	auto bg = new UIBackground(true, 0, 1, Vector2f(2.5 * (16.f/9.f), 2.5));
-	bg->SetSizeMode(UIBox::SizeMode::PixelRelative);
+	bg->SetSizeMode(UIBox::SizeMode::AspectRelative);
 	bg->SetUseTexture(true, Texture::LoadTexture("Data/Game.png"));
 
 	Application::UpdateWindow();

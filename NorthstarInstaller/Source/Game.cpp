@@ -31,7 +31,7 @@ std::string wstrtostr(const std::wstring& wstr);
 LONG GetStringRegKey(HKEY hKey, const std::wstring& strValueName, std::wstring& strValue, const std::wstring& strDefaultValue)
 {
 	strValue = strDefaultValue;
-	WCHAR szBuffer[512];
+	WCHAR szBuffer[512] = {};
 	DWORD dwBufferSize = sizeof(szBuffer);
 	ULONG nError;
 	nError = RegQueryValueExW(hKey, strValueName.c_str(), 0, NULL, (LPBYTE)szBuffer, &dwBufferSize);
@@ -128,7 +128,7 @@ bool Game::IsValidTitanfallLocation(std::filesystem::path p)
 #if _WIN32
 int Game::GetFileVersion(const char* filename, char* ver)
 {
-	DWORD dwHandle, sz = GetFileVersionInfoSizeA(filename, &dwHandle);
+	DWORD dwHandle = 0, sz = GetFileVersionInfoSizeA(filename, &dwHandle);
 	if (0 == sz)
 	{
 		return 1;
@@ -139,7 +139,7 @@ int Game::GetFileVersion(const char* filename, char* ver)
 		delete[] buf;
 		return 2;
 	}
-	VS_FIXEDFILEINFO* pvi;
+	VS_FIXEDFILEINFO* pvi = nullptr;
 	sz = sizeof(VS_FIXEDFILEINFO);
 	if (!VerQueryValueA(&buf[0], "\\", (LPVOID*)&pvi, (unsigned int*)&sz))
 	{

@@ -83,7 +83,7 @@ void ModsTab::GenerateModInfo()
 		->AddChild((new UIBackground(true, 0, 1, Vector2(0.35)))
 			->SetUseTexture(true, Texture::LoadTexture(Thunderstore::SelectedMod.Img))
 			->SetPadding(0.02, 0.02, 0.1, 0.02)
-			->SetSizeMode(UIBox::SizeMode::PixelRelative)));
+			->SetSizeMode(UIBox::SizeMode::AspectRelative)));
 
 	ModActionsBox->AddChild((new UIButton(true, 0, 1, []() {
 		if (Thunderstore::SelectedMod.IsUnknownLocalMod)
@@ -285,7 +285,7 @@ void ModsTab::GenerateModPage()
 			->AddChild(Image
 				->SetUseTexture(UseTexture, tex)
 				->SetPadding(0)
-				->SetSizeMode(UIBox::SizeMode::PixelRelative))
+				->SetSizeMode(UIBox::SizeMode::AspectRelative))
 			->AddChild(NameText
 					->SetPadding(0.005)));
 

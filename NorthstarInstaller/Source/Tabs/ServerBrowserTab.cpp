@@ -485,7 +485,7 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 	ServerDescriptionBox->AddChild((new UIBox(true, 0))
 		->AddChild((new UIBackground(true, 0, 1, Vector2f(16, 9) * 0.025))
 			->SetUseTexture(true, GetMapTexture(e.Map))
-			->SetSizeMode(UIBox::SizeMode::PixelRelative))
+			->SetSizeMode(UIBox::SizeMode::AspectRelative))
 		->AddChild(MapDescr
 			->AddChild((new UIText(0.5, 1, e.MapName, UI::Text))
 				->SetPadding(0, 0, 0.01, 0.01))

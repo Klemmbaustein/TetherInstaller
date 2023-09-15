@@ -3,6 +3,7 @@
 #include <KlemmUI/UI/UIBackground.h>
 #include <KlemmUI/UI/UIScrollBox.h>
 #include <KlemmUI/UI/UITextField.h>
+#include <set>
 
 class ProfileTab : public UITab
 {
@@ -11,6 +12,8 @@ class ProfileTab : public UITab
 	UIBox* ProfileInfoBox;
 	UITextField* NewProfileTextField;
 public:
+	static const std::set<std::string> CoreModNames;
+
 	ProfileTab();
 
 	struct Profile
@@ -40,4 +43,6 @@ public:
 	static std::vector<Profile> AllProfiles;
 
 	static Profile CurrentProfile;
+
+	static void UpdateProfile(Profile Target);
 };

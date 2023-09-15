@@ -1,5 +1,6 @@
 #include "ProfileTab.h"
 #include "ModsTab.h"
+#include "SettingsTab.h"
 
 #include <KlemmUI/UI/UIText.h>
 #include <KlemmUI/UI/UIButton.h>
@@ -18,6 +19,14 @@
 ProfileTab::Profile ProfileTab::CurrentProfile;
 std::vector<ProfileTab::Profile> ProfileTab::AllProfiles;
 ProfileTab* ProfileTab::CurrentProfileTab = nullptr;
+
+const std::set<std::string> ProfileTab::CoreModNames =
+{
+	"Northstar.CustomServers",
+	"Northstar.Custom",
+	"Northstar.Client",
+	"Northstar.Coop", // soooooon
+};
 
 // https://github.com/R2NorthstarTools/FlightCore/blob/b61eeba6e552fa0b6fb96f3eee6202200821826b/src-tauri/src/northstar/profile.rs#L5-L28
 // Thanks flightcore.
@@ -142,7 +151,11 @@ void ProfileTab::OnProfileSwitched()
 	LOG_PRINTF("Switched profile to \"{}\"", CurrentProfile.DisplayName);
 	Installer::UpdateCheckedOnce = false;
 	ModsTab::Reload();
-	new BackgroundTask(ModsTab::CheckForModUpdates);
+	new BackgroundTask(Installer::CheckForUpdates);
+	if (!BackgroundTask::IsFunctionRunningAsTask(ModsTab::CheckForModUpdates))
+	{
+		new BackgroundTask(ModsTab::CheckForModUpdates);
+	}
 	CurrentProfileTab->UpdateProfilesList();
 	CurrentProfileTab->DisplayProfileInfo();
 	CurrentProfileTab->SaveSelectedProfile();
@@ -254,7 +267,31 @@ void ProfileTab::DisplayProfileInfo()
 
 	if (CurrentProfile.DisplayName != "R2Northstar")
 	{
-		ProfileInfoBox->AddChild((new UIButton(true, 0, Vector3f32(1, 0.5, 0), []()
+		auto OptionsBox = (new UIBox(true, 0));
+
+		ProfileInfoBox->AddChild(OptionsBox
+			->AddChild((new UIButton(true, 0, Vector3f32(0, 0.5, 1), []()
+				{
+					new BackgroundTask([]()
+						{
+							if (Game::RequiresUpdate)
+							{
+								Game::UpdateGame();
+							}
+							BackgroundTask::SetStatus("Updating profile...");
+							BackgroundTask::SetProgress(0.8);
+							UpdateProfile(CurrentProfile);
+						},
+						[]()
+						{
+							SettingsTab::CurrentSettingsTab->GenerateSettings();
+						});
+				}))
+				->SetPadding(0.1, 0, 0.01, 0.01)
+					->SetBorder(UIBox::BorderType::Rounded, 0.5)
+					->AddChild((new UIText(0.25, 0, "Update profile", UI::Text))
+						->SetPadding(0.015)))
+			->AddChild((new UIButton(true, 0, Vector3f32(1, 0.5, 0), []()
 			{
 				if (Window::ShowPopupQuestion("Delete profile",
 				"Are you sure you want to delete the profile \"" + CurrentProfile.DisplayName + "\"?")
@@ -277,7 +314,7 @@ void ProfileTab::DisplayProfileInfo()
 			->SetPadding(0.1, 0, 0.01, 0.01)
 			->SetBorder(UIBox::BorderType::Rounded, 0.5)
 			->AddChild((new UIText(0.25, 0, "Delete profile", UI::Text))
-				->SetPadding(0.015)));
+				->SetPadding(0.015))));
 	}
 }
 
@@ -314,13 +351,6 @@ void ProfileTab::CreateNewProfile(std::string Name)
 	}
 	std::filesystem::create_directories(Game::GamePath + Name + "/mods");
 
-	std::set<std::string> CoreModNames =
-	{
-		"Northstar.CustomServers",
-		"Northstar.Custom",
-		"Northstar.Client",
-		"Northstar.Coop", // soooooon
-	};
 	for (auto& i : CoreModNames)
 	{
 		if (std::filesystem::exists(Game::GamePath + "/R2Northstar/mods/" + i))
@@ -363,4 +393,36 @@ void ProfileTab::SaveSelectedProfile()
 	std::ofstream out = std::ofstream("Data/var/SelectedProfile.txt");
 	out << CurrentProfile.DisplayName << std::endl << CurrentProfile.Path << std::endl;
 	out.close();
+}
+
+void ProfileTab::UpdateProfile(Profile Target)
+{
+	Log::Print("Updating profile mods: " + Target.DisplayName);
+	for (auto& mod : std::filesystem::directory_iterator(Target.Path + "/mods/"))
+	{
+		std::string ModString = mod.path().filename().u8string();
+		if (CoreModNames.contains(ModString))
+		{
+			std::filesystem::remove_all(mod);
+		}
+	}
+
+
+	for (auto& m : CoreModNames)
+	{
+		if (std::filesystem::exists(Game::GamePath + "/R2Northstar/mods/" + m))
+		{
+			std::filesystem::copy(
+				Game::GamePath
+				+ "/R2Northstar/mods/"
+				+ m,
+
+				Target.Path
+				+ "/mods/"
+				+ m,
+
+				std::filesystem::copy_options::recursive);
+		}
+	}
+	Window::ShowPopup("Profile update", "Updated profile " + CurrentProfile.DisplayName + " to latest version.");
 }

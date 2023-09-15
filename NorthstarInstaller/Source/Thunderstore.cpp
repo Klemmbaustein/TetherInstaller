@@ -128,6 +128,11 @@ Thunderstore::InstalledModsResult Thunderstore::GetInstalledMods()
 		std::string Author = ModName.substr(0, ModName.find_first_of("."));
 		std::string Name = ModName.substr(ModName.find_first_of(".") + 1);
 
+		if (!std::filesystem::exists(i.path().u8string() + "/mod.json"))
+		{
+			continue;
+		}
+
 		if (!ManagedMods.contains("/mods/" + ModName) && std::filesystem::is_directory(i) && Author != "Northstar" && Name != "autojoin")
 		{
 			Package p;
@@ -243,12 +248,12 @@ bool Thunderstore::IsModInstalled(Package m)
 		}
 	}
 
-	if (!std::filesystem::exists("Data/var/modinfo"))
+	if (!std::filesystem::exists("Data/var/" + ProfileTab::CurrentProfile.DisplayName + "/modinfo"))
 	{
 		return false;
 	}
 
-	for (auto& i : std::filesystem::directory_iterator("Data/var/modinfo"))
+	for (auto& i : std::filesystem::directory_iterator("Data/var/" + ProfileTab::CurrentProfile.DisplayName + "/modinfo"))
 	{
 		std::string Name = i.path().filename().u8string();
 		std::string ModName = Name.substr(Name.find_first_of(".") + 1);
@@ -760,7 +765,8 @@ namespace Thunderstore::TSModFunc
 					}
 					else
 					{
-						Game::UpdateGameAsync();
+						std::filesystem::remove(ProfileTab::CurrentProfile.Path + "/Northstar.dll");
+						Game::UpdateGame();
 					}
 					try
 					{
@@ -801,6 +807,12 @@ namespace Thunderstore::TSModFunc
 						std::filesystem::remove(File);
 					}
 				}
+
+				std::filesystem::copy("Data/temp/mod/Northstar/Northstar.dll",
+					ProfileTab::CurrentProfile.Path + "/Northstar.dll", 
+					std::filesystem::copy_options::overwrite_existing);
+
+				std::filesystem::remove("Data/temp/mod/Northstar/Northstar.dll");
 
 				std::filesystem::copy("Data/temp/mod/Northstar", Game::GamePath,
 					std::filesystem::copy_options::overwrite_existing
@@ -846,7 +858,13 @@ namespace Thunderstore::TSModFunc
 					{"UUID", m.UUID},
 					}));
 
-				std::ofstream out = std::ofstream("Data/var/modinfo/" + m.Namespace + "." + m.Name + ".json");
+				std::ofstream out = std::ofstream("Data/var/modinfo/"
+					+ ProfileTab::CurrentProfile.DisplayName
+					+ "/"
+					+ m.Namespace
+					+ "." 
+					+ m.Name 
+					+ ".json");
 				out << descr.dump();
 				out.close();
 				IsInstallingMod = false;
