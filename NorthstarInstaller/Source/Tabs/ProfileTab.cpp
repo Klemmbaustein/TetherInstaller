@@ -395,7 +395,7 @@ void ProfileTab::SaveSelectedProfile()
 	out.close();
 }
 
-void ProfileTab::UpdateProfile(Profile Target)
+void ProfileTab::UpdateProfile(Profile Target, bool Silent)
 {
 	Log::Print("Updating profile mods: " + Target.DisplayName);
 	for (auto& mod : std::filesystem::directory_iterator(Target.Path + "/mods/"))
@@ -424,5 +424,8 @@ void ProfileTab::UpdateProfile(Profile Target)
 				std::filesystem::copy_options::recursive);
 		}
 	}
-	Window::ShowPopup("Profile update", "Updated profile " + CurrentProfile.DisplayName + " to latest version.");
+	if (!Silent)
+	{
+		Window::ShowPopup("Profile update", "Updated profile " + CurrentProfile.DisplayName + " to latest version.");
+	}
 }

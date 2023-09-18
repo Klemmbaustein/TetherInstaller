@@ -44,5 +44,5 @@ public:
 
 	static Profile CurrentProfile;
 
-	static void UpdateProfile(Profile Target);
+	static void UpdateProfile(Profile Target, bool Silent = false);
 };

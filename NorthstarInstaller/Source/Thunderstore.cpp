@@ -767,6 +767,7 @@ namespace Thunderstore::TSModFunc
 					{
 						std::filesystem::remove(ProfileTab::CurrentProfile.Path + "/Northstar.dll");
 						Game::UpdateGame();
+						ProfileTab::UpdateProfile(ProfileTab::CurrentProfile, true);
 					}
 					try
 					{
@@ -813,6 +814,10 @@ namespace Thunderstore::TSModFunc
 					std::filesystem::copy_options::overwrite_existing);
 
 				std::filesystem::remove("Data/temp/mod/Northstar/Northstar.dll");
+
+				std::filesystem::rename(
+					"Data/temp/mod/Northstar/R2Northstar", 
+					"Data/temp/mod/Northstar/" + ProfileTab::CurrentProfile.DisplayName);
 
 				std::filesystem::copy("Data/temp/mod/Northstar", Game::GamePath,
 					std::filesystem::copy_options::overwrite_existing

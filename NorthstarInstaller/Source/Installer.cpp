@@ -243,13 +243,16 @@ void Installer::GenerateWindowButtons()
 			}, i))
 			->SetHoveredColor(HoveredColor)
 			->SetPressedColor(HoveredColor * 0.5)
-			->SetMinSize(0.05)
+			->SetMinSize(0)
 			->SetPadding(0)
-			->SetSizeMode(UIBox::SizeMode::AspectRelative)
+			->SetSizeMode(UIBox::SizeMode::PixelRelative)
 			->AddChild((new UIBackground(true, 0, 1, Vector2(0.03)))
 				->SetUseTexture(true, WindowButtonsIcons[i])
-				->SetSizeMode(UIBox::SizeMode::AspectRelative)
-				->SetPadding(0.02, 0.01, 0.015, 0.015)));
+				->SetSizeMode(UIBox::SizeMode::PixelRelative)
+				->SetPadding(Application::GetFullScreen() ? 0.0275 : 0.015,
+					0.015,
+					0.015,
+					(Application::GetFullScreen() && i == 0) ? 0.02 : 0.015)));
 	}
 }
 
@@ -364,9 +367,16 @@ int main(int argc, char** argv)
 
 	Log::Print("Successfully started launcher");
 
-	WindowButtonBox = (new UIBox(true, Vector2(0.75, 0.94)))
-		->SetMinSize(Vector2(0.25, 0.06));
+	WindowButtonBox = (new UIBox(true, Vector2f(0.75, 0.0)))
+		->SetPadding(0)
+		->SetAlign(UIBox::Align::Reverse)
+		->SetMinSize(Vector2f(0.25, 0.0));
 	WindowButtonBox->BoxAlign = UIBox::Align::Reverse;
+	(new UIBox(false, Vector2f(0.75, 0.7)))
+		->SetMinSize(Vector2f(0.25, 0.3))
+		->AddChild(WindowButtonBox)
+		->SetAlign(UIBox::Align::Reverse);
+	
 	GenerateWindowButtons();
 	float PrevAspect = Application::AspectRatio;
 
