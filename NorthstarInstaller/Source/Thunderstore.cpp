@@ -818,6 +818,10 @@ namespace Thunderstore::TSModFunc
 				std::filesystem::rename(
 					"Data/temp/mod/Northstar/R2Northstar", 
 					"Data/temp/mod/Northstar/" + ProfileTab::CurrentProfile.DisplayName);
+				std::filesystem::rename(
+					"Data/temp/mod/Northstar/NorthstarLauncher.exe",
+					"Data/temp/mod/Northstar/NorthstarLauncherRC.exe");
+
 
 				std::filesystem::copy("Data/temp/mod/Northstar", Game::GamePath,
 					std::filesystem::copy_options::overwrite_existing

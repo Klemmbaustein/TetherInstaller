@@ -26,7 +26,22 @@ void NorthstarLaunchTask()
 
 	std::string UTF8GameDir = std::regex_replace(Game::GamePath, std::regex(" "), "^ ");
 
-	system((UTF8GameDir + "/NorthstarLauncher.exe -profile=\""
+	Thunderstore::Package ReleaseCanidate;
+
+	ReleaseCanidate.Name = "NorthstarReleaseCandidate";
+	ReleaseCanidate.Author = "northstar";
+	ReleaseCanidate.Namespace = "northstar";
+
+	if (Thunderstore::IsModInstalled(ReleaseCanidate))
+	{
+		UTF8GameDir.append("/NorthstarLauncherRC.exe");
+	}
+	else
+	{
+		UTF8GameDir.append("/NorthstarLauncher.exe");
+	}
+
+	system((UTF8GameDir + " -profile=\""
 		+ ProfileTab::CurrentProfile.DisplayName 
 		+ "\" "
 		+ NorthstarLaunchArgs 
