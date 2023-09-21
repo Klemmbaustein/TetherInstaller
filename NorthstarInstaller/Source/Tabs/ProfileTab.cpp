@@ -241,9 +241,6 @@ void ProfileTab::DisplayProfileInfo()
 		{
 			DLLPath = Game::GamePath + "/Northstar.dll";
 		}
-
-		char Ver[100];
-		Game::GetFileVersion(DLLPath.c_str(), Ver);
 		auto p = std::filesystem::current_path();
 		std::filesystem::current_path(Game::GamePath + "/..");
 		std::vector<std::string> AboutStrings =
