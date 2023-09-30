@@ -11,10 +11,8 @@ vec3 sampleUI()
 	vec4 UIsample = vec4(0);
 	vec2 texSize = 1.f / textureSize(u_ui, 0);
 	UIsample += texture(u_ui, v_texcoords);
-	UIsample += texture(u_ui, v_texcoords + vec2(0, texSize.y));
 	UIsample += texture(u_ui, v_texcoords + vec2(texSize.x, 0));
-	UIsample += texture(u_ui, v_texcoords + texSize);
-	return vec3(UIsample.xyz / 4.f);
+	return vec3(UIsample.xyz / 2.0f);
 }
 void main()
 {

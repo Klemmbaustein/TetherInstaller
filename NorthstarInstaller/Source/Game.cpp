@@ -146,10 +146,10 @@ int Game::GetFileVersion(const char* filename, char* ver)
 		delete[] buf;
 		return 3;
 	}
-	sprintf(ver, "v%d.%d.%d"
-		, pvi->dwProductVersionMS >> 16
-		, pvi->dwFileVersionMS & 0xFFFF
-		, pvi->dwFileVersionLS >> 16
+	sprintf(ver, "v%d.%d.%d",
+		pvi->dwProductVersionMS >> 16, 
+		pvi->dwFileVersionMS & 0xFFFF,
+		pvi->dwFileVersionLS >> 16
 	);
 	delete[] buf;
 	return 0;
