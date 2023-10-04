@@ -53,6 +53,7 @@ namespace Installer
 #endif
 	void GenerateTabs()
 	{
+		Log::Print("Generating tab bar layout");
 		TabButtons.clear();
 		TabBackground->DeleteChildren();
 		for (size_t i = 0; i < Tabs.size(); i++)
@@ -337,7 +338,7 @@ int main(int argc, char** argv)
 
 	Game::GamePath = Game::GetTitanfallLocation();
 
-	Log::Print("Loading tabs...");
+	Log::Print("--- Loading tabs ---");
 	Installer::Tabs =
 	{
 		new LaunchTab(),
@@ -357,7 +358,6 @@ int main(int argc, char** argv)
 
 	TabBackground = new UIBackground(true, Vector2f(-1, 0.85), 0, Vector2f(1.5, 0.15));
 	TabBackground->SetOpacity(0.3);
-	Log::Print("Loading tab bar...");
 	GenerateTabs();
 
 	if (std::filesystem::exists(ProfileTab::CurrentProfile.Path + "/mods/autojoin"))

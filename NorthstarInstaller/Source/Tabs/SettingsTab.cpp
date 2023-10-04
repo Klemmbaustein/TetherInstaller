@@ -22,6 +22,7 @@ SettingsTab::SettingsTab()
 {
 	CurrentSettingsTab = this;
 	Name = "Settings";
+	Log::Print("Loading settings tab...");
 
 	Background->BoxAlign = UIBox::Align::Centered;
 	Background->SetHorizontal(true);

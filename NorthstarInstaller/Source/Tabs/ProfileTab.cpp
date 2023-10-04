@@ -58,6 +58,7 @@ const std::set<std::string> MAY_CONTAIN =
 ProfileTab::ProfileTab()
 {
 	Name = "Profiles";
+	Log::Print("Loading profile tab...");
 
 	Background->BoxAlign = UIBox::Align::Centered;
 	Background->SetHorizontal(true);
@@ -109,7 +110,7 @@ ProfileTab::ProfileTab()
 	
 	if (std::filesystem::exists("Data/var/SelectedProfile.txt"))
 	{
-		Log::Print("Reading profile from SelectedProfile.txt");
+		Log::Print("- Using profile from SelectedProfile.txt");
 		std::ifstream InProfile = std::ifstream("Data/var/SelectedProfile.txt");
 		char LineBuffer[2048];
 		InProfile.getline(LineBuffer, 2048);
@@ -166,11 +167,11 @@ void ProfileTab::DetectProfiles()
 	AllProfiles.clear();
 	if (!std::filesystem::exists(Game::GamePath))
 	{
-		Log::Print("Search for northstar profiles failed - Game path does not exist.", Log::Warning);
+		Log::Print("- Looking for northstar profiles failed - Game path does not exist.", Log::Warning);
 		return;
 	}
 
-	Log::Print("-- Searching for Northstar profiles --");
+	Log::Print("- Looking for Northstar profiles");
 
 	for (const auto& f : std::filesystem::directory_iterator(Game::GamePath))
 	{
@@ -185,7 +186,7 @@ void ProfileTab::DetectProfiles()
 				CurrentProfile = NewProfile;
 			}
 
-			LOG_PRINTF("Found profile: {}", NewProfile.DisplayName);
+			LOG_PRINTF("- * Found profile: {}", NewProfile.DisplayName);
 			AllProfiles.push_back(NewProfile);
 		}
 	}

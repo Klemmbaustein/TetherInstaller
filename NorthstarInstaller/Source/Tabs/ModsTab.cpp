@@ -455,6 +455,7 @@ ModsTab::ModsTab()
 	PrevAspectRatio = Application::AspectRatio;
 	CurrentModsTab = this;
 	Name = "Mods";
+	Log::Print("Loading mods tab...");
 
 	Background->BoxAlign = UIBox::Align::Centered;
 	Background->SetHorizontal(true);

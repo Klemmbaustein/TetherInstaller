@@ -229,6 +229,7 @@ ServerBrowserTab::ServerBrowserTab()
 {
 	CurrentServerTab = this;
 	Name = "Servers";
+	Log::Print("Loading server browser tab...");
 
 	Background->BoxAlign = UIBox::Align::Centered;
 	Background->SetHorizontal(true);
