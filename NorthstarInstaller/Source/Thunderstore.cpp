@@ -51,8 +51,19 @@ Thunderstore::InstalledModsResult Thunderstore::GetInstalledMods()
 		for (auto& i : std::filesystem::directory_iterator("Data/var/modinfo/" + ProfileTab::CurrentProfile.DisplayName))
 		{
 			auto pathstring = i.path().u8string();
-			if (pathstring.substr(i.path().u8string().find_last_of(".")) == ".png")
+			if (pathstring.substr(pathstring.find_last_of(".")) == ".png")
 			{
+				if (!std::filesystem::exists(pathstring.substr(0, pathstring.find_last_of(".")) + ".json"))
+				{
+					try
+					{
+						std::filesystem::remove(std::filesystem::absolute(i));
+					}
+					catch (std::exception& e)
+					{
+						Window::ShowPopupError(e.what());
+					}
+				}
 				continue;
 			}
 
@@ -747,10 +758,6 @@ namespace Thunderstore::TSModFunc
 				if (!str.str().empty())
 				{
 					json modinfo = json::parse(str.str());
-					if (modinfo.contains("image") && std::filesystem::exists(modinfo.at("image")))
-					{
-						std::filesystem::remove(modinfo.at("image"));
-					}
 
 					if (m.Name != "NorthstarReleaseCandidate")
 					{

@@ -48,6 +48,7 @@ void ModsTab::GenerateModInfo()
 	bool IsInstalled = Thunderstore::IsModInstalled(Thunderstore::SelectedMod);
 
 	ModsScrollBox->GetScrollObject()->Percentage = 0;
+	ModsScrollBox->SetDisplayScrollBar(true);
 	ModButtons.clear();
 	ModsScrollBox->DeleteChildren();
 
@@ -70,6 +71,13 @@ void ModsTab::GenerateModInfo()
 
 	UIBox* ModActionsBox = new UIBox(true, 0);
 
+	if (ModPreviewTexture)
+	{
+		Texture::UnloadTexture(ModPreviewTexture);
+	}
+
+	ModPreviewTexture = Texture::LoadTexture(Thunderstore::SelectedMod.Img);
+
 	ModsScrollBox->AddChild((new UIBox(true, 0))
 		->SetPadding(0)
 		->AddChild((new UIBox(false, 0))
@@ -78,10 +86,11 @@ void ModsTab::GenerateModInfo()
 			->AddChild(ModActionsBox)
 
 			->AddChild(new UIText(0.4, 1, DescriptionText, UI::Text))
-			->AddChild(new UIText(0.7, 1, Thunderstore::SelectedMod.Name + (IsInstalled ? " (Installed)" : ""), UI::Text)))
+			->AddChild((new UIText(0.7, 1, Thunderstore::SelectedMod.Name + (IsInstalled ? " (Installed)" : ""), UI::Text))
+				->SetWrapEnabled(true, 0.9, UIBox::SizeMode::ScreenRelative)))
 
 		->AddChild((new UIBackground(true, 0, 1, Vector2(0.35)))
-			->SetUseTexture(true, Texture::LoadTexture(Thunderstore::SelectedMod.Img))
+			->SetUseTexture(true, ModPreviewTexture)
 			->SetPadding(0.02, 0.02, 0.1, 0.02)
 			->SetSizeMode(UIBox::SizeMode::AspectRelative)));
 
@@ -98,7 +107,14 @@ void ModsTab::GenerateModInfo()
 			Thunderstore::InstallOrUninstallMod(Thunderstore::SelectedMod, false, false);
 			},
 			[]() {
-				Thunderstore::LoadedSelectedMod = true;
+				if (!Thunderstore::IsModInstalled(Thunderstore::SelectedMod) && Thunderstore::SelectedOrdering == Thunderstore::Ordering::Installed)
+				{
+					CurrentModsTab->GenerateModPage();
+				}
+				else
+				{
+					Thunderstore::LoadedSelectedMod = true;
+				}
 			});
 		}))
 		->SetPadding(0.01, 0.07, 0.01, 0.01)
@@ -201,7 +217,7 @@ void ModsTab::GenerateModPage()
 	ModImages.clear();
 	ModsScrollBox->GetScrollObject()->Percentage = 0;
 	ModsScrollBox->DeleteChildren();
-
+	ModsScrollBox->SetDisplayScrollBar(false);
 	ClearLoadedTextures();
 
 	std::vector<UIBox*> Rows;
@@ -402,6 +418,11 @@ void ModsTab::CheckForModUpdates()
 		float Progress = 0;
 		try
 		{
+			if (m.IsTemporary)
+			{
+				Thunderstore::InstallOrUninstallMod(m, true, false);
+				continue;
+			}
 			std::ifstream in = std::ifstream("Data/temp/net/mod.json");
 			std::stringstream str; str << in.rdbuf();
 			json response = json::parse(str.str());
@@ -420,11 +441,6 @@ void ModsTab::CheckForModUpdates()
 			else
 			{
 				Log::Print("Mod '" + m.Name + "' is not outdated.");
-			}
-
-			if (m.IsTemporary)
-			{
-				Thunderstore::InstallOrUninstallMod(m, true, false);
 			}
 		}
 		catch (std::exception& e)

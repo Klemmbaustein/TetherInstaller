@@ -105,6 +105,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>SDL2.lib;glew32s.lib;opengl32.lib;KlemmUI.lib;libcurl.lib;Version.lib;%(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Command>xcopy "$(ProjectDir)../KlemmUI/Shaders" "$(ProjectDir)Shaders" /e /i /h /y</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\BackgroundTask.cpp" />
