@@ -92,4 +92,8 @@ void Window::ShowPopup(std::string Title, std::string Message)
 {
 	Log::Print(Title + ": " + Message);
 }
+void Window::ShowPopupError(std::string Message)
+{
+	Log::Print(Message, Log::Severity::Error);
+}
 #endif
