@@ -79,21 +79,76 @@ void Window::ShowPopupError(std::string Message)
 	MessageBoxA(NULL, Message.c_str(), "Tether Installer Error", MB_OK | MB_ICONERROR);
 }
 #else
+#include "nvdialog/nvdialog.h"
+
 std::string Window::ShowSelectFolderDialog()
 {
-	return "";
+	const char* filename = (const char*)malloc(8000);
+	/* 
+	 * This function either returns the filename or NULL to where the second parameter points.
+	 * As you can see below, NULL means no file was selected (Although it could be an error to,
+	 * in which case NvDialog handled it)
+	 */
+	NvdFileDialog* dialog = nvd_open_file_dialog_new("Locate Titanfall 2",
+		NULL);
+	Log::Print("test");
+        if (!dialog) {
+                puts("Error: Could not construct the dialog.");
+                return 0;
+        }
+	Log::Print("test");
+
+	nvd_get_file_location(dialog, &filename);
+	Log::Print("test");
+
+	if (filename != NULL) printf("Chosen file: %s\n", filename);
+	else printf("No file selected.\n");
+    nvd_free_object(dialog);
+	return filename;
 }
 
 Window::PopupReply Window::ShowPopupQuestion(std::string Title, std::string Message)
 {
 	return Window::PopupReply::No;
 }
+
+// This makes the windows api look good, wow.
 void Window::ShowPopup(std::string Title, std::string Message)
 {
-	Log::Print(Title + ": " + Message);
+	/* Constructing the dialog. This is the most important part. */
+    NvdDialogBox* dialog = nvd_dialog_box_new(Title.c_str(),
+		Message.c_str(),
+		NVD_DIALOG_SIMPLE);
+	/* This is not required, but we can set the accept label to something custom. */
+
+	/* If the dialog returned is null, then something went wrong and we must stop execution. */
+	if (!dialog) {
+		puts("Error: Could not construct error dialog.");
+		return;
+	}
+
+	/* Showing the dialog to the user */
+	nvd_show_dialog(dialog);
+	/* Then finally, freeing the dialog. */
+	nvd_free_object(dialog);
 }
+
 void Window::ShowPopupError(std::string Message)
 {
-	Log::Print(Message, Log::Severity::Error);
+	/* Constructing the dialog. This is the most important part. */
+    NvdDialogBox* dialog = nvd_dialog_box_new("Error",
+		Message.c_str(),
+		NVD_DIALOG_ERROR);
+
+	/* If the dialog returned is null, then something went wrong and we must stop execution. */
+	if (!dialog) {
+		puts("Error: Could not construct error dialog.");
+		return;
+	}
+
+	/* Showing the dialog to the user */
+	nvd_show_dialog(dialog);
+	/* Then finally, freeing the dialog. */
+	nvd_free_object(dialog);
 }
 #endif

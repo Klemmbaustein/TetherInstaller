@@ -140,7 +140,11 @@ void ModsTab::GenerateModInfo()
 	else
 	{
 		ModActionsBox->AddChild((new UIButton(true, 0, 1, []() {
+#if _WIN32
 			system(("start https://northstar.thunderstore.io/package/"
+#else
+			system(("xdg-open https://northstar.thunderstore.io/package/"
+#endif
 				+ Thunderstore::SelectedMod.Namespace
 				+ "/"
 				+ Thunderstore::SelectedMod.Name).c_str());

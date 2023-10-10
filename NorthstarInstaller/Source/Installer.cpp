@@ -260,9 +260,20 @@ void Installer::GenerateWindowButtons()
 
 float BackgroundFade = 0;
 
+#if !_WIN32
+#include <nvdialog/nvdialog.h>
+#endif
+
 int main(int argc, char** argv)
 {
 	using namespace Installer;
+
+#if !_WIN32
+    if (nvd_init(argv[0]) != 0) {
+        std::printf("NvDialog couldn't initialize: %s", nvd_stringify_error(nvd_get_error()));
+        exit(EXIT_FAILURE);
+    }
+#endif
 
 	if (!std::filesystem::exists("Shaders/postprocess.vert"))
 	{
