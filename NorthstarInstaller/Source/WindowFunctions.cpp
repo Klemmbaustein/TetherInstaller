@@ -79,17 +79,68 @@ void Window::ShowPopupError(std::string Message)
 	MessageBoxA(NULL, Message.c_str(), "Tether Installer Error", MB_OK | MB_ICONERROR);
 }
 #else
+#include "nvdialog/nvdialog.h"
+
 std::string Window::ShowSelectFolderDialog()
 {
-	return "";
+	const char* filename = nullptr;
+	NvdFileDialog* dialog = nvd_open_file_dialog_new("dialog",
+		NULL);
+	if (!dialog) {
+		puts("Error: :(");
+		return 0;
+	}
+
+	nvd_get_file_location(dialog, &filename);
+
+	if (filename != NULL) printf("Chosen file: %s\n", filename);
+	else printf("No file selected.\n");
+	nvd_free_object(dialog);
+	return filename;
 }
 
 Window::PopupReply Window::ShowPopupQuestion(std::string Title, std::string Message)
 {
 	return Window::PopupReply::No;
 }
+
+// This makes the windows api look good, wow.
 void Window::ShowPopup(std::string Title, std::string Message)
 {
-	Log::Print(Title + ": " + Message);
+	/* Constructing the dialog. This is the most important part. */
+	NvdDialogBox* dialog = nvd_dialog_box_new(Title.c_str(),
+		Message.c_str(),
+		NVD_DIALOG_SIMPLE);
+	/* This is not required, but we can set the accept label to something custom. */
+
+	/* If the dialog returned is null, then something went wrong and we must stop execution. */
+	if (!dialog) {
+		puts("Error: Could not construct error dialog.");
+		return;
+	}
+
+	/* Showing the dialog to the user */
+	nvd_show_dialog(dialog);
+	/* Then finally, freeing the dialog. */
+	nvd_free_object(dialog);
+}
+
+void Window::ShowPopupError(std::string Message)
+{
+	/* Constructing the dialog. This is the most important part. */
+	NvdDialogBox* dialog = nvd_dialog_box_new("Error",
+		Message.c_str(),
+		NVD_DIALOG_ERROR);
+
+	/* If the dialog returned is null, then something went wrong and we must stop execution. */
+	if (!dialog) {
+		puts("Error: Could not construct error dialog.");
+		return;
+	}
+
+	/* Showing the dialog to the user */
+	nvd_show_dialog(dialog);
+	/* Then finally, freeing the dialog. */
+	nvd_free_object(dialog);
 }
 #endif
