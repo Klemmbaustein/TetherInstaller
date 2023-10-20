@@ -44,7 +44,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(SolutionDir)tinyfiledialogs;$(SolutionDir)json\single_include;$(SolutionDir)KlemmUI\Include;$(SolutionDir)curl\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)curl\Build\lib\Release;$(SolutionDir)KlemmUI\glew-cmake\lib\Release\x64;$(SolutionDir)KlemmUI\SDL\VisualC\SDL\x64\Release;$(SolutionDir)KlemmUI\lib\Release;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)curl\Build\lib\Release;$(SolutionDir)KlemmUI\glew-cmake\lib\Release;$(SolutionDir)KlemmUI\SDL\VisualC\SDL\x64\Release;$(SolutionDir)KlemmUI\lib\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev|x64'">
     <IncludePath>$(SolutionDir)tinyfiledialogs;$(SolutionDir)json\single_include;$(SolutionDir)KlemmUI\Include;$(SolutionDir)curl\include;$(IncludePath)</IncludePath>
@@ -81,7 +81,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;glew32s.lib;opengl32.lib;KlemmUI.lib;libcurl.lib;Version.lib;%(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;glew.lib;opengl32.lib;KlemmUI.lib;libcurl.lib;Version.lib;%(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(SolutionDir)release\TetherInstaller.exe</OutputFile>
     </Link>
     <PreBuildEvent>
