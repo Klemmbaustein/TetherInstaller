@@ -75,10 +75,11 @@ jobs:
           make BUILD_ID=${{ github.run_number }}
     - name: make-release
       run: |
+          ls -R
           mkdir Release
           cp -rf NorthstarInstaller/Data Release/Data
           cp -rf NorthstarInstaller/Shaders Release/Shaders
-          cp License.txt Release/License.txt
+#          cp License.txt Release/License.txt
           cp -rf NorthstarInstaller/TetherInstaller Release/TetherInstaller
     - name: upload artifact
       uses: actions/upload-artifact@v3
