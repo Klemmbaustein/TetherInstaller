@@ -78,6 +78,7 @@ jobs:
           mkdir Release
           cp -rf NorthstarInstaller/Data Release/Data
           cp -rf NorthstarInstaller/Shaders Release/Shaders
+          cp -rf License.txt Release/License.txt
           cp -rf NorthstarInstaller/TetherInstaller Release/TetherInstaller
     - name: upload artifact
       uses: actions/upload-artifact@v3
