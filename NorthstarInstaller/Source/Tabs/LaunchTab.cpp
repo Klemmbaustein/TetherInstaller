@@ -41,15 +41,30 @@ void NorthstarLaunchTask()
 		UTF8GameDir.append("/NorthstarLauncher.exe");
 	}
 
-#if __linux__
-#endif
+#if __linux
+	int isWSL = !system("grep microsoft /proc/version");
 
-	system((UTF8GameDir + " -profile=\""
-		+ ProfileTab::CurrentProfile.DisplayName 
-		+ "\" "
-		+ NorthstarLaunchArgs 
-		+ " " 
-		+ Game::GetLaunchArgs()).c_str());
+	if (!isWSL)
+#else
+	if (false)
+#endif
+	{
+		system(("wine " + UTF8GameDir + " -profile=\""
+			+ ProfileTab::CurrentProfile.DisplayName 
+			+ "\" "
+			+ NorthstarLaunchArgs 
+			+ " " 
+			+ Game::GetLaunchArgs()).c_str());
+	}
+	else
+	{
+		system((UTF8GameDir + " -profile=\""
+			+ ProfileTab::CurrentProfile.DisplayName 
+			+ "\" "
+			+ NorthstarLaunchArgs 
+			+ " " 
+			+ Game::GetLaunchArgs()).c_str());
+	}
 	Log::Print("Game has finished running");
 	ModsTab::CheckForModUpdates();
 }
@@ -148,4 +163,6 @@ void LaunchTab::Tick()
 	}
 }
 
-Launch
+LaunchTab::~LaunchTab()
+{
+}
