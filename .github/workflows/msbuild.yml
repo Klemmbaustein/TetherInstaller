@@ -40,13 +40,14 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
-      run: ./Setup.ps1 && msbuild TetherInstaller.sln /p:Configuration=Release /p:Platform=x64
+      run:  |
+        set ExternalCompilerOptions /D:CI_BUILD=#${{ github.run_number }}
+        ./Setup.ps1 && msbuild TetherInstaller.sln /p:Configuration=Release /p:Platform=x64
 
     - name: create-zip
       working-directory: ${{env.GITHUB_WORKSPACE}}
-      # Also remove large unneeded folders
       run: |
-        Compress-Archive ./Release* Release.zip
+        Compress-Archive ./Release/* Release.zip
 
     - name: release
       uses: actions/create-release@v1
@@ -54,8 +55,8 @@ jobs:
       with:
         draft: false
         prerelease: false
-        release_name: "Release #${{ github.run_number }}"
-        tag_name: "Release-${{ github.run_number }}"
+        release_name: "Build #${{ github.run_number }}"
+        tag_name: "Build-${{ github.run_number }}"
       env:
         GITHUB_TOKEN: ${{ github.token }}
     - name: upload artifact

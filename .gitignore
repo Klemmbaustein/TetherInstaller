@@ -35,6 +35,7 @@
 *.user
 .vs
 .vscode
+Release/
 x64
 
 # launcher files

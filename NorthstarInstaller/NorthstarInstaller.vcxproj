@@ -73,7 +73,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
-      <AdditionalOptions>/Zc:char8_t- %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Zc:char8_t- $(ExternalCompilerOptions) %(AdditionalOptions)</AdditionalOptions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
