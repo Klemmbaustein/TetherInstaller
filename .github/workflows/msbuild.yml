@@ -98,7 +98,7 @@ jobs:
         path: Release
 
     - name: list-directory
-      run: "ls -r"
+      run: "ls -R"
 
     - name: Create release
       uses: actions/create-release@v1
