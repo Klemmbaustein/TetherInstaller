@@ -81,7 +81,7 @@ jobs:
     - name: make-release
       run: |
           mkdir Release
-          cp -rf NorthstarInstaller/Data Release/Shaders
+          cp -rf NorthstarInstaller/Data Release/Data
           cp -rf NorthstarInstaller/Shaders Release/Shaders
           cp -rf NorthstarInstaller/TetherInstaller Release/TetherInstaller
           zip -r Release.zip ./Release
