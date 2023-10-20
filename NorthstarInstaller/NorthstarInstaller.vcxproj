@@ -82,7 +82,11 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>SDL2.lib;glew32s.lib;opengl32.lib;KlemmUI.lib;libcurl.lib;Version.lib;%(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(SolutionDir)release\TetherInstaller.exe</OutputFile>
     </Link>
+    <PreBuildEvent>
+      <Command>cd $(SolutionDir) &amp;&amp; pwsh $(SolutionDir)MakeRelease.ps1</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dev|x64'">
     <ClCompile>

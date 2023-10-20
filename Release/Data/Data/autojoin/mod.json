@@ -1,0 +1,21 @@
+{
+  "Name": "AutoJoin",
+  "Description": "Automatically join a server through the command line",
+  "LoadPriority": 2,
+  "Version": "1.0.3",
+  "Scripts": [
+	{
+	  "Path": "autoJoinServer.gnut",
+	  "RunOn": "UI",
+	  "UICallback": {
+		"After": "joinFromConvar"
+	  }
+	}
+  ],
+  "ConVars": [
+	{
+	  "Name": "autoJoinServer",
+	  "DefaultValue": "none"
+	}
+  ]
+}
