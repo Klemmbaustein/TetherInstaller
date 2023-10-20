@@ -105,7 +105,7 @@ namespace Networking
 		/* open the file */
 		if (target_cp.find_last_of("/\\") != std::string::npos)
 		{
-			std::string Path = target_cp.substr(target_cp.find_last_of("/\\"));
+			std::string Path = target_cp.substr(0, target_cp.find_last_of("/\\"));
 			std::filesystem::create_directories(Path);
 		}
 
