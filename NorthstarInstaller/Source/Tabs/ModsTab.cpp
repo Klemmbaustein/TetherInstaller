@@ -87,7 +87,7 @@ void ModsTab::GenerateModInfo()
 
 			->AddChild(new UIText(0.4, 1, DescriptionText, UI::Text))
 			->AddChild((new UIText(0.7, 1, Thunderstore::SelectedMod.Name + (IsInstalled ? " (Installed)" : ""), UI::Text))
-				->SetWrapEnabled(true, 0.9, UIBox::SizeMode::ScreenRelative)))
+				->SetWrapEnabled(true, 0.2, UIBox::SizeMode::ScreenRelative)))
 
 		->AddChild((new UIBackground(true, 0, 1, Vector2(0.35)))
 			->SetUseTexture(true, ModPreviewTexture)
@@ -310,7 +310,7 @@ void ModsTab::GenerateModPage()
 					->SetPadding(0.005)));
 
 		NameText->Wrap = true;
-		NameText->WrapDistance = 0.8 / Application::AspectRatio;
+		NameText->WrapDistance = 0.2 / Application::AspectRatio;
 
 		if (!UseTexture)
 		{

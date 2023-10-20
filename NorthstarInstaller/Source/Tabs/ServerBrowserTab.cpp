@@ -461,13 +461,13 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 
 	UIText* Descr = new UIText(0.3, 1, e.Description, UI::Text);
 	Descr->Wrap = true;
-	Descr->WrapDistance = 1.6;
+	Descr->WrapDistance = 0.4;
 	std::string PlayerCount = "Players: " +
 	 std::to_string(e.PlayerCount) + "/" + std::to_string(e.MaxPlayerCount);
 
 	UIText* Title = new UIText(0.5, 1, e.Name, UI::Text);
 	Title->Wrap = true;
-	Title->WrapDistance = 1;
+	Title->WrapDistance = 0.25;
 
 	ServerDescriptionBox->AddChild(Title);
 	
