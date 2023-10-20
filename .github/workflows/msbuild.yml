@@ -92,7 +92,7 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         path: ${{ github.workspace }}/Release.zip
-        name: Tether-Windows-Build-${{ github.run_number }}.zip
+        name: Tether-Linux-Build-${{ github.run_number }}.zip
 
 #  Release:
 #    runs-on: ubuntu-latest
