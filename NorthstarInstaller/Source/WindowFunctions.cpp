@@ -1,11 +1,10 @@
 #include "WindowFunctions.h"
 #include "Log.h"
+#include <tinyfiledialogs.h>
+
 #if _WIN32
-#include <Shlobj.h>
-#include <shobjidl.h> 
-
-
-//https://www.cplusplus.com/forum/windows/74644/
+#include <Windows.h>
+#include <ShlObj.h>
 std::string wstrtostr(const std::wstring& wstr)
 {
 	std::string strTo;
@@ -16,8 +15,6 @@ std::string wstrtostr(const std::wstring& wstr)
 	delete[] szTo;
 	return strTo;
 }
-
-
 std::string Window::ShowSelectFolderDialog()
 {
 	std::string FilePath = "";
@@ -60,11 +57,23 @@ std::string Window::ShowSelectFolderDialog()
 	}
 	return FilePath;
 }
+#else
+// tinyfd does *not* use the regular win32 open file dialog on windows.
+std::string Window::ShowSelectFolderDialog()
+{
+	char* ret = tinyfd_selectFolderDialog("Locate Titanfall 2", nullptr);
+	if (ret)
+	{
+		return ret;
+	}
+	return "";
+}
+#endif
 
 Window::PopupReply Window::ShowPopupQuestion(std::string Title, std::string Message)
 {
-	int a = MessageBoxA(NULL, Message.c_str(), Title.c_str(), MB_YESNO | MB_ICONQUESTION);
-	if (a == IDYES)
+	int a = tinyfd_messageBox(Title.c_str(), Message.c_str(), "yesno", "question", 0);
+	if (a == 0)
 	{
 		return Window::PopupReply::Yes;
 	}
@@ -72,75 +81,9 @@ Window::PopupReply Window::ShowPopupQuestion(std::string Title, std::string Mess
 }
 void Window::ShowPopup(std::string Title, std::string Message)
 {
-	MessageBoxA(NULL, Message.c_str(), Title.c_str(), MB_OK);
+	tinyfd_notifyPopup(Title.c_str(), Message.c_str(), "info");
 }
 void Window::ShowPopupError(std::string Message)
 {
-	MessageBoxA(NULL, Message.c_str(), "Tether Installer Error", MB_OK | MB_ICONERROR);
+	tinyfd_notifyPopup("Tether Installer Error", Message.c_str(), "error");
 }
-#else
-#include "nvdialog/nvdialog.h"
-
-std::string Window::ShowSelectFolderDialog()
-{
-	const char* filename = nullptr;
-	NvdFileDialog* dialog = nvd_open_file_dialog_new("dialog",
-		NULL);
-	if (!dialog) {
-		puts("Error: :(");
-		return 0;
-	}
-
-	nvd_get_file_location(dialog, &filename);
-
-	if (filename != NULL) printf("Chosen file: %s\n", filename);
-	else printf("No file selected.\n");
-	nvd_free_object(dialog);
-	return filename;
-}
-
-Window::PopupReply Window::ShowPopupQuestion(std::string Title, std::string Message)
-{
-	return Window::PopupReply::No;
-}
-
-// This makes the windows api look good, wow.
-void Window::ShowPopup(std::string Title, std::string Message)
-{
-	/* Constructing the dialog. This is the most important part. */
-	NvdDialogBox* dialog = nvd_dialog_box_new(Title.c_str(),
-		Message.c_str(),
-		NVD_DIALOG_SIMPLE);
-	/* This is not required, but we can set the accept label to something custom. */
-
-	/* If the dialog returned is null, then something went wrong and we must stop execution. */
-	if (!dialog) {
-		puts("Error: Could not construct error dialog.");
-		return;
-	}
-
-	/* Showing the dialog to the user */
-	nvd_show_dialog(dialog);
-	/* Then finally, freeing the dialog. */
-	nvd_free_object(dialog);
-}
-
-void Window::ShowPopupError(std::string Message)
-{
-	/* Constructing the dialog. This is the most important part. */
-	NvdDialogBox* dialog = nvd_dialog_box_new("Error",
-		Message.c_str(),
-		NVD_DIALOG_ERROR);
-
-	/* If the dialog returned is null, then something went wrong and we must stop execution. */
-	if (!dialog) {
-		puts("Error: Could not construct error dialog.");
-		return;
-	}
-
-	/* Showing the dialog to the user */
-	nvd_show_dialog(dialog);
-	/* Then finally, freeing the dialog. */
-	nvd_free_object(dialog);
-}
-#endif

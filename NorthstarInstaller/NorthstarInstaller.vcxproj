@@ -43,11 +43,11 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)json\single_include;$(SolutionDir)KlemmUI\Include;$(SolutionDir)curl\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)tinyfiledialogs;$(SolutionDir)json\single_include;$(SolutionDir)KlemmUI\Include;$(SolutionDir)curl\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)curl\Build\lib\Release;$(SolutionDir)KlemmUI\glew-cmake\lib\Release\x64;$(SolutionDir)KlemmUI\SDL\VisualC\SDL\x64\Release;$(SolutionDir)KlemmUI\lib\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev|x64'">
-    <IncludePath>$(SolutionDir)json\single_include;$(SolutionDir)KlemmUI\Include;$(SolutionDir)curl\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)tinyfiledialogs;$(SolutionDir)json\single_include;$(SolutionDir)KlemmUI\Include;$(SolutionDir)curl\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)curl\Build\lib\Release;$(SolutionDir)KlemmUI\glew-cmake\lib\Release\x64;$(SolutionDir)KlemmUI\SDL\VisualC\SDL\x64\Release;$(SolutionDir)KlemmUI\lib\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg">
@@ -110,6 +110,7 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\tinyfiledialogs\tinyfiledialogs.c" />
     <ClCompile Include="Source\BackgroundTask.cpp" />
     <ClCompile Include="Source\Installer.cpp" />
     <ClCompile Include="Source\Game.cpp" />
@@ -127,6 +128,7 @@
     <ClCompile Include="Source\WindowFunctions.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\tinyfiledialogs\tinyfiledialogs.h" />
     <ClInclude Include="Source\BackgroundTask.h" />
     <ClInclude Include="Source\Game.h" />
     <ClInclude Include="Source\miniz\miniz.h" />
