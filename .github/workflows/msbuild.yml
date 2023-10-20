@@ -24,7 +24,7 @@ permissions:
   write-all
 
 jobs:
-  build:
+  MSBuild-Windows:
     runs-on: windows-latest
 
     steps:
@@ -47,23 +47,64 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: |
         Compress-Archive ./Release/* Release.zip
-
-    - name: release
-      uses: actions/create-release@v1
-      id: create_release
-      with:
-        draft: false
-        prerelease: false
-        release_name: "CI Build #${{ github.run_number }}"
-        tag_name: "CI-Build-${{ github.run_number }}"
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
     - name: upload artifact
-      uses: actions/upload-release-asset@v1
+      uses: actions/upload-artifact@v3
       env:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ github.workspace }}/Release.zip
-        asset_name: Tether-Build-${{ github.run_number }}.zip
-        asset_content_type: application/zip
+        path: ${{ github.workspace }}/Release.zip
+        name: Tether-Windows-Build-${{ github.run_number }}.zip
+  Build-Linux:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Checkout submodules
+      run: git submodule update --init --recursive
+
+    - name: install dependencies
+      run: |
+          sudo apt-get install libsdl2-2.0-0
+          sudo apt-get install libsdl2-dev
+          sudo apt-get install libglew-dev
+          sudo apt-get install libcurl4-openssl-dev
+          cd KlemmUI
+          make && sudo make install
+          cd ..
+    - name: build
+      run: |
+          cd NorthstarInstaller
+          make
+    - name: make-release
+      run: |
+          mkdir Release
+          cp -rf NorthstarInstaller/Data Release/Shaders
+          cp -rf NorthstarInstaller/Shaders Release/Shaders
+          cp -rf NorthstarInstaller/TetherInstaller Release/TetherInstaller
+          zip -r Release.zip ./Release
+    - name: upload artifact
+      uses: actions/upload-artifact@v3
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        path: ${{ github.workspace }}/Release.zip
+        name: Tether-Windows-Build-${{ github.run_number }}.zip
+
+#  Release:
+#    runs-on: ubuntu-latest
+#    steps:
+#    - name: release
+#      uses: actions/create-release@v1
+#      id: create_release
+#      with:
+#        draft: false
+#        prerelease: false
+#        release_name: "CI Build #${{ github.run_number }}"
+#        tag_name: "CI-Build-${{ github.run_number }}"
+#      env:
+#        GITHUB_TOKEN: ${{ github.token }}
+
+
