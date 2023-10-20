@@ -41,8 +41,7 @@ jobs:
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
       run:  |
-        set ExternalCompilerOptions /D:CI_BUILD=${{ github.run_number }}
-        ./Setup.ps1 && msbuild TetherInstaller.sln /p:Configuration=Release /p:Platform=x64
+        ./Setup.ps1 && msbuild TetherInstaller.sln /p:Configuration=Release /p:Platform=x64 /p:CI_BUILD=${{ github.run_number }}
 
     - name: create-zip
       working-directory: ${{env.GITHUB_WORKSPACE}}
@@ -66,5 +65,5 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ${{ github.workspace }}/Release.zip
-        asset_name: Klemmgine-Release-${{ github.run_number }}.zip
+        asset_name: Tether-Build-${{ github.run_number }}.zip
         asset_content_type: application/zip
