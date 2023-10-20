@@ -99,8 +99,10 @@ jobs:
 
     - name: "zip artifacts"
       run: |
-        zip -r tether-win.zip Release/Tether-Windows-Build-${{ github.run_number }}.zip/*
-        zip -r tether-linux.zip Release/Tether-Linux-Build-${{ github.run_number }}.zip/*
+        cd ${{ github.workspace }}/Release/Tether-Windows-Build-${{ github.run_number }}.zip
+        zip -r ${{ github.workspace }}/tether-win.zip ./*
+        cd ${{ github.workspace }}/Release/Tether-Linux-Build-${{ github.run_number }}.zip
+        zip -r ${{ github.workspace }}/tether-linux.zip ./
 
     - name: list-directory
       run: "ls -R"
@@ -115,16 +117,6 @@ jobs:
         tag_name: CI-Build-${{ github.run_number }}
       env:
         GITHUB_TOKEN: ${{ github.token }}
-    - name: upload windows artifact
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: tether-win.zip
-        asset_name: Tether-Windows-${{ github.run_number }}.zip
-        asset_content_type: application/zip
-
     - name: upload linux artifact
       uses: actions/upload-release-asset@v1
       env:
@@ -133,4 +125,14 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: tether-linux.zip
         asset_name: Tether-Linux-${{ github.run_number }}.zip
+        asset_content_type: application/zip
+
+    - name: upload windows artifact
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: tether-win.zip
+        asset_name: Tether-Windows-${{ github.run_number }}.zip
         asset_content_type: application/zip
