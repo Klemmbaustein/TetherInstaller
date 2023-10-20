@@ -169,7 +169,7 @@ namespace Networking
 		return "";
 	}
 
-	std::string DownloadLatestReleaseOf(std::string RepoName)
+	std::string DownloadLatestReleaseOf(std::string RepoName, std::string NecessaryAssetName)
 	{
 		using namespace nlohmann;
 		CheckNetTempFolder();
@@ -184,6 +184,11 @@ namespace Networking
 
 			for (auto& elem : response["assets"])
 			{
+				if (elem.get<std::string>().find(NecessaryAssetName) == std::string::npos)
+				{
+					continue;
+				}
+
 				std::string url = elem.at("browser_download_url").dump();
 
 				url = url.substr(1, url.size() - 2);

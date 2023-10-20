@@ -126,7 +126,7 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: tether-linux.zip
-        asset_name: Tether-Linux-${{ github.run_number }}.zip
+        asset_name: Tether-Linux-Build-${{ github.run_number }}.zip
         asset_content_type: application/zip
 
     - name: upload windows artifact
@@ -136,5 +136,5 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: tether-win.zip
-        asset_name: Tether-Windows-${{ github.run_number }}.zip
+        asset_name: Tether-Windows-Build-${{ github.run_number }}.zip
         asset_content_type: application/zip

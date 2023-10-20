@@ -198,13 +198,17 @@ namespace Installer
 
 	void UpdateInstaller()
 	{
+#if __linux__
+		Window::ShowPopupError("A new version of Tether is avaliable but updating the installer is not yet supported on linux.\nPlease update manually.");
+		return;
+#endif
 		BackgroundTask::SetStatus("Updating installer");
 		if (Window::ShowPopupQuestion("Update", "An update for the launcher is avaliabe.\nWould you like to install it?") != Window::PopupReply::Yes)
 		{
 			return;
 		}
 		BackgroundTask::SetProgress(0.3);
-		Networking::DownloadLatestReleaseOf("Klemmbaustein/TetherInstaller");
+		Networking::DownloadLatestReleaseOf("Klemmbaustein/TetherInstaller", "Windows");
 		Networking::ExtractZip("Data/temp/net/latest.zip", "Data/temp/install");
 
 		system("start update.bat");
