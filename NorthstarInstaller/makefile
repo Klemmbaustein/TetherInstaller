@@ -10,11 +10,15 @@ DEPS := $(OBJS:.o=.d)
 INC_DIRS := $(SRC_DIRS) ../json/single_include ../tinyfiledialogs
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
-CPPFLAGS := $(INC_FLAGS) -MMD -MP -fno-char8_t -std=c++2a `sdl2-config --cflags --libs`
+CPPFLAGS := $(INC_FLAGS) -O2 -Wno-unused-result -MMD -MP -fno-char8_t -std=c++2a `sdl2-config --cflags --libs`
+
+ifdef BUILD_ID
+CPPFLAGS := -DCI_BUILD=$(BUILD_ID) $(CPPFLAGS)
+endif
 
 # Package all C++ object files into a static library
 $(TARGET_EXEC): $(OBJS)
-	$(CXX) $(OBJS) -o $@ -lKlemmUI -l:libGLEW.a -lcurl -lGL `sdl2-config --cflags --libs`
+	$(CXX) $(OBJS) -o $@ -O2 -lKlemmUI -l:libGLEW.a -lcurl -lGL `sdl2-config --cflags --libs`
 
 # Build C++ object files
 $(BUILD_DIR)/%.cpp.o: %.cpp

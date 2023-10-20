@@ -24,7 +24,7 @@ permissions:
   write-all
 
 jobs:
-  MSBuild-Windows:
+  Build-Windows:
     runs-on: windows-latest
 
     steps:
@@ -42,18 +42,13 @@ jobs:
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
       run:  |
         ./Setup.ps1 && msbuild TetherInstaller.sln /p:Configuration=Release /p:Platform=x64 /p:CI_BUILD=${{ github.run_number }}
-
-    - name: create-zip
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: |
-        Compress-Archive ./Release/* Release.zip
     - name: upload artifact
       uses: actions/upload-artifact@v3
       env:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        path: ${{ github.workspace }}/Release.zip
+        path: ${{ github.workspace }}/Release
         name: Tether-Windows-Build-${{ github.run_number }}.zip
   Build-Linux:
     runs-on: ubuntu-latest
@@ -77,35 +72,37 @@ jobs:
     - name: build
       run: |
           cd NorthstarInstaller
-          make
+          make BUILD_ID=${{ github.run_number }}
     - name: make-release
       run: |
           mkdir Release
           cp -rf NorthstarInstaller/Data Release/Data
           cp -rf NorthstarInstaller/Shaders Release/Shaders
           cp -rf NorthstarInstaller/TetherInstaller Release/TetherInstaller
-          zip -r Release.zip ./Release
     - name: upload artifact
       uses: actions/upload-artifact@v3
       env:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        path: ${{ github.workspace }}/Release.zip
+        path: Release
         name: Tether-Linux-Build-${{ github.run_number }}.zip
 
-#  Release:
-#    runs-on: ubuntu-latest
-#    steps:
-#    - name: release
-#      uses: actions/create-release@v1
-#      id: create_release
-#      with:
-#        draft: false
-#        prerelease: false
-#        release_name: "CI Build #${{ github.run_number }}"
-#        tag_name: "CI-Build-${{ github.run_number }}"
-#      env:
-#        GITHUB_TOKEN: ${{ github.token }}
+  Release:
+    runs-on: ubuntu-latest
+    needs: [Build-Windows, Build-Linux]
+    steps:
+    - name: Retrieve Release Artifacts
+      uses: actions/download-artifact@v2
+      with:
+        path: Release
 
-
+    - name: Create release
+      uses: softprops/action-gh-release@v1
+      with:
+        names: |
+          Tether-Windows-Build-${{ github.run_number }}.zip
+          Tether-Linux-Build-${{ github.run_number }}.zip
+        token: ${{ github.token }}
+        generate_release_notes: true
+        name: CI-Build-${{ github.run_number }}
