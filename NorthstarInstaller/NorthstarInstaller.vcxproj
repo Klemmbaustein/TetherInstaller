@@ -129,6 +129,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\tinyfiledialogs\tinyfiledialogs.h" />
+    <ClInclude Include="Source\Linux_PE.h" />
     <ClInclude Include="Source\BackgroundTask.h" />
     <ClInclude Include="Source\Game.h" />
     <ClInclude Include="Source\miniz\miniz.h" />

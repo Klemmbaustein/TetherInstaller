@@ -7,6 +7,7 @@
 #include "Networking.h"
 #include "BackgroundTask.h"
 #include "Tabs/SettingsTab.h"
+#include "Linux_PE.h"
 
 std::string Game::GamePath;
 bool Game::RequiresUpdate = false;
@@ -154,14 +155,20 @@ int Game::GetFileVersion(const char* filename, char* ver)
 	delete[] buf;
 	return 0;
 }
+
+
 #endif
 
 std::string Game::GetCurrentVersion()
 {
+
 #if _WIN32
 	char Ver[100];
 	GetFileVersion(std::filesystem::path(GamePath + "NorthstarLauncher.exe").u8string().c_str(), Ver);
 	return Ver;
+#endif
+#if __linux__
+	getV(std::filesystem::path(GamePath + "NorthstarLauncher.exe").u8string().c_str());
 #endif
 	return "Unknown";
 }

@@ -113,6 +113,9 @@
     <ClInclude Include="..\tinyfiledialogs\tinyfiledialogs.h">
       <Filter>Dependencies</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Linux_PE.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />
