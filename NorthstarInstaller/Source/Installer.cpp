@@ -29,6 +29,7 @@
 * 
 */
 
+
 namespace Installer
 {
 	UIBox* WindowButtonBox = nullptr;
@@ -44,7 +45,13 @@ namespace Installer
 	UIBackground* TaskBackground = nullptr;
 	UIBackground* TaskProgressBar = nullptr;
 	UIText* TaskNameText = nullptr;
-	const std::string InstallerVersion = "v1.2.4";
+#ifdef CI_BUILD
+#define _STR(x) _XSTR(x)
+#define _XSTR(x) std::string(#x)
+	const std::string InstallerVersion = "CI Build #" + _STR(CI_BUILD);
+#else
+	const std::string InstallerVersion = "DevBuild";
+#endif
 	const std::string GithubInstallerVersion = InstallerVersion;
 #if DEBUG
 	const std::string UserAgent = "TetherNSInstaller/" + InstallerVersion + "-dev";

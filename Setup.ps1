@@ -11,6 +11,7 @@ if (!(Test-Path -Path SDL\VisualC\SDL\x64\Release))
 	./Setup.ps1
 	cd ..
 }
+
 cp KlemmUI\SDL\VisualC\SDL\x64\Release\SDL2.dll NorthstarInstaller
 
 cd curl

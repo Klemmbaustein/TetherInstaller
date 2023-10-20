@@ -41,7 +41,7 @@ jobs:
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
       run:  |
-        set ExternalCompilerOptions /D:CI_BUILD=#${{ github.run_number }}
+        set ExternalCompilerOptions /D:CI_BUILD=${{ github.run_number }}
         ./Setup.ps1 && msbuild TetherInstaller.sln /p:Configuration=Release /p:Platform=x64
 
     - name: create-zip
@@ -55,8 +55,8 @@ jobs:
       with:
         draft: false
         prerelease: false
-        release_name: "Build #${{ github.run_number }}"
-        tag_name: "Build-${{ github.run_number }}"
+        release_name: "CI Build #${{ github.run_number }}"
+        tag_name: "CI Build #${{ github.run_number }}"
       env:
         GITHUB_TOKEN: ${{ github.token }}
     - name: upload artifact
