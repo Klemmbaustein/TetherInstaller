@@ -99,8 +99,8 @@ jobs:
 
     - name: "zip artifacts"
       run: |
-        zip tether-win.zip Release/Tether-Windows-Build-${{ github.run_number }}.zip
-        zip tether-linux.zip Release/Tether-Linux-Build-${{ github.run_number }}.zip
+        zip -r tether-win.zip Release/Tether-Windows-Build-${{ github.run_number }}.zip/*
+        zip -r tether-linux.zip Release/Tether-Linux-Build-${{ github.run_number }}.zip/*
 
     - name: list-directory
       run: "ls -R"
