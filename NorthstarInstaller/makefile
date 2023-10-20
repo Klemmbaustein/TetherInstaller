@@ -14,7 +14,7 @@ CPPFLAGS := $(INC_FLAGS) -MMD -MP -fno-char8_t -std=c++2a `sdl2-config --cflags 
 
 # Package all C++ object files into a static library
 $(TARGET_EXEC): $(OBJS)
-	$(CXX) $(OBJS) -o $@ -lKlemmUI -l:libGLEW.a -lcurl -lnvdialog -lGL `sdl2-config --cflags --libs`
+	$(CXX) $(OBJS) -o $@ -lKlemmUI -l:libGLEW.a -lcurl -lGL `sdl2-config --cflags --libs`
 
 # Build C++ object files
 $(BUILD_DIR)/%.cpp.o: %.cpp
