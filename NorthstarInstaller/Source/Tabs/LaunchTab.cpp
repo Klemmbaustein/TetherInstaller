@@ -41,6 +41,9 @@ void NorthstarLaunchTask()
 		UTF8GameDir.append("/NorthstarLauncher.exe");
 	}
 
+#if __linux__
+#endif
+
 	system((UTF8GameDir + " -profile=\""
 		+ ProfileTab::CurrentProfile.DisplayName 
 		+ "\" "
@@ -145,6 +148,4 @@ void LaunchTab::Tick()
 	}
 }
 
-LaunchTab::~LaunchTab()
-{
-}
+Launch

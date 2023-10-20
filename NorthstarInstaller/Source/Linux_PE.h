@@ -11,6 +11,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <sys/stat.h>
+#include <string>
 
 typedef uint32_t DWORD;
 typedef uint16_t WORD;
@@ -40,13 +41,16 @@ static const char* FindVersion(const char* buf)
     WORD optHeaderSize = READ_WORD(coff + 16);
     if (numSections == 0 || optHeaderSize == 0)
         return NULL;
-    //optHeader is a IMAGE_OPTIONAL_HEADER32
-    const char* optHeader = coff + 20;
-    if (READ_WORD(optHeader) != 0x10b) //Optional header magic (32 bits)
-        return NULL;
-    //dataDir is an array of IMAGE_DATA_DIRECTORY
-    const char* dataDir = optHeader + 96;
-    DWORD vaRes = READ_DWORD(dataDir + 8 * 2);
+//optHeader is a IMAGE_OPTIONAL_HEADER32
+const char *optHeader = coff + 20;
+WORD magic = READ_WORD(optHeader);
+if (magic != 0x10b && magic != 0x20b)
+    return NULL;
+
+//dataDir is an array of IMAGE_DATA_DIRECTORY
+const char *dataDir = optHeader + (magic==0x10b ? 96: 112);
+DWORD vaRes = READ_DWORD(dataDir + 8*2);
+
 
     //secTable is an array of IMAGE_SECTION_HEADER
     const char* secTable = optHeader + optHeaderSize;
@@ -112,7 +116,7 @@ static const char* FindVersion(const char* buf)
     return NULL;
 }
 
-static int PrintVersion(const char* version, int offs)
+static int PrintVersion(const char* version, std::string& tgt, int offs)
 {
     offs = PAD(offs);
     WORD len = READ_WORD(version + offs);
@@ -143,7 +147,10 @@ static int PrintVersion(const char* version, int offs)
             value[i] = c;
         }
         value[i] = 0;
-        printf("info <%s>: <%s>\n", info, value);
+        if (info == std::string("ProductVersion"))
+        {
+            tgt = std::string(value);
+        }
     }
     else
     {
@@ -159,47 +166,47 @@ static int PrintVersion(const char* version, int offs)
             WORD prodB = READ_WORD(fixed + 16);
             WORD prodC = READ_WORD(fixed + 22);
             WORD prodD = READ_WORD(fixed + 20);
+            tgt = "v" + std::to_string(fileA) + "." + std::to_string(fileB) + "." + std::to_string(fileC);
             printf("\tFile: %d.%d.%d.%d\n", fileA, fileB, fileC, fileD);
-            printf("\tProd: %d.%d.%d.%d\n", prodA, prodB, prodC, prodD);
         }
         offs += valLen;
     }
     while (offs < len)
-        offs = PrintVersion(version, offs);
+        offs = PrintVersion(version, tgt, offs);
     return PAD(offs);
 }
-static int getV(const char* file)
+static std::string getV(const char* file)
 {
     struct stat st;
     if (stat(file, &st) < 0)
     {
         perror(file);
-        return 1;
+        return "Unknown";
     }
 
     char* buf = (char*)malloc(st.st_size);
 
     if (!buf)
     {
-        return 1;
+        return "Unknown";
     }
 
     FILE* f = fopen(file, "r");
     if (!f)
     {
         perror(file);
-        return 2;
+        return "Unable to read";
     }
 
     fread(buf, 1, st.st_size, f);
     fclose(f);
-
+    std::string str;
     const char* version = FindVersion(buf);
     if (!version)
-        printf("No version\n");
+        str = "Unknown";
     else
-        PrintVersion(version, 0);
-    return 0;
+        PrintVersion(version, str, 0);
+    return str;
 }
 
 #endif

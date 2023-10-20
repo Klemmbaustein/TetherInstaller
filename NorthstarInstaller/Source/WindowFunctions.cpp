@@ -72,8 +72,8 @@ std::string Window::ShowSelectFolderDialog()
 
 Window::PopupReply Window::ShowPopupQuestion(std::string Title, std::string Message)
 {
-	int a = tinyfd_messageBox(Title.c_str(), Message.c_str(), "yesno", "question", 0);
-	if (a == 0)
+	int a = tinyfd_messageBox(Title.c_str(), Message.c_str(), "yesno", "question", 1);
+	if (a == 1)
 	{
 		return Window::PopupReply::Yes;
 	}

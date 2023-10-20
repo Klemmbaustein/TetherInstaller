@@ -164,11 +164,11 @@ std::string Game::GetCurrentVersion()
 
 #if _WIN32
 	char Ver[100];
-	GetFileVersion(std::filesystem::path(GamePath + "NorthstarLauncher.exe").u8string().c_str(), Ver);
+	GetFileVersion(std::filesystem::path(GamePath + "/NorthstarLauncher.exe").u8string().c_str(), Ver);
 	return Ver;
 #endif
 #if __linux__
-	getV(std::filesystem::path(GamePath + "NorthstarLauncher.exe").u8string().c_str());
+	return getV(std::filesystem::path(GamePath + "/NorthstarLauncher.exe").u8string().c_str());
 #endif
 	return "Unknown";
 }
