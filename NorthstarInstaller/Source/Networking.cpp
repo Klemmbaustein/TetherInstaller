@@ -43,7 +43,6 @@ bool replace(std::string& str, const std::string& from, const std::string& to) {
 namespace Networking
 {
 
-	const std::string NorthstarVersionFile = "Data/";
 	const std::string NetTempFolder = "Data/temp/net/";
 
 	static size_t write_data(void* ptr, size_t size, size_t nmemb, void* stream)
@@ -106,7 +105,17 @@ namespace Networking
 		if (target_cp.find_last_of("/\\") != std::string::npos)
 		{
 			std::string Path = target_cp.substr(0, target_cp.find_last_of("/\\"));
-			std::filesystem::create_directories(Path);
+			Log::Print(std::filesystem::current_path().u8string() + "/" + Path);
+			try
+			{
+				std::filesystem::create_directories(Path);
+			}
+			catch (std::exception& e)
+			{
+				Window::ShowPopupError(e.what());
+				Log::Print(e.what(), Log::Error);
+				return;
+			}
 		}
 
 		pagefile = fopen(target_cp.c_str(), "wb");
@@ -184,7 +193,7 @@ namespace Networking
 
 			for (auto& elem : response["assets"])
 			{
-				if (elem.get<std::string>().find(NecessaryAssetName) == std::string::npos)
+				if (!NecessaryAssetName.empty() && elem.at("name").get<std::string>().find(NecessaryAssetName) == std::string::npos)
 				{
 					continue;
 				}
@@ -200,7 +209,7 @@ namespace Networking
 		}
 		catch (std::exception& e)
 		{
-			Log::Print("Github response has an invalid layout.", Log::Error);
+			Log::Print("Github response has an invalid layout. - https://api.github.com/repos/" + RepoName + "/releases/latest", Log::Error);
 			Log::Print(e.what(), Log::Error);
 
 			Log::Print("Writing response to Data/temp/invalidresponse.txt", Log::Error);
