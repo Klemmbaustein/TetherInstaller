@@ -116,7 +116,7 @@ namespace Networking
 		if (IsDownload)
 		{
 			// Internal CURL progressmeter must be disabled if we provide our own callback
-			curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, FALSE);
+			curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 0L);
 			// Install the callback function
 			curl_easy_setopt(curl_handle, CURLOPT_PROGRESSFUNCTION, progress_func);
 		}
