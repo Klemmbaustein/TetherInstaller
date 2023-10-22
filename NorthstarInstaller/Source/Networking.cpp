@@ -12,12 +12,12 @@
 #include <fstream>
 #include <filesystem>
 #include <regex>
+#include "BackgroundTask.h"
 
 #define DEV_NET_DEBUGGING 0
 
 #if _WIN32
 #include <wtsapi32.h>
-#include "BackgroundTask.h"
 #include <iostream>
 #pragma comment(lib, "Wtsapi32.lib")
 #pragma comment(lib, "wldap32.lib" )
