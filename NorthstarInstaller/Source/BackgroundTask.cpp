@@ -55,6 +55,11 @@ bool BackgroundTask::IsFunctionRunningAsTask(void(*Function)())
 	return false;
 }
 
+bool BackgroundTask::IsBackgroundTask()
+{
+	return ThisThreadPtr;
+}
+
 void BackgroundTask::UpdateTaskStatus()
 {
 	IsRunningTask = false;

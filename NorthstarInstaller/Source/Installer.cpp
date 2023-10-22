@@ -8,43 +8,34 @@
 #include "Game.h"
 #include "Log.h"
 #include "Installer.h"
-#include "UIDef.h"
+#include "UI/UIDef.h"
 #include "Networking.h"
 #include "BackgroundTask.h"
 #include "WindowFunctions.h"
 #include "Thunderstore.h"
+#include "UI/Download.h"
 
 #include "Tabs/LaunchTab.h"
 #include "Tabs/SettingsTab.h"
 #include "Tabs/ModsTab.h"
 #include "Tabs/ProfileTab.h"
 #include "Tabs/ServerBrowserTab.h"
-
-/*
-* 
-* TODO: 
-* 
-* - Implement https://github.com/LazyJazz/tinyfiledialogs/blob/master/tinyfiledialogs.h instead of regular win32-api calls
-* - Linux??!???!?
-* 
-*/
-
+#include "UI/Icon.h"
 
 namespace Installer
 {
 	UIBox* WindowButtonBox = nullptr;
 	size_t SelectedTab = 0;
 	std::vector<UIButton*> TabButtons;
-	UIBackground* TabBackground;
 	std::vector<UITab*> Tabs;
-
+	UIBackground* SidebarBackground = nullptr;
+	size_t HoveredTab = 0;
 	UIButtonStyle* TabStyles[2] = { new UIButtonStyle("Tab default style"), new UIButtonStyle("Tab selected style")};
+
+	UIText* AppTitle;
 
 	std::vector<unsigned int> WindowButtonsIcons;
 
-	UIBackground* TaskBackground = nullptr;
-	UIBackground* TaskProgressBar = nullptr;
-	UIText* TaskNameText = nullptr;
 #ifdef CI_BUILD
 #define _STR(x) _XSTR(x)
 #define _XSTR(x) std::string(#x)
@@ -62,45 +53,28 @@ namespace Installer
 	{
 		Log::Print("Generating tab bar layout");
 		TabButtons.clear();
-		TabBackground->DeleteChildren();
+		SidebarBackground->DeleteChildren();
 		for (size_t i = 0; i < Tabs.size(); i++)
 		{
-			if (SelectedTab == i)
-			{
-				Tabs[i]->Background->IsVisible = true;
-			}
-			else
-			{
-				Tabs[i]->Background->IsVisible = false;
-			}
+			Tabs[i]->Background->IsVisible = SelectedTab == i;
 
-			auto Button = new UIButton(true, 0, TabStyles[(int)(i == SelectedTab)], []()
+			auto Button = new UIButton(true, 0, TabStyles[(int)(SelectedTab == i)], [](int Index)
 				{
-					for (size_t i = 0; i < TabButtons.size(); i++)
-					{
-						if (TabButtons.at(i)->GetIsHovered())
-						{
-							SelectedTab = i;
-							GenerateTabs();
-							return;
-						}
-					}
-				});
+					SelectedTab = Index;
+					GenerateTabs();
+				}, (int)i);
 			Button->BoxAlign = UIBox::Align::Centered;
-			TabBackground->AddChild(Button
+			SidebarBackground->AddChild(Button
 				->SetSizeMode(UIBox::SizeMode::AspectRelative)
-				->SetMinSize(Vector2f(0.3, 0))
-				->SetPadding(0.01, 0.01, 0.01, 0)
-				->AddChild((new UIText(0.5, 0, Tabs[i]->Name, UI::Text))
-					->SetPadding(0.025, 0.025, 0, 0)));
+				->SetPaddingSizeMode(UIBox::SizeMode::AspectRelative)
+				->SetBorder(UIBox::BorderType::Rounded, 0.3)
+				->SetPadding(0.01, 0.01, 0.01, 0.01)
+				->AddChild((new UIBackground(true, 0, 0, 0.1))
+					->SetUseTexture(true, Icon("Tab_" + Tabs[i]->Name).TextureID)
+					->SetPaddingSizeMode(UIBox::SizeMode::AspectRelative)
+					->SetSizeMode(UIBox::SizeMode::AspectRelative)));
 			TabButtons.push_back(Button);
 		}
-	}
-
-	void CreateTaskWindow()
-	{
-		TaskNameText = new UIText(0.4, 1, "No background task", UI::Text);
-		TaskBackground->AddChild(TaskNameText);
 	}
 
 	bool UpdateCheckedOnce = false;
@@ -186,7 +160,7 @@ namespace Installer
 		if (GithubInstallerVersion != Ver)
 		{
 			RequiresUpdate = true;
-			Log::Print("Launcher requires update. " + GithubInstallerVersion + " ->" + Ver , Log::Warning);
+			Log::Print("Launcher requires update. " + GithubInstallerVersion + " -> " + Ver , Log::Warning);
 		}
 	}
 	std::queue<void (*)()> LaunchTasks =
@@ -214,6 +188,34 @@ namespace Installer
 		system("start update.bat");
 		exit(0);
 	}
+
+	UIBackground* HoveredTabName = nullptr;
+
+	void GenerateTabName(size_t TabIndex)
+	{
+		if (HoveredTabName)
+		{
+			delete HoveredTabName;
+			HoveredTabName = nullptr;
+		}
+		if (TabIndex == SIZE_MAX)
+		{
+			return;
+		}
+
+		HoveredTabName = new UIBackground(false,
+			Vector2f(SidebarBackground->GetPosition().X + SidebarBackground->GetUsedSize().X, TabButtons[TabIndex]->GetPosition().Y),
+			0,
+			Vector2f(0, TabButtons[TabIndex]->GetUsedSize().Y));
+
+		HoveredTabName
+			->SetOpacity(0.75)
+			->SetBorder(UIBox::BorderType::Rounded, 0.25)
+			->AddChild((new UIText(0.3, 0.8, Tabs[TabIndex]->Description, UI::Text))
+				->SetPadding(0, 0.01, 0.01, 0.01))
+			->AddChild((new UIText(0.4, 1, Tabs[TabIndex]->Name, UI::Text))
+				->SetPadding(0, 0.01, 0.01, 0.01));
+	}
 }
 
 void Installer::GenerateWindowButtons()
@@ -230,12 +232,12 @@ void Installer::GenerateWindowButtons()
 	WindowButtonBox->DeleteChildren();
 	for (int i : Buttons)
 	{
-		Vector3f32 HoveredColor = 0.2f;
+		Vector3f32 HoveredColor = 0.3f;
 		if (i == 0)
 		{
 			HoveredColor = Vector3f32(0.5, 0, 0);
 		}
-		WindowButtonBox->AddChild((new UIButton(true, 0, 0.25, [](int Index) {
+		WindowButtonBox->AddChild((new UIButton(true, 0, 0.1, [](int Index) {
 			switch (Index)
 			{
 			case 0:
@@ -266,6 +268,25 @@ void Installer::GenerateWindowButtons()
 					0.015,
 					(Application::GetFullScreen() && i == 0) ? 0.02 : 0.015)));
 	}
+
+	if (!DownloadWindow::IsDownloading)
+	{
+		return;
+	}
+
+	WindowButtonBox->AddChild((new UIButton(true, 0, Vector3f32(0.1), []() {
+		DownloadWindow::SetWindowVisible(true);
+		}))
+		->SetHoveredColor(0.3f)
+		->SetPressedColor(0.15f)
+		->SetPadding(0, 0, 0, 0.25)
+		->AddChild((new UIBackground(true, 0, 1, Vector2(0.045)))
+			->SetUseTexture(true, Icon("Download").TextureID)
+			->SetSizeMode(UIBox::SizeMode::PixelRelative)
+			->SetPadding(Application::GetFullScreen() ? 0.0175 : 0.005,
+				0.005,
+				0.015,
+				0.015)));
 }
 
 
@@ -281,17 +302,16 @@ int main(int argc, char** argv)
 		std::filesystem::current_path(ProgramLocation.substr(0, ProgramLocation.find_last_of("/\\")));
 	}
 
+	Application::SetBorderlessWindowOutlineColor(Vector3f32(0.3f, 0.5f, 1));
+	Application::SetShaderPath("Data/shaders");
 	Application::SetErrorMessageCallback([](std::string Message)
 		{
 			Window::ShowPopupError("-- Internal UI Error --\n\n" + Message);
 		});
-	Application::Initialize("Tether installer " + Installer::InstallerVersion, Application::BORDERLESS_BIT);
+	Application::Initialize("TetherInstaller " + Installer::InstallerVersion, Application::BORDERLESS_BIT);
 	Application::SetWindowMovableCallback([]() 
 		{ 
-			return Installer::TabBackground
-				&& Installer::TabBackground->IsBeingHovered()
-			|| (Installer::TaskBackground 
-				&& Installer::TaskBackground->IsBeingHovered()); 
+			return WindowButtonBox->IsBeingHovered();
 		});
 	Log::Print("Created app window");
 
@@ -310,6 +330,15 @@ int main(int argc, char** argv)
 	TabStyles[1]->BorderSize = 0.4;
 
 	UI::LoadFonts();
+
+
+	WindowButtonsIcons =
+	{
+		Texture::LoadTexture("Data/WindowX.png"),
+		Texture::LoadTexture("Data/WindowResize.png"),
+		Texture::LoadTexture("Data/WindowResize2.png"),
+		Texture::LoadTexture("Data/WindowMin.png"),
+	};
 
 	Log::Print("Cleaning up temp directory");
 	{
@@ -334,18 +363,29 @@ int main(int argc, char** argv)
 	bg->SetSizeMode(UIBox::SizeMode::AspectRelative);
 	bg->SetUseTexture(true, Texture::LoadTexture("Data/Game.png"));
 
+	WindowButtonBox = (new UIBackground(true, 0, 0.1))
+		->SetPadding(0)
+		->SetAlign(UIBox::Align::Reverse)
+		->SetMinSize(Vector2f(2, 0.0));
+	WindowButtonBox->BoxAlign = UIBox::Align::Reverse;
+	(new UIBox(false, Vector2f(-1, 0.7)))
+		->SetMinSize(Vector2f(2, 0.3))
+		->AddChild(WindowButtonBox)
+		->SetAlign(UIBox::Align::Reverse);
+
+	GenerateWindowButtons();
+
+	AppTitle = new UIText(0.3, 1, "TetherInstaller - Loading...", UI::Text);
+	AppTitle->SetPosition(Vector2f(-1, 0.9));
+	AppTitle->SetTextSizeMode(UIBox::SizeMode::PixelRelative);
+
 	Application::UpdateWindow();
 	bg->SetPosition(Vector2f(0.0) - bg->GetUsedSize() / 2);
+	AppTitle->SetPosition(Vector2f(-1, WindowButtonBox->GetPosition().Y));
+
 	Application::UpdateWindow();
 
-	TaskBackground = new UIBackground(false, Vector2f(0.5, 0.85), Vector3f32(0.15), Vector2f(0.5, 0.15));
-	TaskProgressBar = new UIBackground(false, Vector2f(0.5, 0.985), Vector3f32(1, 0.5, 0), Vector2f(0.5, 0.05));
-	TaskProgressBar->SetBorder(UIBox::BorderType::Rounded, 0.5);
-
-
 	Networking::Init();
-
-	CreateTaskWindow();
 
 	Game::GamePath = Game::GetTitanfallLocation();
 
@@ -359,16 +399,10 @@ int main(int argc, char** argv)
 		new SettingsTab(),
 	};
 
-	WindowButtonsIcons =
-	{
-		Texture::LoadTexture("Data/WindowX.png"),
-		Texture::LoadTexture("Data/WindowResize.png"),
-		Texture::LoadTexture("Data/WindowResize2.png"),
-		Texture::LoadTexture("Data/WindowMin.png"),
-	};
-
-	TabBackground = new UIBackground(true, Vector2f(-1, 0.85), 0, Vector2f(1.5, 0.15));
-	TabBackground->SetOpacity(0.3);
+	SidebarBackground = new UIBackground(false, Vector2f(-1, -1), 0, Vector2f(0, 2));
+	SidebarBackground
+		->SetOpacity(0.75)
+		->SetAlign(UIBox::Align::Reverse);
 	GenerateTabs();
 
 	if (std::filesystem::exists(ProfileTab::CurrentProfile.Path + "/mods/autojoin"))
@@ -377,58 +411,56 @@ int main(int argc, char** argv)
 	}
 
 	Log::Print("Successfully started launcher");
-
-	WindowButtonBox = (new UIBox(true, Vector2f(0.75, 0.0)))
-		->SetPadding(0)
-		->SetAlign(UIBox::Align::Reverse)
-		->SetMinSize(Vector2f(0.25, 0.0));
-	WindowButtonBox->BoxAlign = UIBox::Align::Reverse;
-	(new UIBox(false, Vector2f(0.75, 0.7)))
-		->SetMinSize(Vector2f(0.25, 0.3))
-		->AddChild(WindowButtonBox)
-		->SetAlign(UIBox::Align::Reverse);
-	
-	GenerateWindowButtons();
 	float PrevAspect = Application::AspectRatio;
 
 	while (!Application::Quit)
 	{
 		for (auto i : Tabs)
 		{
+			i->Background->SetPosition(Vector2f(
+				SidebarBackground->GetPosition().X + SidebarBackground->GetUsedSize().X,
+				-1));
+			i->Background->SetMinSize(Vector2f(
+				2 - SidebarBackground->GetUsedSize().X,
+				2 - WindowButtonBox->GetUsedSize().Y));
+			i->Background->SetMaxSize(Vector2f(
+				2 - SidebarBackground->GetUsedSize().X,
+				2 - WindowButtonBox->GetUsedSize().Y));
 			i->Tick();
 		}
-		bg->SetPosition(Vector2f(0.0) - bg->GetUsedSize() / 2);
-		BackgroundTask::UpdateTaskStatus();
-		if (BackgroundTask::IsRunningTask)
+
+		bool AnyButtonHovered = false;
+		for (size_t i = 0; i < TabButtons.size(); i++)
 		{
-			BackgroundFade = 0;
-			TaskProgressBar->SetOpacity(1);
-			if (BackgroundTask::CurrentTaskProgress != 1)
+			if (TabButtons[i]->GetIsHovered())
 			{
-				TaskProgressBar->SetMinSize(Vector2f(0.5 * BackgroundTask::CurrentTaskProgress, 0.05));
-				TaskProgressBar->IsVisible = true;
-				TaskNameText->SetText(BackgroundTask::CurrentTaskStatus);
+				AnyButtonHovered = true;
+				if (HoveredTab != i)
+				{
+					HoveredTab = i;
+					GenerateTabName(HoveredTab);
+				}
 			}
 		}
-		else if (BackgroundFade < 1)
+		if (!AnyButtonHovered && HoveredTab != SIZE_MAX)
 		{
-			TaskProgressBar->SetMinSize(Vector2f(0.5, 0.05));
-			BackgroundFade += Application::DeltaTime * 2;
-			TaskProgressBar->SetOpacity(1 - BackgroundFade);
-			TaskProgressBar->IsVisible = true;
-			TaskNameText->SetText(BackgroundTask::CurrentTaskStatus);
+			HoveredTab = SIZE_MAX;
+			GenerateTabName(HoveredTab);
 		}
-		else
-		{
-			TaskProgressBar->IsVisible = false;
-			TaskNameText->SetText("No background task");
-		}
+
+		bg->SetPosition(Vector2f(0.0) - bg->GetUsedSize() / 2);
+		BackgroundTask::UpdateTaskStatus();
+		AppTitle->SetPosition(Vector2f(SidebarBackground->GetUsedSize().X - 0.99, WindowButtonBox->GetPosition().Y));
+		AppTitle->SetText("TetherInstaller - " + Tabs[SelectedTab]->Name);
+		DownloadWindow::Update(WindowButtonBox->GetUsedSize().Y);
 
 		if (Application::AspectRatio != PrevAspect)
 		{
 			PrevAspect = Application::AspectRatio;
+			AppTitle->SetTextSize(Application::GetFullScreen() ? 0.5 : 0.3);
 			GenerateWindowButtons();
 		}
+
 
 		if (!BackgroundTask::IsRunningTask && !LaunchTasks.empty())
 		{
@@ -452,6 +484,7 @@ int main(int argc, char** argv)
 	}
 	Networking::Cleanup();
 	Log::Print("Application closed.");
+	exit(0);
 }
 
 #if _WIN32

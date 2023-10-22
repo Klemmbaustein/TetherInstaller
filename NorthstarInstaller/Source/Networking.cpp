@@ -17,6 +17,8 @@
 
 #if _WIN32
 #include <wtsapi32.h>
+#include "BackgroundTask.h"
+#include <iostream>
 #pragma comment(lib, "Wtsapi32.lib")
 #pragma comment(lib, "wldap32.lib" )
 #pragma comment(lib, "crypt32.lib" )
@@ -51,6 +53,16 @@ namespace Networking
 		return written;
 	}
 
+	int progress_func(void* ptr, double TotalToDownload, double NowDownloaded, double TotalToUpload, double NowUploaded)
+	{
+		if (TotalToDownload == 0)
+		{ 
+			return 0;
+		}
+		BackgroundTask::SetProgress(NowDownloaded / TotalToDownload * 0.9f);
+		return 0;
+	}
+
 
 	void CheckNetTempFolder()
 	{
@@ -66,7 +78,7 @@ namespace Networking
 	}
 
 
-	void Download(std::string url, std::string target, std::string Header)
+	void Download(std::string url, std::string target, std::string Header, bool IsDownload)
 	{
 #if DEV_NET_DEBUGGING
 		Log::Print("Requesting url " + url);
@@ -101,11 +113,18 @@ namespace Networking
 		curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_data);
 		curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
 
+		if (IsDownload)
+		{
+			// Internal CURL progressmeter must be disabled if we provide our own callback
+			curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, FALSE);
+			// Install the callback function
+			curl_easy_setopt(curl_handle, CURLOPT_PROGRESSFUNCTION, progress_func);
+		}
+
 		/* open the file */
 		if (target_cp.find_last_of("/\\") != std::string::npos)
 		{
 			std::string Path = target_cp.substr(0, target_cp.find_last_of("/\\"));
-			Log::Print(std::filesystem::current_path().u8string() + "/" + Path);
 			try
 			{
 				std::filesystem::create_directories(Path);
@@ -113,7 +132,6 @@ namespace Networking
 			catch (std::exception& e)
 			{
 				Window::ShowPopupError(e.what());
-				Log::Print(e.what(), Log::Error);
 				return;
 			}
 		}
@@ -125,7 +143,6 @@ namespace Networking
 			/* write the page body to this file handle */
 			curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, pagefile);
 
-			/* get it! */
 			CURLcode res;
 			res = curl_easy_perform(curl_handle);
 
@@ -203,7 +220,7 @@ namespace Networking
 				url = url.substr(1, url.size() - 2);
 
 				Log::Print("Found latest release -> " + url);
-				Download(url, NetTempFolder + "latest.zip", "");
+				Download(url, NetTempFolder + "latest.zip", "User-Agent: " + Installer::UserAgent, true);
 				return NetTempFolder + "latest.zip";
 			}
 		}

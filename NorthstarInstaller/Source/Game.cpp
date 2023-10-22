@@ -177,11 +177,10 @@ void Game::UpdateGame()
 {
 	try
 	{
-		BackgroundTask::SetStatus("Downloading Northstar");
-		BackgroundTask::SetProgress(0.5);
+		BackgroundTask::SetStatus("dl_Downloading Northstar");
 		auto result = Networking::DownloadLatestReleaseOf("R2Northstar/Northstar");
-		BackgroundTask::SetProgress(0.7);
-		BackgroundTask::SetStatus("Installing Northstar");
+		BackgroundTask::SetProgress(0.9);
+		BackgroundTask::SetStatus("dl_Installing Northstar");
 		Log::Print("Extracting zip: " + result);
 
 		// Remove core mods before installing them again
@@ -195,8 +194,8 @@ void Game::UpdateGame()
 			}
 		}
 		Networking::ExtractZip(result, Game::GamePath);
-		BackgroundTask::SetStatus("Removing temporary files");
-		BackgroundTask::SetProgress(0.9);
+		BackgroundTask::SetStatus("dl_Removing temporary files");
+		BackgroundTask::SetProgress(0.98);
 		std::filesystem::remove_all("Data/temp/net");
 		Log::Print("Removed temporary files");
 		Game::RequiresUpdate = false;

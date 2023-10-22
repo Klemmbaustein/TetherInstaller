@@ -792,11 +792,11 @@ namespace Thunderstore::TSModFunc
 			Log::Print("Installing mod \"" + m.Name + "\"");
 			if (Async)
 			{
-				BackgroundTask::SetStatus("Downloading mod");
+				BackgroundTask::SetStatus("dl_Downloading mod");
 				BackgroundTask::SetProgress(0.999);
 			}
 			std::string TargetZipName = "Data/temp/net/" + m.Author + "." + m.Name + ".zip";
-			Networking::Download(m.DownloadUrl, TargetZipName, "");
+			Networking::Download(m.DownloadUrl, TargetZipName, "", BackgroundTask::IsBackgroundTask());
 
 			std::filesystem::remove_all("Data/temp/mod");
 			std::filesystem::create_directories("Data/temp/mod");

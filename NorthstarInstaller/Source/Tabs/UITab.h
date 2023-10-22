@@ -7,6 +7,7 @@ public:
 	UIBox* Background = nullptr;
 
 	std::string Name = "Tab";
+	std::string Description = "Default Description";
 
 	UITab();
 	virtual void Tick();

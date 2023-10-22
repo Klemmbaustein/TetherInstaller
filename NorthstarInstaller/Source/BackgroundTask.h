@@ -25,11 +25,13 @@ struct BackgroundTask
 	static float CurrentTaskProgress;
 	static bool IsRunningTask;
 
+	static bool IsBackgroundTask();
+
 	static void UpdateTaskStatus();
 
 	static bool IsFunctionRunningAsTask(void (*Function)());
+	static std::vector<BackgroundTask*> AllTasks;
 
 private:
-	static std::vector<BackgroundTask*> AllTasks;
 	static void TaskRun(void (*Function)(), BackgroundTask* Task);
 };

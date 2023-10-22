@@ -10,9 +10,9 @@
 
 #include "nlohmann/json.hpp"
 
+#include "../UI/UIDef.h"
 #include "../Networking.h"
 #include "../Installer.h"
-#include "../UIDef.h"
 #include "../Log.h"
 #include "../Game.h"
 #include "../Thunderstore.h"
@@ -41,6 +41,7 @@ namespace Thunderstore
 
 void ModsTab::GenerateModInfo()
 {
+	IsInModInfo = true;
 	UpdateClickedCategoryButton();
 
 	Log::Print("Displaying info for mod: " + Thunderstore::SelectedMod.Name);
@@ -103,7 +104,10 @@ void ModsTab::GenerateModInfo()
 			return;
 		}
 		new BackgroundTask([]() {
-			BackgroundTask::SetStatus("Installing mod");
+			if (!Thunderstore::IsModInstalled(Thunderstore::SelectedMod))
+			{
+				BackgroundTask::SetStatus("dl_Installing " + Thunderstore::SelectedMod.Name);
+			}
 			Thunderstore::InstallOrUninstallMod(Thunderstore::SelectedMod, false, false);
 			},
 			[]() {
@@ -111,7 +115,7 @@ void ModsTab::GenerateModInfo()
 				{
 					CurrentModsTab->GenerateModPage();
 				}
-				else
+				else if (CurrentModsTab->IsInModInfo)
 				{
 					Thunderstore::LoadedSelectedMod = true;
 				}
@@ -217,6 +221,7 @@ void ModsTab::GenerateModInfo()
 
 void ModsTab::GenerateModPage()
 {
+	IsInModInfo = false;
 	UpdateClickedCategoryButton();
 	ModImages.clear();
 	ModsScrollBox->GetScrollObject()->Percentage = 0;
@@ -340,6 +345,20 @@ void ModsTab::GenerateModPage()
 					CurrentModsTab->LoadedModList = false;
 				}
 			} });
+
+		if (i == SelectedPage)
+		{
+			b->SetColor(Vector3f32(0.3f, 0.5f, 1.0f));
+			b->SetHoveredColor(Vector3f32(0.3f, 0.5f, 1.0f));
+			b->SetPressedColor(Vector3f32(0.3f, 0.5f, 1.0f));
+		}
+		else
+		{
+			b->SetColor(Vector3f32(1.0f, 1.0f, 1.0f));
+			b->SetHoveredColor(Vector3f32(0.6f, 0.7f, 1.0f));
+			b->SetPressedColor(Vector3f32(0.3f, 0.5f, 1.0f));
+		}
+
 		Rows[19]->AddChild(b
 			->SetPadding(0.005)
 			->SetBorder(UIBox::BorderType::Rounded, 0.25)
@@ -370,11 +389,15 @@ void ModsTab::UpdateClickedCategoryButton()
 	{
 		if (Thunderstore::TSCategoryNames[i].o == Thunderstore::SelectedOrdering)
 		{
-			CategoryButtons[i]->SetColor(0.5);
+			CategoryButtons[i]->SetColor(Vector3f32(0.3f, 0.5f, 1.0f));
+			CategoryButtons[i]->SetHoveredColor(Vector3f32(0.3f, 0.5f, 1.0f));
+			CategoryButtons[i]->SetPressedColor(Vector3f32(0.3f, 0.5f, 1.0f));
 		}
 		else
 		{
-			CategoryButtons[i]->SetColor(1);
+			CategoryButtons[i]->SetColor(Vector3f32(1.0f, 1.0f, 1.0f));
+			CategoryButtons[i]->SetHoveredColor(Vector3f32(0.6f, 0.7f, 1.0f));
+			CategoryButtons[i]->SetPressedColor(Vector3f32(0.3f, 0.5f, 1.0f));
 		}
 	}
 }
@@ -475,6 +498,7 @@ ModsTab::ModsTab()
 	PrevAspectRatio = Application::AspectRatio;
 	CurrentModsTab = this;
 	Name = "Mods";
+	Description = "Install mods";
 	Log::Print("Loading mods tab...");
 
 	Background->BoxAlign = UIBox::Align::Centered;
@@ -482,8 +506,7 @@ ModsTab::ModsTab()
 
 	ModsBackground = new UIBackground(false, 0, 0, Vector2f(1.2, 1.85));
 	Background->AddChild(ModsBackground
-		->SetOpacity(0.5)
-		->SetMaxSize(Vector2f(1.2, 1.85))
+		->SetOpacity(0.65)
 		->AddChild((new UIBackground(true, 0, 1, Vector2f(1.2, 0.005)))
 			->SetPadding(0))
 		->SetPadding(0));
@@ -496,8 +519,8 @@ ModsTab::ModsTab()
 	ModsScrollBox = new UIScrollBox(false, 0, true);
 	ModsScrollBox->BoxAlign = UIBox::Align::Reverse;
 
-	ModsScrollBox->SetMinSize(Vector2f(1.15, 1.7));
-	ModsScrollBox->SetMaxSize(Vector2f(1.15, 1.7));
+	ModsScrollBox->SetMinSize(Vector2f(1.15, 1.77));
+	ModsScrollBox->SetMaxSize(Vector2f(1.15, 1.77));
 	ShowLoadingText();
 	ModsBackground->AddChild(ModsScrollBox);
 
@@ -547,6 +570,7 @@ void ModsTab::Tick()
 	{
 		return;
 	}
+	ModsBackground->SetMinSize(Vector2f(1.2, Background->GetUsedSize().Y));
 	ModsPerPage = GetModsPerPage(Application::AspectRatio);
 	if (!LoadedModList && Background->IsVisible && !Thunderstore::IsDownloading)
 	{

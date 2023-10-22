@@ -10,37 +10,44 @@
 #include <filesystem>
 
 #include "../Log.h"
-#include "../UIDef.h"
+#include "../UI/UIDef.h"
 #include "../Game.h"
 #include "../Installer.h"
 #include "../BackgroundTask.h"
 #include "../WindowFunctions.h"
 #include "ProfileTab.h"
+#include "../UI/Icon.h"
 
 SettingsTab* SettingsTab::CurrentSettingsTab = nullptr;
 SettingsTab::SettingsTab()
 {
 	CurrentSettingsTab = this;
 	Name = "Settings";
+	Description = "Configure TetherInstaller";
 	Log::Print("Loading settings tab...");
 
 	Background->BoxAlign = UIBox::Align::Centered;
 	Background->SetHorizontal(true);
 
-	SettingsBackground = new UIBackground(false, 0, 0, Vector2f(0.8, 1.85));
+	SettingsBackground = new UIBackground(false, 0, 0, Vector2f(1, 1.85));
 	Background->AddChild(SettingsBackground
-		->SetOpacity(0.5)
-		->AddChild((new UIBackground(true, 0, 1, Vector2f(0.8, 0.005)))
+		->SetOpacity(0.65)
+		->AddChild((new UIBackground(true, 0, 1, Vector2f(1, 0.005)))
 			->SetPadding(0))
 		->SetPadding(0));
 	SettingsBackground->BoxAlign = UIBox::Align::Reverse;
 	SettingsBackground->AddChild(new UIText(0.8, 1, "Settings", UI::Text));
-	SettingsBox = new UIScrollBox(false, 0, true);
-	SettingsBox->SetMinSize(Vector2f(0, 1.65));
-	SettingsBox->SetMaxSize(Vector2f(2, 1.65));
+	SettingsBox = new UIScrollBox(false, 0, false);
+	SettingsBox->SetMinSize(Vector2f(0, 1.78));
+	SettingsBox->SetMaxSize(Vector2f(2, 1.78));
 	SettingsBox->BoxAlign = UIBox::Align::Reverse;
 	SettingsBackground->AddChild(SettingsBox);
 	GenerateSettings();
+}
+
+void SettingsTab::Tick()
+{
+	SettingsBackground->SetMinSize(Vector2f(1, Background->GetUsedSize().Y));
 }
 
 void DeleteAllMods()
@@ -52,7 +59,7 @@ void DeleteAllMods()
 		"Northstar.Custom",
 		"Northstar.Client",
 		"Northstar.Coop", // soooooon
-	};
+ 	};
 
 	for (const auto& m : std::filesystem::directory_iterator(ProfileTab::CurrentProfile.Path + "/mods/"))
 	{
@@ -73,18 +80,42 @@ void LocateTitanfall()
 		Game::SaveGameDir(NewPath);
 		Game::GamePath = Game::GetTitanfallLocation();
 	}
+	else if (!NewPath.empty())
+	{
+		Window::ShowPopupError(NewPath + " is not a valid Titanfall 2 path.");
+	}
 	SettingsTab::CurrentSettingsTab->GenerateSettings();
 }
 
 constexpr uint16_t MAX_GAMEPATH_SIZE = 30;
 
-void AddCategoryHeader(std::string Text, UIBox* Parent)
+void AddCategoryHeader(std::string Text, std::string IconName, UIBox* Parent)
 {
-	Parent->AddChild((new UIText(0.5, 1, Text, UI::Text))
-		->SetPadding(0.05, 0.01, 0.01, 0.01));
-	Parent->AddChild((new UIBackground(true, 0, 1, Vector2f(0.76, 0.005)))
+	Parent->AddChild((new UIBox(true, 0))
+		->AddChild((new UIBackground(true, 0, 1, 0.075))
+			->SetUseTexture(true, Icon(IconName).TextureID)
+			->SetPadding(0.01, 0.005, 0, 0)
+			->SetSizeMode(UIBox::SizeMode::AspectRelative))
+		->AddChild((new UIText(0.5, 1, Text, UI::Text))
+		->SetPadding(0.05, 0.005, 0.01, 0.01)));
+	Parent->AddChild((new UIBackground(true, 0, 1, Vector2f(0.98, 0.005)))
 		->SetPadding(0.0, 0.02, 0, 0));
 }
+
+void AddSettingsButton(std::string Text, std::string IconName, void(*OnClicked)(), UIBox* Parent)
+{
+	Parent->AddChild((new UIButton(true, 0, 1, OnClicked))
+		->SetPadding(0.01, 0.01, 0.06, 0)
+		->SetBorder(UIBox::BorderType::Rounded, 0.25)
+		->SetMinSize(Vector2f(0.6, 0))
+		->AddChild((new UIBackground(true, 0, 0, 0.05))
+			->SetUseTexture(true, Icon(IconName).TextureID)
+			->SetPadding(0.01, 0.01, 0.01, 0)
+			->SetSizeMode(UIBox::SizeMode::AspectRelative))
+		->AddChild((new UIText(0.35, 0, Text, UI::Text))
+			->SetPadding(0.01, 0.01, 0.01, 0.01)));
+}
+
 
 void SettingsTab::GenerateSettings()
 {
@@ -96,45 +127,69 @@ void SettingsTab::GenerateSettings()
 		ShortGamePath = ShortGamePath.substr(0, MAX_GAMEPATH_SIZE - 3) + "...";
 	}
 
-	AddCategoryHeader("General", SettingsBox);
-	SettingsBox->AddChild((new UIButton(true, 0, 1, LocateTitanfall))
-		->AddChild(new UIText(0.35, 0, Game::GamePath.empty() ? "Locate Titanfall 2 (No path!)" : "Locate Titanfall (" + ShortGamePath + ")", UI::Text)));
+	AddCategoryHeader("General", "Tab_Settings", SettingsBox);
+	AddSettingsButton("Locate Titanfall 2", "Settings/Folder", LocateTitanfall, SettingsBox);
+
+	bool PathValid = true;
+	std::string PathString = "Path: " + Game::GamePath;
+	if (!std::filesystem::exists(Game::GamePath))
+	{
+		PathString = "No path selected!";
+		PathValid = false;
+	}
+
+	SettingsBox->AddChild((new UIBox(true, 0))
+		->SetPadding(0.01, 0.05, 0.09, 0)
+		->AddChild((new UIBackground(true, 0, PathValid ? Vector3f32(0, 1, 0.5) : Vector3f32(1, 0.5, 0), 0.05))
+			->SetUseTexture(true, PathValid ? Icon("Settings/Checkmark").TextureID : Icon("Settings/Warning").TextureID)
+			->SetSizeMode(UIBox::SizeMode::AspectRelative)
+			->SetPadding(0.01, 0.01, 0, 0))
+		->AddChild((new UIText(0.35, 0.9, PathString, UI::Text))));
 
 	if (Game::IsValidTitanfallLocation(Game::GamePath))
 	{
-
-
-		SettingsBox->AddChild((new UIButton(true, 0, 1, []() {
+		AddSettingsButton("Re-check for updates", "Settings/Reload", []() {
 			new BackgroundTask(Installer::CheckForUpdates);
-			}))
-			->AddChild(new UIText(0.35, 0, "Re-check for updates", UI::Text)));
+			}, SettingsBox);
 
-		SettingsBox->AddChild((new UIButton(true, 0, 1, Game::UpdateGameAsync))
-			->AddChild(new UIText(0.35, 0, "Reinstall Northstar", UI::Text)));
 
-		LaunchArgsText = new UITextField(true, 0, 0, UI::MonoText, []() {Game::SetLaunchArgs(CurrentSettingsTab->LaunchArgsText->GetText()); });
+		AddSettingsButton("Re-install northstar", "Download", Game::UpdateGameAsync, SettingsBox);
 
-		SettingsBox->AddChild(new UIText(0.35, 1, "Launch arguments", UI::Text));
+		LaunchArgsText = new UITextField(true, 0, 1, UI::MonoText, []() {Game::SetLaunchArgs(CurrentSettingsTab->LaunchArgsText->GetText()); });
+
+		SettingsBox->AddChild((new UIBox(true, 0))
+			->SetPadding(0.05, 0.01, 0.06, 0.01)
+			->AddChild((new UIBackground(true, 0, 1, 0.05))
+				->SetUseTexture(true, Icon("Settings/Arguments").TextureID)
+				->SetPadding(0.01, 0.01, 0, 0)
+				->SetSizeMode(UIBox::SizeMode::AspectRelative))
+			->AddChild((new UIText(0.4, 1, "Launch arguments", UI::Text))
+				->SetPadding(0.01)));
 		SettingsBox->AddChild(LaunchArgsText
 			->SetHintText("Launch arguments")
+			->SetTextColor(0)
 			->SetTextSize(0.3)
 			->SetText(Game::GetLaunchArgs())
-			->SetMinSize(Vector2f(0.75, 0.05)));
+			->SetPadding(0.01, 0.01, 0.06, 0.01)
+			->SetMinSize(Vector2f(0.6, 0.05)));
 
-		AddCategoryHeader("Logs", SettingsBox);
+		AddCategoryHeader("Logs", "Settings/Logs", SettingsBox);
 
-		SettingsBox->AddChild((new UIButton(true, 0, 1, []() 
+		AddSettingsButton("Open log folder", "Settings/Folder", []()
 			{
 				if (!std::filesystem::exists(ProfileTab::CurrentProfile.Path + "/logs"))
 				{
 					Window::ShowPopupError("Log folder does not exist.");
 					return;
 				}
-				system(("cd " + ProfileTab::CurrentProfile.Path + "\\logs && explorer .").c_str());
-			}))
-			->AddChild(new UIText(0.35, 0, "Open log folder", UI::Text)));
+#if _WIN32
+				system(("cd \"" + ProfileTab::CurrentProfile.Path + "/logs\" && explorer .").c_str());
+#else
+				system(("xdg-open \"" + ProfileTab::CurrentProfile.Path + "/logs\"").c_str());
+#endif
+			}, SettingsBox);
 
-		SettingsBox->AddChild((new UIButton(true, 0, 1, []() 
+		AddSettingsButton("View latest log", "Settings/Logs", []()
 			{
 				if (!std::filesystem::exists(ProfileTab::CurrentProfile.Path + "/logs"))
 				{
@@ -145,7 +200,7 @@ void SettingsTab::GenerateSettings()
 				for (auto& i : std::filesystem::directory_iterator(ProfileTab::CurrentProfile.Path + "/logs"))
 				{
 					if (i.path().extension().u8string() == ".txt"
-						&& (!LatestLog.exists() 
+						&& (!LatestLog.exists()
 							|| i.last_write_time() > LatestLog.last_write_time()))
 					{
 						LatestLog = i;
@@ -156,16 +211,18 @@ void SettingsTab::GenerateSettings()
 					Window::ShowPopupError("Could not find a log file.");
 					return;
 				}
+#if _WIN32
 				system(("start \"\" \"" + LatestLog.path().u8string() + "\"").c_str());
-			}))
-			->AddChild(new UIText(0.35, 0, "View latest log", UI::Text)));
+#else
+				system(("xdg-open \"\" \"" + LatestLog.path().u8string() + "\"").c_str());
+#endif
+			}, SettingsBox);
 
 
-		AddCategoryHeader("Danger zone", SettingsBox);
-		SettingsBox->AddChild((new UIButton(true, 0, 1, DeleteAllMods))
-			->AddChild(new UIText(0.35, 0, "Delete all mods", UI::Text)));
+		AddCategoryHeader("Danger zone", "Settings/Warning", SettingsBox);
+		AddSettingsButton("Delete all mods", "Settings/Delete", DeleteAllMods, SettingsBox);
 
-		SettingsBox->AddChild((new UIButton(true, 0, 1, []() {
+		AddSettingsButton("Reset installer", "Settings/Reload", []() {
 			try
 			{
 				std::filesystem::remove_all("Data/temp");
@@ -177,18 +234,22 @@ void SettingsTab::GenerateSettings()
 			}
 			catch (std::exception& e)
 			{
-
+				Log::Print(e.what());
 			}
-			}))
-			->AddChild(new UIText(0.35, 0, "Reset launcher", UI::Text)));
+			}, SettingsBox);
 	}
 
-	AddCategoryHeader("About", SettingsBox);
-	SettingsBox->AddChild(new UIText(0.35, 1, "Installed Northstar version: " + Game::GetCurrentVersion(), UI::Text));
-	SettingsBox->AddChild(new UIText(0.35, 1, "Launcher version: " + Installer::InstallerVersion, UI::Text));
 #if _WIN32
-	SettingsBox->AddChild(new UIText(0.35, 1, "Operating system: Windows", UI::Text));
+	constexpr const char* OS = "Windows";
 #elif __linux__
-	SettingsBox->AddChild(new UIText(0.35, 1, "Operating system: Linux", UI::Text));
+	constexpr const char* OS = "Linux";
+#else
+	constexpr const char* OS = "Unknown";
 #endif
+
+	AddCategoryHeader("About", "Settings/About", SettingsBox);
+	SettingsBox->AddChild((new UIText(0.35, 1, "Installed Northstar version: " + Game::GetCurrentVersion(), UI::Text))
+		->SetPadding(0.01, 0.01, 0.06, 0.01));
+	SettingsBox->AddChild((new UIText(0.35, 1, "Launcher version: " + Installer::InstallerVersion + "-" + std::string(OS), UI::Text))
+		->SetPadding(0.01, 0.01, 0.06, 0.01));
 }

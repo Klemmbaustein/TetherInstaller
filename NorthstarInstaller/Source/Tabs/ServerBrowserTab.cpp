@@ -229,6 +229,7 @@ ServerBrowserTab::ServerBrowserTab()
 {
 	CurrentServerTab = this;
 	Name = "Servers";
+	Description = "Browse northstar servers";
 	Log::Print("Loading server browser tab...");
 
 	Background->BoxAlign = UIBox::Align::Centered;
@@ -236,7 +237,7 @@ ServerBrowserTab::ServerBrowserTab()
 
 	ServerBackground = new UIBackground(false, 0, 0, Vector2f(1.5, 1.85));
 	Background->AddChild(ServerBackground
-		->SetOpacity(0.5)
+		->SetOpacity(0.65)
 		->SetMaxSize(Vector2f(1.5, 1.85))
 		->AddChild((new UIBackground(true, 0, 1, Vector2f(1.5, 0.005)))
 			->SetPadding(0))
@@ -272,8 +273,8 @@ ServerBrowserTab::ServerBrowserTab()
 	ServerBackground->AddChild((new UIBox(true, 0))
 		->SetPadding(0)
 		->AddChild(ServerBox
-			->SetMaxSize(Vector2f(0.825, 1.4))
-			->SetMinSize(Vector2f(0.825, 1.4)))
+			->SetMaxSize(Vector2f(0.825, 1.55))
+			->SetMinSize(Vector2f(0.825, 1.55)))
 		->AddChild(ServerDescriptionBox
 			->SetMinSize(Vector2f(0.3, 1.4))));
 	ServerDescriptionBox->BoxAlign = UIBox::Align::Reverse;
@@ -424,6 +425,9 @@ void JoinCurrentServer()
 
 void ServerBrowserTab::Tick()
 {
+	ServerBackground->SetMinSize(Vector2f(1.2, Background->GetUsedSize().Y));
+	ServerBackground->SetMaxSize(Vector2f(2, Background->GetUsedSize().Y));
+
 	if (!ServerDescriptionText)
 		return;
 
@@ -536,7 +540,8 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 		{
 			ModName.append(" (installed)");
 		}
-		ServerDescriptionBox->AddChild(new UIText(0.3, 1, ModName, UI::Text));
+		ServerDescriptionBox->AddChild((new UIText(0.3, 1, ModName, UI::Text))
+			->SetPadding(0.0, 0.005, 0.01, 0.01));
 	}
 }
 

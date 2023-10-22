@@ -3,7 +3,7 @@
 #include <KlemmUI/UI/UIText.h>
 #include <KlemmUI/UI/UIBackground.h>
 
-#include "../UIDef.h"
+#include "../UI/UIDef.h"
 #include "../Log.h"
 #include "../Game.h"
 #include "../Installer.h"
@@ -114,9 +114,10 @@ void LaunchTab::LaunchNorthstar(std::string Args)
 LaunchTab::LaunchTab()
 {
 	Name = "Play";
+	Description = "Play Northstar";
 	Log::Print("Loading launch tab...");
 	Background->BoxAlign = UIBox::Align::Default;
-	auto TextBox = (new UIBackground(true, 0, 0, 0))->SetOpacity(0.3);
+	auto TextBox = (new UIBackground(true, 0, 0, 0))->SetOpacity(0.65);
 	TextBox->BoxAlign = UIBox::Align::Centered;
 
 	LaunchButton = new UIButton(true, 0, 1, LaunchNorthstar);
@@ -127,7 +128,7 @@ LaunchTab::LaunchTab()
 		->SetPadding(0)
 		->AddChild(LaunchButton
 			->SetPadding(0.03)
-			->SetBorder(UIBox::BorderType::Rounded, 1)
+			->SetBorder(UIBox::BorderType::Rounded, 0.25)
 			->AddChild(LaunchText)));
 
 

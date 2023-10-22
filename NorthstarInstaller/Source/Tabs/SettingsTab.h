@@ -11,6 +11,7 @@ class SettingsTab : public UITab
 public:
 	UITextField* LaunchArgsText = nullptr;
 	SettingsTab();
+	void Tick() override;
 	void GenerateSettings();
 	static SettingsTab* CurrentSettingsTab;
 };

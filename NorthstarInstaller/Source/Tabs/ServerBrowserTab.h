@@ -6,7 +6,7 @@
 
 #include <map>
 
-#include "../UIDef.h"
+#include "../UI/UIDef.h"
 
 class ServerBrowserTab : public UITab
 {

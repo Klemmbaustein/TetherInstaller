@@ -8,8 +8,8 @@
 #include <fstream>
 #include <filesystem>
 
+#include "../UI/UIDef.h"
 #include "../Game.h"
-#include "../UIDef.h"
 #include "../Log.h"
 #include "../Installer.h"
 #include "../BackgroundTask.h"
@@ -58,6 +58,7 @@ const std::set<std::string> MAY_CONTAIN =
 ProfileTab::ProfileTab()
 {
 	Name = "Profiles";
+	Description = "Manage profiles";
 	Log::Print("Loading profile tab...");
 
 	Background->BoxAlign = UIBox::Align::Centered;
@@ -65,7 +66,7 @@ ProfileTab::ProfileTab()
 
 	ProfileBackground = new UIBackground(false, 0, 0, Vector2f(1.5, 1.85));
 	Background->AddChild(ProfileBackground
-		->SetOpacity(0.6)
+		->SetOpacity(0.65)
 		->AddChild((new UIBackground(true, 0, 1, Vector2f(1.5, 0.005)))
 			->SetPadding(0))
 		->SetPadding(0));
@@ -80,9 +81,9 @@ ProfileTab::ProfileTab()
 
 	ProfileBackground->AddChild((new UIBox(true, 0))
 		->AddChild(ProfileList
-			->SetMinSize(Vector2f(0.85, 1.4)))
+			->SetMinSize(Vector2f(0.85, 1.55)))
 		->AddChild(ProfileInfoBox
-			->SetMinSize(Vector2f(0, 1.4))));
+			->SetMinSize(Vector2f(0, 1.55))));
 
 	NewProfileTextField = new UITextField(true, 0, 0, UI::Text, nullptr);
 
@@ -192,6 +193,12 @@ void ProfileTab::DetectProfiles()
 	}
 }
 
+void ProfileTab::Tick()
+{
+	ProfileBackground->SetMinSize(Vector2f(0, Background->GetUsedSize().Y));
+	ProfileBackground->SetMaxSize(Vector2f(2, Background->GetUsedSize().Y));
+}
+
 void ProfileTab::DisplayProfileInfo()
 {
 	ProfileInfoBox->DeleteChildren();
@@ -292,7 +299,7 @@ void ProfileTab::DisplayProfileInfo()
 			->AddChild((new UIButton(true, 0, Vector3f32(1, 0.5, 0), []()
 			{
 				if (Window::ShowPopupQuestion("Delete profile",
-				"Are you sure you want to delete the profile \"" + CurrentProfile.DisplayName + "\"?")
+				"Are you sure you want to delete the profile " + CurrentProfile.DisplayName + "?")
 					 != Window::PopupReply::Yes)
 				{ 
 					return;

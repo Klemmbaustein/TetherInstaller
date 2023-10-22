@@ -10,7 +10,7 @@
     <ClCompile Include="Source\Log.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Source\UIDef.cpp">
+    <ClCompile Include="Source\UI\UIDef.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="Source\Tabs\UITab.cpp">
@@ -46,9 +46,9 @@
     <ClCompile Include="Source\Tabs\ProfileTab.cpp">
       <Filter>Source\Tabs</Filter>
     </ClCompile>
-    <ClCompile Include="..\tinyfiledialogs\tinyfiledialogs.c">
-      <Filter>Dependencies</Filter>
-    </ClCompile>
+    <ClCompile Include="Source\UI\Icon.cpp" />
+    <ClCompile Include="..\tinyfiledialogs\tinyfiledialogs.c" />
+    <ClCompile Include="Source\UI\Download.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -71,7 +71,7 @@
     <ClInclude Include="Source\Log.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="Source\UIDef.h">
+    <ClInclude Include="Source\UI\UIDef.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="Source\Tabs\UITab.h">
@@ -110,12 +110,11 @@
     <ClInclude Include="Source\Tabs\ProfileTab.h">
       <Filter>Source\Tabs</Filter>
     </ClInclude>
-    <ClInclude Include="..\tinyfiledialogs\tinyfiledialogs.h">
-      <Filter>Dependencies</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Linux_PE.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="Source\UI\Icon.h" />
+    <ClInclude Include="Source\UI\Download.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />

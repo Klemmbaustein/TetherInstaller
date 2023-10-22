@@ -19,6 +19,7 @@ class ModsTab : public UITab
 	unsigned int ModPreviewTexture = 0;
 	float PrevAspectRatio = 0;
 	std::vector<UIBackground*> ModImages;
+	bool IsInModInfo = false;
 public:
 	static std::atomic<unsigned int> ModsPerPage;
 	UITextField* SearchBar = nullptr;

@@ -33,7 +33,7 @@ public:
 
 	static void OnProfileSwitched();
 	static void DetectProfiles();
-
+	void Tick() override;
 	void DisplayProfileInfo();
 	void UpdateProfilesList();
 
