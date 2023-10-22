@@ -82,9 +82,9 @@ Window::PopupReply Window::ShowPopupQuestion(std::string Title, std::string Mess
 }
 void Window::ShowPopup(std::string Title, std::string Message)
 {
-	tinyfd_notifyPopup(Title.c_str(), Message.c_str(), "info");
+	tinyfd_messageBox(Title.c_str(), Message.c_str(), "ok", "info", 1);
 }
 void Window::ShowPopupError(std::string Message)
 {
-	tinyfd_notifyPopup("Tether Installer Error", Message.c_str(), "error");
+	tinyfd_messageBox("Tether Installer Error", Message.c_str(), "ok", "errror", 1);
 }
