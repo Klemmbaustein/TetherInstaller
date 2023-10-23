@@ -13,7 +13,11 @@
 #include <thread>
 #include <atomic>
 #include <map>
-#include <regex>
+#include <algorithm>
+
+#if _WIN32
+#include <Windows.h>
+#endif
 
 #include "ModsTab.h"
 
@@ -24,7 +28,7 @@ void NorthstarLaunchTask()
 	BackgroundTask::SetStatus("Northstar is running");
 	Log::Print("Game has started");
 
-	std::string GameDir = std::regex_replace(Game::GamePath, std::regex(" "), "^ ");
+	std::string GamePath = Game::GamePath;
 
 	Thunderstore::Package ReleaseCanidate;
 
@@ -34,45 +38,60 @@ void NorthstarLaunchTask()
 
 	if (Thunderstore::IsModInstalled(ReleaseCanidate))
 	{
-		GameDir.append("/NorthstarLauncherRC.exe");
+		GamePath.append("/NorthstarLauncherRC.exe");
 	}
 	else
 	{
-		GameDir.append("/NorthstarLauncher.exe");
+		GamePath.append("/NorthstarLauncher.exe");
 	}
 
-#if __linux
-	int IsWSL = !system("grep microsoft /proc/version");
+#if __linux__
 
-	if (!IsWSL)
-#else
-	if (false)
+	std::string Commad = "steam://run/1237970/-profile=\\\""
+		+ ProfileTab::CurrentProfile.DisplayName
+		+ "\\\" "
+		+ NorthstarLaunchArgs
+		+ " "
+		+ Game::GetLaunchArgs();
+
+	system(("open \"" + Commad + "\"").c_str());
+#elif _WIN32
+		STARTUPINFOA Startup;
+		PROCESS_INFORMATION pi;
+		ZeroMemory(&Startup, sizeof(Startup));
+		Startup.cb = sizeof(Startup);
+		ZeroMemory(&pi, sizeof(pi));
+
+		CreateProcessA(GamePath.c_str(), 
+			(LPSTR)(" -profile=\""
+			+ ProfileTab::CurrentProfile.DisplayName
+			+ "\" "
+			+ NorthstarLaunchArgs
+			+ " "
+			+ Game::GetLaunchArgs()).c_str(),
+			NULL,
+			NULL,
+			FALSE,
+			0,
+			NULL,
+			NULL,
+			&Startup,
+			&pi);
+
+		WaitForSingleObject(pi.hProcess, INFINITE);
+
+		CloseHandle(pi.hProcess);
+		CloseHandle(pi.hThread);
+
 #endif
-	{
-		system(("wine " + GameDir + " -profile=\""
-			+ ProfileTab::CurrentProfile.DisplayName 
-			+ "\" "
-			+ NorthstarLaunchArgs 
-			+ " " 
-			+ Game::GetLaunchArgs()).c_str());
-	}
-	else
-	{
-		system((GameDir + " -profile=\""
-			+ ProfileTab::CurrentProfile.DisplayName 
-			+ "\" "
-			+ NorthstarLaunchArgs 
-			+ " " 
-			+ Game::GetLaunchArgs()).c_str());
-	}
 	Log::Print("Game has finished running");
 	ModsTab::CheckForModUpdates();
 }
 
 std::map<void (*)(), std::string> LaunchStoppingTasks =
 {
-	std::pair(Game::UpdateGame, "Updating northstar"),
-	std::pair(NorthstarLaunchTask, "Northstar is running"),
+	std::pair(Game::UpdateGame, "Updating Northstar"),
+	std::pair(NorthstarLaunchTask, "Game is running"),
 	std::pair(Installer::CheckForUpdates, "Checking for updates (1/3)"),
 	std::pair(Installer::CheckForInstallerUpdate, "Checking for updates (2/3)"),
 	std::pair(ModsTab::CheckForModUpdates, "Checking for updates (3/3)"),
@@ -165,7 +184,7 @@ void LaunchTab::Tick()
 	}
 	else if (Game::RequiresUpdate)
 	{
-		LaunchText->SetText("Update northstar");
+		LaunchText->SetText("Update Northstar");
 	}
 	else if (VanillaPlus)
 	{

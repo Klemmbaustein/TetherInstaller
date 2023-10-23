@@ -242,9 +242,9 @@ void ModsTab::GenerateModInfo()
 	{
 		GenerateModInfoText(
 			{
-				"This is a northstar release canidate",
-				"Release canidates are versions of northstar that are almost ready to release.",
-				"If you notice any issues with it, please report them to github or the northstar discord server."
+				"This is a Northstar release canidate",
+				"Release canidates are versions of Northstar that are almost ready to release.",
+				"If you notice any issues with it, please report them to github or the Northstar discord server."
 			}, Vector3f32(0.1f, 0.2f, 0.6f), "Settings/About", 0.15)
 			->AddChild((new UIButton(true, 0, 1, []() {system("start https://discord.com/channels/920776187884732556/951461326478262292"); }))
 				->SetBorder(UIBox::BorderType::Rounded, 0.25)

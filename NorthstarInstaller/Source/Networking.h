@@ -14,6 +14,8 @@ namespace Networking
 
 	void Download(std::string url, std::string target, std::string Header, bool IsDownload = false);
 
+	bool IsProcessRunning(std::string Name);
+
 	void Init();
 
 	void Cleanup();

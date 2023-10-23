@@ -160,6 +160,27 @@ namespace Networking
 		return;
 	}
 
+	bool IsProcessRunning(std::string Name)
+	{
+#if _WIN32
+		DWORD pCount = 0;
+		PWTS_PROCESS_INFO ppProcessInfo, pProcess;
+		WTSEnumerateProcesses(WTS_CURRENT_SERVER_HANDLE, 0, 1, &ppProcessInfo, &pCount);
+		pProcess = ppProcessInfo;
+
+		for (int i = 0; i < pCount; i++)
+		{
+			std::wstring pName = pProcess->pProcessName;
+			if (ToLowerCase(Name) == ToLowerCase(std::string(pName.begin(), pName.end())))
+			{
+				return true;
+			}
+			pProcess++;
+		}
+#endif
+		return false;
+	}
+
 
 	std::string GetLatestReleaseOf(std::string RepoName)
 	{
@@ -247,7 +268,7 @@ namespace Networking
 			Window::ShowPopup("Error", "Failed to ping https://northstar.tf\n\n\
 What this could mean:\n\
 - No internet connection\n\
-- The northstar master server is currently offline\n\n\
+- The Northstar master server is currently offline\n\n\
 What you can do:\n\
 - Check your internet connection\n\
 - Wait (Up to a few hours)");
@@ -256,21 +277,9 @@ What you can do:\n\
 		std::filesystem::remove("Data/temp/net/ntf.html");
 
 #if _WIN32
-		DWORD pCount = 0;
-		PWTS_PROCESS_INFO ppProcessInfo, pProcess;
-		WTSEnumerateProcesses(WTS_CURRENT_SERVER_HANDLE, 0, 1, &ppProcessInfo, &pCount);
-		pProcess = ppProcessInfo;
-		const char* pgm = "EADesktop.exe";
-
-		for (int i = 0; i < pCount; i++)
+		if (IsProcessRunning("EADesktop.exe"))
 		{
-			std::wstring pName = pProcess->pProcessName;
-			if (ToLowerCase(pgm) == ToLowerCase(std::string(pName.begin(), pName.end())))
-			{
-				Log::Print("EA app is running.");
-				return;
-			}
-			pProcess++;
+			return;
 		}
 		HKEY RegKey;
 		LONG lRes = RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Electronic Arts\\EA Desktop", 0, KEY_READ, &RegKey);
@@ -283,10 +292,29 @@ What you can do:\n\
 				std::string UTF8GameDir = std::string(GameDir.begin(), GameDir.end());
 				Log::Print("Found EA app through Windows registry: " + UTF8GameDir);
 
-				UTF8GameDir = std::regex_replace(UTF8GameDir, std::regex(" "), "^ ");
+				STARTUPINFOA Startup;
+				PROCESS_INFORMATION pi;
+				ZeroMemory(&Startup, sizeof(Startup));
+				Startup.cb = sizeof(Startup);
+				ZeroMemory(&pi, sizeof(pi));
 
+				CreateProcessA((UTF8GameDir + "\\EA Desktop\\EALauncher.exe").c_str(),
+					NULL,
+					NULL,
+					NULL,
+					FALSE,
+					0,
+					NULL,
+					NULL,
+					&Startup,
+					&pi);
 
-				system((UTF8GameDir + "\\EA^ Desktop\\EALauncher.exe").c_str());
+				// Wait until child process exits.
+				WaitForSingleObject(pi.hProcess, INFINITE);
+
+				// Close process and thread handles. 
+				CloseHandle(pi.hProcess);
+				CloseHandle(pi.hThread);
 			}
 		}
 #endif

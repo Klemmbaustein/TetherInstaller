@@ -144,7 +144,7 @@ void SettingsTab::GenerateSettings()
 			}, SettingsBox);
 
 
-		AddSettingsButton("Re-install northstar", "Download", Game::UpdateGameAsync, SettingsBox);
+		AddSettingsButton("Re-install Northstar", "Download", Game::UpdateGameAsync, SettingsBox);
 
 		LaunchArgsText = new UITextField(true, 0, 1, UI::MonoText, []() {Game::SetLaunchArgs(CurrentSettingsTab->LaunchArgsText->GetText()); });
 

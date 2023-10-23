@@ -165,7 +165,7 @@ void ProfileTab::DetectProfiles()
 	AllProfiles.clear();
 	if (!std::filesystem::exists(Game::GamePath))
 	{
-		Log::Print("- Looking for northstar profiles failed - Game path does not exist.", Log::Warning);
+		Log::Print("- Looking for Northstar profiles failed - Game path does not exist.", Log::Warning);
 		return;
 	}
 

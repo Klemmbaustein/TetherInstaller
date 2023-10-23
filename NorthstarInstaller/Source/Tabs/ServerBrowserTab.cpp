@@ -230,7 +230,7 @@ ServerBrowserTab::ServerBrowserTab()
 {
 	CurrentServerTab = this;
 	Name = "Servers";
-	Description = "Browse northstar servers";
+	Description = "Browse Northstar servers";
 	Log::Print("Loading server browser tab...");
 
 	Background->BoxAlign = UIBox::Align::Centered;
@@ -428,7 +428,7 @@ void JoinCurrentServer()
 {
 	if (Thunderstore::VanillaPlusInstalled())
 	{
-		Window::ShowPopupError("Cannot join northstar servers with Vanilla+");
+		Window::ShowPopupError("Cannot join Northstar servers with Vanilla+");
 		ServerBrowserTab::ShouldLaunchGame = false;
 		return;
 	}
