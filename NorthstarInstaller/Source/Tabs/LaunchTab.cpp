@@ -115,6 +115,11 @@ void LaunchTab::LaunchNorthstar(std::string Args)
 	}
 }
 
+void LaunchTab::OnClicked()
+{
+	VanillaPlus = Thunderstore::VanillaPlusInstalled();
+}
+
 LaunchTab::LaunchTab()
 {
 	Name = "Play";
@@ -132,10 +137,10 @@ LaunchTab::LaunchTab()
 		->SetPadding(0)
 		->AddChild(LaunchButton
 			->SetPadding(0.03)
-			->SetBorder(UIBox::BorderType::Rounded, 0.25)
+			->SetBorder(UIBox::BorderType::Rounded, 0.5)
 			->AddChild(LaunchText)));
 
-
+	OnClicked();
 }
 
 void LaunchTab::Tick()
@@ -161,6 +166,10 @@ void LaunchTab::Tick()
 	else if (Game::RequiresUpdate)
 	{
 		LaunchText->SetText("Update northstar");
+	}
+	else if (VanillaPlus)
+	{
+		LaunchText->SetText("Launch Vanilla+");
 	}
 	else
 	{

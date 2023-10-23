@@ -1,5 +1,6 @@
 #include "ServerBrowserTab.h"
 #include "LaunchTab.h"
+#include "ProfileTab.h"
 
 #include <fstream>
 #include <sstream>
@@ -11,6 +12,7 @@
 
 #include "nlohmann/json.hpp"
 
+#include "../UI/Icon.h"
 #include "../Networking.h"
 #include "../Installer.h"
 #include "../Log.h"
@@ -18,7 +20,6 @@
 #include "../Thunderstore.h"
 #include "../WindowFunctions.h"
 #include "../Game.h"
-#include "ProfileTab.h"
 
 
 bool ServerBrowserTab::ShouldLaunchGame;
@@ -248,6 +249,11 @@ ServerBrowserTab::ServerBrowserTab()
 	ServerBackground->AddChild((new UIBox(true, 0))
 		->AddChild(PlayerCountText->SetPadding(0.02, 0.02, 0.01, 0.02))
 		->AddChild((new UIButton(true, 0, 1, RefreshServerBrowser))
+			->SetBorder(UIBox::BorderType::Rounded, 0.25)
+			->AddChild((new UIBackground(true, 0, 0, 0.04))
+				->SetUseTexture(true, Icon("Settings/Reload").TextureID)
+				->SetPadding(0.01, 0.01, 0.01, 0)
+				->SetSizeMode(UIBox::SizeMode::AspectRelative))
 			->AddChild(new UIText(0.3, 0, "Refresh", UI::Text))));
 
 	ServerSearchBox = new UITextField(true, 0, 0, UI::Text, []() {
@@ -520,7 +526,11 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 				}
 			});
 			}))
-			->SetBorder(UIBox::BorderType::Rounded, 0.5)
+			->SetBorder(UIBox::BorderType::Rounded, 0.25)
+			->AddChild((new UIBackground(true, 0, 0, 0.055))
+				->SetUseTexture(true, Icon("Tab_Play").TextureID)
+				->SetPadding(0.01, 0.01, 0.01, 0)
+				->SetSizeMode(UIBox::SizeMode::AspectRelative))
 			->AddChild(ServerDescriptionText)));
 
 	ServerDescriptionBox->AddChild(new UIText(0.5, 1, "Mods: ", UI::Text));

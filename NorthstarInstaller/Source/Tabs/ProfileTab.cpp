@@ -8,6 +8,7 @@
 #include <fstream>
 #include <filesystem>
 
+#include "../UI/Icon.h"
 #include "../UI/UIDef.h"
 #include "../Game.h"
 #include "../Log.h"
@@ -86,11 +87,15 @@ ProfileTab::ProfileTab()
 				->SetTextSize(0.3)
 				->SetHintText("New profile name")
 				->SetPadding(0.01, 0.02, 0.01, 0.01)
-				->SetMinSize(Vector2f(0.6, 0.055)))
+				->SetMinSize(Vector2f(0.5, 0.055)))
 			->AddChild((new UIButton(true, 0, Vector3f32(0, 0.5, 1), []()
 				{
 					CurrentProfileTab->CreateNewProfile(CurrentProfileTab->NewProfileTextField->GetText()); 
 				}))
+				->AddChild((new UIBackground(true, 0, 0, 0.06))
+					->SetUseTexture(true, Icon("Add").TextureID)
+					->SetPadding(0.01, 0.01, 0.01, 0)
+					->SetSizeMode(UIBox::SizeMode::AspectRelative))
 				->SetMinSize(Vector2f(0, 0.055))
 				->SetBorder(UIBox::BorderType::Rounded, 0.5)
 				->AddChild((new UIText(0.3, 0, "Create", UI::Text))
@@ -292,9 +297,13 @@ void ProfileTab::DisplayProfileInfo()
 						});
 				}))
 				->SetPadding(0.1, 0, 0.01, 0.01)
-					->SetBorder(UIBox::BorderType::Rounded, 0.5)
-					->AddChild((new UIText(0.25, 0, "Update profile", UI::Text))
-						->SetPadding(0.015)));
+				->AddChild((new UIBackground(true, 0, 0, 0.045))
+					->SetUseTexture(true, Icon("Settings/Reload").TextureID)
+					->SetPadding(0.01, 0.01, 0.01, 0)
+					->SetSizeMode(UIBox::SizeMode::AspectRelative))
+				->SetBorder(UIBox::BorderType::Rounded, 0.5)
+				->AddChild((new UIText(0.25, 0, "Update profile", UI::Text))
+					->SetPadding(0.015)));
 		}
 		OptionsBox->AddChild((new UIButton(true, 0, Vector3f32(1, 0.5, 0), []()
 			{
@@ -318,6 +327,10 @@ void ProfileTab::DisplayProfileInfo()
 			}))
 			->SetPadding(0.1, 0, 0.01, 0.01)
 			->SetBorder(UIBox::BorderType::Rounded, 0.5)
+			->AddChild((new UIBackground(true, 0, 0, 0.045))
+				->SetUseTexture(true, Icon("Delete").TextureID)
+				->SetPadding(0.01, 0.01, 0.01, 0)
+				->SetSizeMode(UIBox::SizeMode::AspectRelative))
 			->AddChild((new UIText(0.25, 0, "Delete profile", UI::Text))
 				->SetPadding(0.015)));
 	}

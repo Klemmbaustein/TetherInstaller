@@ -182,7 +182,6 @@ namespace Installer
 		{
 			return;
 		}
-		BackgroundTask::SetProgress(0.3);
 		Networking::DownloadLatestReleaseOf("Klemmbaustein/TetherInstaller", "Windows");
 		Networking::ExtractZip("Data/temp/net/latest.zip", "Data/temp/install");
 

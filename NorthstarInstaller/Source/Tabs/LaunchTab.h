@@ -5,7 +5,10 @@
 
 class LaunchTab : public UITab
 {
+	bool VanillaPlus = false;
 public:
+
+	void OnClicked() override;
 	UIButton* LaunchButton = nullptr;
 	UIText* LaunchText = nullptr;
 	LaunchTab();
