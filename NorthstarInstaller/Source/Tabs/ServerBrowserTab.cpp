@@ -420,6 +420,12 @@ void ServerBrowserTab::DisplayServers()
 
 void JoinCurrentServer()
 {
+	if (Thunderstore::VanillaPlusInstalled())
+	{
+		Window::ShowPopupError("Cannot join northstar servers with Vanilla+");
+		ServerBrowserTab::ShouldLaunchGame = false;
+		return;
+	}
 	ServerBrowserTab::ShouldLaunchGame = InstallRequiredModsForServer(ServerBrowserTab::CurrentServerTab->SelectedServer);
 }
 
@@ -505,7 +511,7 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 		->AddChild((new UIButton(true, 0, Vector3f32(0.5, 0.6, 1), []() { new BackgroundTask(JoinCurrentServer, []() {
 
 				ServerBrowserTab::CurrentServerTab->DisplayServerDescription(ServerBrowserTab::CurrentServerTab->SelectedServer);
-				if (ServerBrowserTab::ShouldLaunchGame) 
+				if (ServerBrowserTab::ShouldLaunchGame)
 				{ 
 					LOG_PRINTF("Joining server \"{}\" (id: {})",
 						ServerBrowserTab::CurrentServerTab->SelectedServer.Name,
