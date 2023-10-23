@@ -47,7 +47,7 @@ void NorthstarLaunchTask()
 
 #if __linux__
 
-	std::string Commad = "steam://run/1237970/-profile=\\\""
+	std::string Commad = "steam://run/1237970/-northstar -profile=\\\""
 		+ ProfileTab::CurrentProfile.DisplayName
 		+ "\\\" "
 		+ NorthstarLaunchArgs
