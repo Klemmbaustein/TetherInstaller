@@ -36,6 +36,7 @@ public:
 	void Tick() override;
 	void DisplayProfileInfo();
 	void UpdateProfilesList();
+	void OnClicked() override;
 
 	void CreateNewProfile(std::string Name);
 	void SaveSelectedProfile();

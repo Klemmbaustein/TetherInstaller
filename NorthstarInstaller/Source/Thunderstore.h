@@ -95,10 +95,22 @@ namespace Thunderstore
 	// For example: GlitchOverhaul package -> [Titanfall2]/R2Northstar/packages/S2Mods-GlitchOverhaul-1.2.11/mods/*
 	std::vector<std::string> GetLocalMods(Package m);
 
+	// Installs the Vanilla+ mod to the current profile.
+	// The profile cannot be "R2Northstar" since that would break things.
+	// From: The extracted .zip file the mod should be installed from.
+	// VPPackage: The Package info of Vanilla+
+	void InstallVanillaPlus(std::string From, Package VPPackage);
+
+	void RemoveVanillaPlus();
+
 	namespace TSModFunc
 	{
 		void InstallOrUninstallMod();
 	}
+
+	void SaveModInfo(Package m, std::vector<std::string> ModFiles);
+
+	bool VanillaPlusInstalled();
 
 	void SetModEnabled(Package m, bool IsEnabled);
 	bool GetModEnabled(Package m);

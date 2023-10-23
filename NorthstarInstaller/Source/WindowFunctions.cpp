@@ -86,5 +86,6 @@ void Window::ShowPopup(std::string Title, std::string Message)
 }
 void Window::ShowPopupError(std::string Message)
 {
+	Log::Print(Message, Log::Error);
 	tinyfd_messageBox("Tether Installer Error", Message.c_str(), "ok", "error", 1);
 }

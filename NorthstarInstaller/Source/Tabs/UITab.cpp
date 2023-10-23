@@ -1,6 +1,10 @@
 #include "UITab.h"
 #include <KlemmUI/UI/UIBackground.h>
 
+void UITab::OnClicked()
+{
+}
+
 UITab::UITab()
 {
 	Background = new UIBox(false, Vector2f(-1, -1));

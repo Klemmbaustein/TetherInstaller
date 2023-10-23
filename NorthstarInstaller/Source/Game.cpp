@@ -13,6 +13,13 @@ std::string Game::GamePath;
 bool Game::RequiresUpdate = false;
 const std::string GameDirTxtPath = "Data/var/GameDir.txt";
 
+std::set<std::string> Game::CoreModNames =
+{
+	"Northstar.CustomServers",
+	"Northstar.Custom",
+	"Northstar.Client",
+	"Northstar.Coop", // soooooon
+};
 
 std::string CommonTitanfallLocations[] =
 {
@@ -194,10 +201,6 @@ void Game::UpdateGame()
 			}
 		}
 		Networking::ExtractZip(result, Game::GamePath);
-		BackgroundTask::SetStatus("dl_Removing temporary files");
-		BackgroundTask::SetProgress(0.98);
-		std::filesystem::remove_all("Data/temp/net");
-		Log::Print("Removed temporary files");
 		Game::RequiresUpdate = false;
 	}
 	catch (std::exception& e)

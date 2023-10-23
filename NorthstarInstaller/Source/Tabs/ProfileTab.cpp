@@ -20,14 +20,6 @@ ProfileTab::Profile ProfileTab::CurrentProfile;
 std::vector<ProfileTab::Profile> ProfileTab::AllProfiles;
 ProfileTab* ProfileTab::CurrentProfileTab = nullptr;
 
-const std::set<std::string> ProfileTab::CoreModNames =
-{
-	"Northstar.CustomServers",
-	"Northstar.Custom",
-	"Northstar.Client",
-	"Northstar.Coop", // soooooon
-};
-
 // https://github.com/R2NorthstarTools/FlightCore/blob/b61eeba6e552fa0b6fb96f3eee6202200821826b/src-tauri/src/northstar/profile.rs#L5-L28
 // Thanks flightcore.
 
@@ -261,6 +253,11 @@ void ProfileTab::DisplayProfileInfo()
 			AboutStrings.push_back("This is the default profile.");
 		}
 
+		if (Thunderstore::VanillaPlusInstalled())
+		{
+			AboutStrings.push_back("This profile has Vanilla+ installed.");
+		}
+
 		std::filesystem::current_path(p);
 
 		for (auto& i : AboutStrings)
@@ -273,9 +270,11 @@ void ProfileTab::DisplayProfileInfo()
 	if (CurrentProfile.DisplayName != "R2Northstar")
 	{
 		auto OptionsBox = (new UIBox(true, 0));
-
-		ProfileInfoBox->AddChild(OptionsBox
-			->AddChild((new UIButton(true, 0, Vector3f32(0, 0.5, 1), []()
+		ProfileInfoBox->AddChild(OptionsBox);
+		if (!Thunderstore::VanillaPlusInstalled())
+		{
+			
+			OptionsBox->AddChild((new UIButton(true, 0, Vector3f32(0, 0.5, 1), []()
 				{
 					new BackgroundTask([]()
 						{
@@ -295,8 +294,9 @@ void ProfileTab::DisplayProfileInfo()
 				->SetPadding(0.1, 0, 0.01, 0.01)
 					->SetBorder(UIBox::BorderType::Rounded, 0.5)
 					->AddChild((new UIText(0.25, 0, "Update profile", UI::Text))
-						->SetPadding(0.015)))
-			->AddChild((new UIButton(true, 0, Vector3f32(1, 0.5, 0), []()
+						->SetPadding(0.015)));
+		}
+		OptionsBox->AddChild((new UIButton(true, 0, Vector3f32(1, 0.5, 0), []()
 			{
 				if (Window::ShowPopupQuestion("Delete profile",
 				"Are you sure you want to delete the profile " + CurrentProfile.DisplayName + "?")
@@ -319,7 +319,7 @@ void ProfileTab::DisplayProfileInfo()
 			->SetPadding(0.1, 0, 0.01, 0.01)
 			->SetBorder(UIBox::BorderType::Rounded, 0.5)
 			->AddChild((new UIText(0.25, 0, "Delete profile", UI::Text))
-				->SetPadding(0.015))));
+				->SetPadding(0.015)));
 	}
 }
 
@@ -342,6 +342,11 @@ void ProfileTab::UpdateProfilesList()
 	}
 }
 
+void ProfileTab::OnClicked()
+{
+	DisplayProfileInfo();
+}
+
 void ProfileTab::CreateNewProfile(std::string Name)
 {
 	if (Name.empty())
@@ -356,7 +361,7 @@ void ProfileTab::CreateNewProfile(std::string Name)
 	}
 	std::filesystem::create_directories(Game::GamePath + Name + "/mods");
 
-	for (auto& i : CoreModNames)
+	for (auto& i : Game::CoreModNames)
 	{
 		if (std::filesystem::exists(Game::GamePath + "/R2Northstar/mods/" + i))
 		{
@@ -406,14 +411,14 @@ void ProfileTab::UpdateProfile(Profile Target, bool Silent)
 	for (auto& mod : std::filesystem::directory_iterator(Target.Path + "/mods/"))
 	{
 		std::string ModString = mod.path().filename().u8string();
-		if (CoreModNames.contains(ModString))
+		if (Game::CoreModNames.contains(ModString))
 		{
 			std::filesystem::remove_all(mod);
 		}
 	}
 
 
-	for (auto& m : CoreModNames)
+	for (auto& m : Game::CoreModNames)
 	{
 		if (std::filesystem::exists(Game::GamePath + "/R2Northstar/mods/" + m))
 		{

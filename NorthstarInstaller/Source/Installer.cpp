@@ -60,6 +60,7 @@ namespace Installer
 
 			auto Button = new UIButton(true, 0, TabStyles[(int)(SelectedTab == i)], [](int Index)
 				{
+					Tabs.at(Index)->OnClicked();
 					SelectedTab = Index;
 					GenerateTabs();
 				}, (int)i);
@@ -176,7 +177,7 @@ namespace Installer
 		Window::ShowPopupError("A new version of Tether is avaliable but updating the installer is not yet supported on linux.\nPlease update manually.");
 		return;
 #endif
-		BackgroundTask::SetStatus("Updating installer");
+		BackgroundTask::SetStatus("dl_Updating installer");
 		if (Window::ShowPopupQuestion("Update", "An update for the launcher is avaliabe.\nWould you like to install it?") != Window::PopupReply::Yes)
 		{
 			return;
@@ -450,8 +451,8 @@ int main(int argc, char** argv)
 
 		bg->SetPosition(Vector2f(0.0) - bg->GetUsedSize() / 2);
 		BackgroundTask::UpdateTaskStatus();
-		AppTitle->SetPosition(Vector2f(SidebarBackground->GetUsedSize().X - 0.99, WindowButtonBox->GetPosition().Y));
-		AppTitle->SetText("TetherInstaller - " + Tabs[SelectedTab]->Name);
+		AppTitle->SetPosition(Vector2f(SidebarBackground->GetUsedSize().X - 0.99, WindowButtonBox->GetPosition().Y + 0.001));
+		AppTitle->SetText("TetherInstaller - " + Tabs[SelectedTab]->Name + " - Profile: " + ProfileTab::CurrentProfile.DisplayName);
 		DownloadWindow::Update(WindowButtonBox->GetUsedSize().Y);
 
 		if (Application::AspectRatio != PrevAspect)

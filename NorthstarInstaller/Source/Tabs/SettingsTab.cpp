@@ -52,18 +52,9 @@ void SettingsTab::Tick()
 
 void DeleteAllMods()
 {
-	// Do not uninstall the core mods. That's a very bad idea.
-	std::set<std::string> CoreModNames =
-	{
-		"Northstar.CustomServers",
-		"Northstar.Custom",
-		"Northstar.Client",
-		"Northstar.Coop", // soooooon
- 	};
-
 	for (const auto& m : std::filesystem::directory_iterator(ProfileTab::CurrentProfile.Path + "/mods/"))
 	{
-		if (CoreModNames.find(m.path().filename().u8string()) == CoreModNames.end() && std::filesystem::is_directory(m))
+		if (Game::CoreModNames.find(m.path().filename().u8string()) == Game::CoreModNames.end() && std::filesystem::is_directory(m))
 		{
 			std::filesystem::remove_all(m);
 			Log::Print("Removing mod: " + m.path().filename().u8string(),  Log::Warning);
@@ -141,7 +132,7 @@ void SettingsTab::GenerateSettings()
 	SettingsBox->AddChild((new UIBox(true, 0))
 		->SetPadding(0.01, 0.05, 0.09, 0)
 		->AddChild((new UIBackground(true, 0, PathValid ? Vector3f32(0, 1, 0.5) : Vector3f32(1, 0.5, 0), 0.05))
-			->SetUseTexture(true, PathValid ? Icon("Settings/Checkmark").TextureID : Icon("Settings/Warning").TextureID)
+			->SetUseTexture(true, PathValid ? Icon("Enabled").TextureID : Icon("Settings/Warning").TextureID)
 			->SetSizeMode(UIBox::SizeMode::AspectRelative)
 			->SetPadding(0.01, 0.01, 0, 0))
 		->AddChild((new UIText(0.35, 0.9, PathString, UI::Text))));
@@ -220,7 +211,7 @@ void SettingsTab::GenerateSettings()
 
 
 		AddCategoryHeader("Danger zone", "Settings/Warning", SettingsBox);
-		AddSettingsButton("Delete all mods", "Settings/Delete", DeleteAllMods, SettingsBox);
+		AddSettingsButton("Delete all mods", "Delete", DeleteAllMods, SettingsBox);
 
 		AddSettingsButton("Reset installer", "Settings/Reload", []() {
 			try

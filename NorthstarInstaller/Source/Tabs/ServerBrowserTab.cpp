@@ -273,8 +273,8 @@ ServerBrowserTab::ServerBrowserTab()
 	ServerBackground->AddChild((new UIBox(true, 0))
 		->SetPadding(0)
 		->AddChild(ServerBox
-			->SetMaxSize(Vector2f(0.825, 1.55))
-			->SetMinSize(Vector2f(0.825, 1.55)))
+			->SetMaxSize(Vector2f(0.825, 1.5))
+			->SetMinSize(Vector2f(0.825, 1.5)))
 		->AddChild(ServerDescriptionBox
 			->SetMinSize(Vector2f(0.3, 1.4))));
 	ServerDescriptionBox->BoxAlign = UIBox::Align::Reverse;

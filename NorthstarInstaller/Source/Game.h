@@ -1,9 +1,12 @@
 #pragma once
 #include <string>
 #include <filesystem>
+#include <set>
 
 namespace Game
 {
+	extern std::set<std::string> CoreModNames;
+	
 	std::string GetTitanfallLocation();
 	void SaveGameDir(std::string FoundGameDir);
 	bool IsValidTitanfallLocation(std::filesystem::path p);

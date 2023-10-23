@@ -611,6 +611,60 @@ namespace Thunderstore::TSGetModInfoFunc
 	}
 }
 
+void Thunderstore::SaveModInfo(Package m, std::vector<std::string> ModFiles)
+{
+	using namespace nlohmann;
+
+	std::filesystem::create_directories("Data/var/modinfo/" + ProfileTab::CurrentProfile.DisplayName);
+	std::ofstream out = std::ofstream("Data/var/modinfo/" + ProfileTab::CurrentProfile.DisplayName + "/" + m.Namespace + "." + m.Name + ".json");
+
+	std::string Image;
+	if (std::filesystem::exists(m.Img))
+	{
+		std::string ImagePath = "Data/var/modinfo/" + ProfileTab::CurrentProfile.DisplayName + "/" + m.Namespace + "." + m.Name + ".png";
+		if (std::filesystem::exists(ImagePath))
+		{
+			std::filesystem::remove(ImagePath);
+		}
+		std::filesystem::copy(m.Img, ImagePath);
+		Image = ImagePath;
+	}
+	else
+	{
+		Networking::Download(m.Img, "Data/var/modinfo/"
+			+ ProfileTab::CurrentProfile.DisplayName
+			+ "/"
+			+ m.Namespace
+			+ "."
+			+ m.Name
+			+ ".png", "");
+	}
+
+	auto descr(json::object({
+		{"version", m.Version},
+		{"author", m.Author},
+		{"namespace", m.Namespace},
+		{"name", m.Name},
+		{"mod_files", ModFiles},
+		{"description", m.Description},
+		{"image", Image},
+		{"is_temporary", false},
+		{"file_format_version", MOD_DESCRIPTOR_FILE_FORMAT_VERSION},
+		{"UUID", m.UUID}
+		}));
+	Log::Print("Saving mod info - Data/var/modinfo/" + ProfileTab::CurrentProfile.DisplayName + "/" + m.Namespace + "." + m.Name + ".json");
+
+	out << descr.dump();
+	out.close();
+}
+
+bool Thunderstore::VanillaPlusInstalled()
+{
+	Package VanillaPlus;
+	VanillaPlus.Name = "VanillaPlus";
+	return Thunderstore::IsModInstalled(VanillaPlus);
+}
+
 void Thunderstore::SetModEnabled(Package m, bool IsEnabled)
 {
 	using namespace nlohmann;
@@ -754,7 +808,6 @@ namespace Thunderstore::TSModFunc
 					std::filesystem::remove_all(InfoFile);
 				}
 
-
 				if (!str.str().empty())
 				{
 					json modinfo = json::parse(str.str());
@@ -769,32 +822,30 @@ namespace Thunderstore::TSModFunc
 								std::filesystem::remove_all(file);
 							}
 						}
+
+						if (m.Name == "VanillaPlus")
+						{
+							RemoveVanillaPlus();
+							IsInstallingMod = false;
+							return;
+						}
 					}
-					else
+					else if (!IsTemporary)
 					{
 						std::filesystem::remove(ProfileTab::CurrentProfile.Path + "/Northstar.dll");
 						Game::UpdateGame();
 						ProfileTab::UpdateProfile(ProfileTab::CurrentProfile, true);
-					}
-					try
-					{
-						FoundMods = GetInstalledMods().Combined();
-					}
-					catch (std::exception& e)
-					{
-						FoundMods.clear();
-						Log::Print("Error parsing installed mods: " + std::string(e.what()), Log::Error);
 					}
 				}
 				IsInstallingMod = false;
 				return;
 			}
 			Log::Print("Installing mod \"" + m.Name + "\"");
-			if (Async)
+			if (BackgroundTask::IsBackgroundTask())
 			{
 				BackgroundTask::SetStatus("dl_Downloading mod");
-				BackgroundTask::SetProgress(0.999);
 			}
+
 			std::string TargetZipName = "Data/temp/net/" + m.Author + "." + m.Name + ".zip";
 			Networking::Download(m.DownloadUrl, TargetZipName, "", BackgroundTask::IsBackgroundTask());
 
@@ -803,6 +854,15 @@ namespace Thunderstore::TSModFunc
 			Networking::ExtractZip(TargetZipName, "Data/temp/mod/");
 			std::filesystem::remove(TargetZipName);
 			
+			if (m.Name == "VanillaPlus")
+			{
+				InstallVanillaPlus("Data/temp/mod", m);
+				if (m.UUID == SelectedMod.UUID)
+					LoadedSelectedMod = true;
+				IsInstallingMod = false;
+				return;
+			}
+
 			if (m.Name == "NorthstarReleaseCandidate")
 			{
 				// Remove core mods before installing them again
@@ -834,55 +894,7 @@ namespace Thunderstore::TSModFunc
 					std::filesystem::copy_options::overwrite_existing
 					| std::filesystem::copy_options::recursive);
 
-				std::string Image;
-				if (std::filesystem::exists(m.Img))
-				{
-					std::string ImagePath = "Data/var/modinfo/" + ProfileTab::CurrentProfile.DisplayName 
-						+ "/"
-						+ m.Namespace 
-						+ "." 
-						+ m.Name 
-						+ ".png";
-					if (std::filesystem::exists(ImagePath))
-					{
-						std::filesystem::remove(ImagePath);
-					}
-					std::filesystem::copy(m.Img, ImagePath);
-					Image = ImagePath;
-				}
-				else if (!IsTemporary)
-				{
-					Networking::Download(m.Img, "Data/var/modinfo/" 
-						+ ProfileTab::CurrentProfile.DisplayName 
-						+ "/"
-						+ m.Namespace 
-						+ "."
-						+ m.Name 
-						+ ".png", "");
-				}
-
-				json descr(json::object({
-					{"version", m.Version},
-					{"author", m.Author},
-					{"namespace", m.Namespace},
-					{"name", m.Name},
-					{"mod_files", ""},
-					{"description", m.Description},
-					{"image", Image},
-					{"is_temporary", IsTemporary},
-					{"file_format_version", MOD_DESCRIPTOR_FILE_FORMAT_VERSION},
-					{"UUID", m.UUID},
-					}));
-
-				std::ofstream out = std::ofstream("Data/var/modinfo/"
-					+ ProfileTab::CurrentProfile.DisplayName
-					+ "/"
-					+ m.Namespace
-					+ "." 
-					+ m.Name 
-					+ ".json");
-				out << descr.dump();
-				out.close();
+				SaveModInfo(m, {});
 				IsInstallingMod = false;
 				return;
 			}
@@ -909,46 +921,8 @@ namespace Thunderstore::TSModFunc
 			// TODO: (Or not, since it now is deprecated behavior) Handle plugins
 #endif
 
-			std::filesystem::create_directories("Data/var/modinfo/" + ProfileTab::CurrentProfile.DisplayName);
-			std::ofstream out = std::ofstream("Data/var/modinfo/" + ProfileTab::CurrentProfile.DisplayName + "/" + m.Namespace + "." + m.Name + ".json");
+			SaveModInfo(m, Files);
 
-			std::string Image;
-			if (std::filesystem::exists(m.Img))
-			{
-				std::string ImagePath = "Data/var/modinfo/" + ProfileTab::CurrentProfile.DisplayName + "/" + m.Namespace + "." + m.Name + ".png";
-				if (std::filesystem::exists(ImagePath))
-				{
-					std::filesystem::remove(ImagePath);
-				}
-				std::filesystem::copy(m.Img, ImagePath);
-				Image = ImagePath;
-			}
-			else
-			{
-				Networking::Download(m.Img, "Data/var/modinfo/"
-					+ ProfileTab::CurrentProfile.DisplayName
-					+ "/"
-					+ m.Namespace 
-					+ "." 
-					+ m.Name
-					+ ".png", "");
-			}
-
-			auto descr(json::object({
-				{"version", m.Version},
-				{"author", m.Author},
-				{"namespace", m.Namespace},
-				{"name", m.Name},
-				{"mod_files", Files},
-				{"description", m.Description},
-				{"image", Image},
-				{"is_temporary", IsTemporary},
-				{"file_format_version", MOD_DESCRIPTOR_FILE_FORMAT_VERSION},
-				{"UUID", m.UUID}
-				}));
-
-			out << descr.dump();
-			out.close();
 		//	Thunderstore::SetModEnabled(m, true);
 		}
 		catch (std::exception& e)
@@ -956,7 +930,7 @@ namespace Thunderstore::TSModFunc
 			Log::Print(e.what(), Log::Error);
 		}
 		if (m.UUID == SelectedMod.UUID)
-		Thunderstore::LoadedSelectedMod = true;
+			LoadedSelectedMod = true;
 		IsInstallingMod = false;
 	}
 }
@@ -1090,3 +1064,41 @@ std::vector<std::string> Thunderstore::GetLocalMods(Package m)
 	}
 }
 
+void Thunderstore::InstallVanillaPlus(std::string From, Package m)
+{
+	using namespace nlohmann;
+	if (ProfileTab::CurrentProfile.DisplayName == "R2Northstar")
+	{
+		Window::ShowPopupError("Cannot install Vanilla+ on the default R2Northstar profile.\nPlease create and select a new profile in the profile menu.");
+		return;
+	}
+
+	std::filesystem::copy(From + "/mods",
+		ProfileTab::CurrentProfile.Path + "/mods", 
+		std::filesystem::copy_options::recursive | std::filesystem::copy_options::overwrite_existing);
+
+	for (const auto& i : Game::CoreModNames)
+	{
+		std::string Path = ProfileTab::CurrentProfile.Path + "/mods/" + i;
+		if (std::filesystem::exists(Path))
+		{
+			std::filesystem::remove_all(Path);
+		}
+	}
+
+	SaveModInfo(m, {"/mods/NP.VanillaPlus"});
+}
+
+void Thunderstore::RemoveVanillaPlus()
+{
+	for (const auto& i : Game::CoreModNames)
+	{
+		std::string From = Game::GamePath + "/R2Northstar/mods/" + i;
+		if (std::filesystem::exists(From))
+		{
+			std::filesystem::copy(From,
+				ProfileTab::CurrentProfile.Path + "/mods/" + i,
+				std::filesystem::copy_options::recursive | std::filesystem::copy_options::overwrite_existing);
+		}
+	}
+}

@@ -24,7 +24,7 @@ void NorthstarLaunchTask()
 	BackgroundTask::SetStatus("Northstar is running");
 	Log::Print("Game has started");
 
-	std::string UTF8GameDir = std::regex_replace(Game::GamePath, std::regex(" "), "^ ");
+	std::string GameDir = std::regex_replace(Game::GamePath, std::regex(" "), "^ ");
 
 	Thunderstore::Package ReleaseCanidate;
 
@@ -34,22 +34,22 @@ void NorthstarLaunchTask()
 
 	if (Thunderstore::IsModInstalled(ReleaseCanidate))
 	{
-		UTF8GameDir.append("/NorthstarLauncherRC.exe");
+		GameDir.append("/NorthstarLauncherRC.exe");
 	}
 	else
 	{
-		UTF8GameDir.append("/NorthstarLauncher.exe");
+		GameDir.append("/NorthstarLauncher.exe");
 	}
 
 #if __linux
-	int isWSL = !system("grep microsoft /proc/version");
+	int IsWSL = !system("grep microsoft /proc/version");
 
-	if (!isWSL)
+	if (!IsWSL)
 #else
 	if (false)
 #endif
 	{
-		system(("wine " + UTF8GameDir + " -profile=\""
+		system(("wine " + GameDir + " -profile=\""
 			+ ProfileTab::CurrentProfile.DisplayName 
 			+ "\" "
 			+ NorthstarLaunchArgs 
@@ -58,7 +58,7 @@ void NorthstarLaunchTask()
 	}
 	else
 	{
-		system((UTF8GameDir + " -profile=\""
+		system((GameDir + " -profile=\""
 			+ ProfileTab::CurrentProfile.DisplayName 
 			+ "\" "
 			+ NorthstarLaunchArgs 
@@ -88,6 +88,10 @@ void LaunchTab::LaunchNorthstar()
 void LaunchTab::LaunchNorthstar(std::string Args)
 {
 	NorthstarLaunchArgs = Args;
+	if (Thunderstore::VanillaPlusInstalled())
+	{
+		NorthstarLaunchArgs.append(" -norestrictservercommands ");
+	}
 	for (auto& i : LaunchStoppingTasks)
 	{
 		if (BackgroundTask::IsFunctionRunningAsTask(i.first))

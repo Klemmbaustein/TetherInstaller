@@ -9,6 +9,8 @@ public:
 	std::string Name = "Tab";
 	std::string Description = "Default Description";
 
+	virtual void OnClicked();
+
 	UITab();
 	virtual void Tick();
 	virtual ~UITab();

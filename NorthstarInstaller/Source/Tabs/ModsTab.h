@@ -20,6 +20,7 @@ class ModsTab : public UITab
 	float PrevAspectRatio = 0;
 	std::vector<UIBackground*> ModImages;
 	bool IsInModInfo = false;
+	UIBox* GenerateModInfoText(std::vector<std::string> Text, Vector3f32 Color, std::string Icon, double IconPadding = 0.01);
 public:
 	static std::atomic<unsigned int> ModsPerPage;
 	UITextField* SearchBar = nullptr;
