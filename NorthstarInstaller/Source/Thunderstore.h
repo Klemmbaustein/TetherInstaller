@@ -108,7 +108,7 @@ namespace Thunderstore
 		void InstallOrUninstallMod();
 	}
 
-	void SaveModInfo(Package m, std::vector<std::string> ModFiles);
+	void SaveModInfo(Package m, std::vector<std::string> ModFiles, bool Temporary);
 
 	bool VanillaPlusInstalled();
 

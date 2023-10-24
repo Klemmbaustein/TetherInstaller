@@ -17,6 +17,8 @@ namespace DownloadWindow
 	UIText* TitleText = nullptr;
 	size_t AllTasksSize = 0;
 
+	BackgroundTask* LatestBackgroundTask = nullptr;
+
 	void Generate();
 
 	struct DownloadInfo
@@ -41,7 +43,7 @@ void DownloadWindow::Generate()
 	IsDownloading = false;
 	for (BackgroundTask* i : BackgroundTask::AllTasks)
 	{
-		if (i->Status.substr(0, 3) == "dl_")
+		if (i->Status.size() >= 3 && i->Status.substr(0, 3) == "dl_")
 		{
 			DownloadInfo NewDownload;
 			NewDownload.Task = i;
@@ -87,8 +89,14 @@ void DownloadWindow::Update(float WindowBarSize)
 		SetWindowVisible(false);
 	}
 
-	if (AllTasksSize != BackgroundTask::AllTasks.size())
+	
+
+	if (AllTasksSize != BackgroundTask::AllTasks.size() || (!BackgroundTask::AllTasks.empty() && BackgroundTask::AllTasks[0] != LatestBackgroundTask))
 	{
+		if (!BackgroundTask::AllTasks.empty())
+		{
+			LatestBackgroundTask = BackgroundTask::AllTasks[0];
+		}
 		AllTasksSize = BackgroundTask::AllTasks.size();
 		Generate();
 		if (IsDownloading)
@@ -102,7 +110,10 @@ void DownloadWindow::Update(float WindowBarSize)
 		Vector2f Size = Vector2f(i.Task->CurrentTaskProgress / 3, 0.05);
 		i.ProgressBar->SetMinSize(Size);
 		i.ProgressBar->SetMaxSize(Size);
-		i.NameText->SetText(i.Task->Status.substr(3));
+		if (i.Task->Status.size() > 3)
+		{
+			i.NameText->SetText(i.Task->Status.substr(3));
+		}
 		DissapearTimer = 0;
 	}
 	DownloadBackground->SetPosition(Vector2f(0.5, 1 - WindowBarSize - 0.25));

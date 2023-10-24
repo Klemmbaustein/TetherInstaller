@@ -1,6 +1,7 @@
 #include "BackgroundTask.h"
 #include <cassert>
 #include "Log.h"
+#include <iostream>
 
 thread_local BackgroundTask* BackgroundTask::ThisThreadPtr = nullptr;
 std::string BackgroundTask::CurrentTaskStatus;
@@ -67,12 +68,13 @@ void BackgroundTask::UpdateTaskStatus()
 	{
 		if (AllTasks[i]->Progress >= 1)
 		{
-			if (AllTasks[i]->Callback)
-			{
-				AllTasks[i]->Callback();
-			}
+			auto Callback = AllTasks[i]->Callback;
 			delete AllTasks[i];
 			AllTasks.erase(AllTasks.begin() + i);
+			if (Callback)
+			{
+				Callback();
+			}
 			break;
 		}
 		else if (!IsRunningTask)

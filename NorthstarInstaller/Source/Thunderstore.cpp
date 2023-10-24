@@ -611,7 +611,7 @@ namespace Thunderstore::TSGetModInfoFunc
 	}
 }
 
-void Thunderstore::SaveModInfo(Package m, std::vector<std::string> ModFiles)
+void Thunderstore::SaveModInfo(Package m, std::vector<std::string> ModFiles, bool Temporary)
 {
 	using namespace nlohmann;
 
@@ -648,7 +648,7 @@ void Thunderstore::SaveModInfo(Package m, std::vector<std::string> ModFiles)
 		{"mod_files", ModFiles},
 		{"description", m.Description},
 		{"image", Image},
-		{"is_temporary", false},
+		{"is_temporary", Temporary},
 		{"file_format_version", MOD_DESCRIPTOR_FILE_FORMAT_VERSION},
 		{"UUID", m.UUID}
 		}));
@@ -841,7 +841,7 @@ namespace Thunderstore::TSModFunc
 				return;
 			}
 			Log::Print("Installing mod \"" + m.Name + "\"");
-			if (BackgroundTask::IsBackgroundTask())
+			if (BackgroundTask::IsBackgroundTask() && !IsTemporary)
 			{
 				BackgroundTask::SetStatus("dl_Downloading mod");
 			}
@@ -894,7 +894,7 @@ namespace Thunderstore::TSModFunc
 					std::filesystem::copy_options::overwrite_existing
 					| std::filesystem::copy_options::recursive);
 
-				SaveModInfo(m, {});
+				SaveModInfo(m, {}, false);
 				IsInstallingMod = false;
 				return;
 			}
@@ -921,7 +921,7 @@ namespace Thunderstore::TSModFunc
 			// TODO: (Or not, since it now is deprecated behavior) Handle plugins
 #endif
 
-			SaveModInfo(m, Files);
+			SaveModInfo(m, Files, IsTemporary);
 
 		//	Thunderstore::SetModEnabled(m, true);
 		}
@@ -1086,7 +1086,7 @@ void Thunderstore::InstallVanillaPlus(std::string From, Package m)
 		}
 	}
 
-	SaveModInfo(m, {"/mods/NP.VanillaPlus"});
+	SaveModInfo(m, {"/mods/NP.VanillaPlus"}, false);
 }
 
 void Thunderstore::RemoveVanillaPlus()

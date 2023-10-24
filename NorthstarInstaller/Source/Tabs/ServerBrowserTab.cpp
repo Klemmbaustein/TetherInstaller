@@ -99,7 +99,7 @@ bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
 {
 	using namespace nlohmann;
 
-	BackgroundTask::SetStatus("Loading required mods");
+	BackgroundTask::SetStatus("dl_Loading required mods");
 
 	Networking::Download(
 		"https://thunderstore.io/c/northstar/api/v1/package/",
@@ -185,7 +185,7 @@ bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
 		}
 		if (ClosestModScore != SIZE_MAX)
 		{
-			BackgroundTask::SetStatus("Installing " + m.Name);
+			BackgroundTask::SetStatus("dl_Installing " + m.Name);
 			Thunderstore::InstallOrUninstallMod(m, true, false);
 			HasInstalledMod = true;
 		}
@@ -514,8 +514,8 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 	ServerDescriptionBox->AddChild(new UIBackground(true, 0, 1, Vector2f(0.6, 0.005)));
 	ServerDescriptionText = new UIText(0.4, 0, "Join server", UI::Text);
 	ServerDescriptionBox->AddChild((new UIBox(true, 0))
-		->AddChild((new UIButton(true, 0, Vector3f32(0.5, 0.6, 1), []() { new BackgroundTask(JoinCurrentServer, []() {
-
+		->AddChild((new UIButton(true, 0, Vector3f32(0.5, 0.6, 1), []() { new BackgroundTask(JoinCurrentServer,
+			[]() {
 				ServerBrowserTab::CurrentServerTab->DisplayServerDescription(ServerBrowserTab::CurrentServerTab->SelectedServer);
 				if (ServerBrowserTab::ShouldLaunchGame)
 				{ 

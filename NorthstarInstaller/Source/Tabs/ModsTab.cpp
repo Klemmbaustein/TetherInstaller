@@ -129,7 +129,8 @@ void ModsTab::GenerateModInfo()
 
 			->AddChild(ModActionsBox)
 
-			->AddChild(new UIText(0.4, 1, DescriptionText, UI::Text))
+			->AddChild((new UIText(0.4, 1, DescriptionText, UI::Text))
+				->SetWrapEnabled(true, 0.2, UIBox::SizeMode::ScreenRelative))
 			->AddChild((new UIText(0.7, 1, Thunderstore::SelectedMod.Name + (IsInstalled ? " (Installed)" : ""), UI::Text))
 				->SetWrapEnabled(true, 0.2, UIBox::SizeMode::ScreenRelative)))
 
