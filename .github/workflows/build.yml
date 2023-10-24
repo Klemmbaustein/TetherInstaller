@@ -114,8 +114,8 @@ jobs:
       with:
         draft: false
         prerelease: false
-        release_name: "CI Build #${{ github.run_number }}"
-        tag_name: CI-Build-${{ github.run_number }}
+        release_name: "Build #${{ github.run_number }}"
+        tag_name: Build-${{ github.run_number }}
       env:
         GITHUB_TOKEN: ${{ github.token }}
     - name: upload linux artifact

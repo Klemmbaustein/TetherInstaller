@@ -39,7 +39,7 @@ namespace Installer
 #ifdef CI_BUILD
 #define _STR(x) _XSTR(x)
 #define _XSTR(x) std::string(#x)
-	const std::string InstallerVersion = "CI Build #" + _STR(CI_BUILD);
+	const std::string InstallerVersion = "Build #" + _STR(CI_BUILD);
 #else
 	const std::string InstallerVersion = "DevBuild";
 #endif

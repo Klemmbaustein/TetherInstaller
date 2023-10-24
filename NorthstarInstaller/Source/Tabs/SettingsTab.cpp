@@ -241,6 +241,6 @@ void SettingsTab::GenerateSettings()
 	AddCategoryHeader("About", "Settings/About", SettingsBox);
 	SettingsBox->AddChild((new UIText(0.35, 1, "Installed Northstar version: " + Game::GetCurrentVersion(), UI::Text))
 		->SetPadding(0.01, 0.01, 0.06, 0.01));
-	SettingsBox->AddChild((new UIText(0.35, 1, "Launcher version: " + Installer::InstallerVersion + "-" + std::string(OS), UI::Text))
+	SettingsBox->AddChild((new UIText(0.35, 1, "Launcher version: " + Installer::InstallerVersion + " (" + std::string(OS) + ")", UI::Text))
 		->SetPadding(0.01, 0.01, 0.06, 0.01));
 }
