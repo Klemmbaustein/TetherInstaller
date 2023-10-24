@@ -3,7 +3,7 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: MSBuild
+name: Build and release
 
 on:
   push:
@@ -78,7 +78,6 @@ jobs:
           ls -R
           mkdir Release
           cp -rf NorthstarInstaller/Data Release/Data
-          cp -rf NorthstarInstaller/Shaders Release/Shaders
           cp LICENSE.txt Release/License.txt
           cp -rf NorthstarInstaller/TetherInstaller Release/TetherInstaller
     - name: upload artifact
