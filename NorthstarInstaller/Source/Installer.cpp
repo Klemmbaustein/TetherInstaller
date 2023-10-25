@@ -30,6 +30,8 @@ namespace Installer
 	std::vector<UITab*> Tabs;
 	UIBackground* SidebarBackground = nullptr;
 	size_t HoveredTab = 0;
+	bool UseSystemTitleBar = false;
+
 	UIButtonStyle* TabStyles[2] = { new UIButtonStyle("Tab default style"), new UIButtonStyle("Tab selected style")};
 
 	UIText* AppTitle;
@@ -230,6 +232,10 @@ void Installer::GenerateWindowButtons()
 		Buttons = { 0, 1, 3 };
 	}
 	WindowButtonBox->DeleteChildren();
+	if (UseSystemTitleBar)
+	{
+		return;
+	}
 	for (int i : Buttons)
 	{
 		Vector3f32 HoveredColor = 0.3f;
@@ -296,7 +302,16 @@ int main(int argc, char** argv)
 {
 	using namespace Installer;
 
-	if (!std::filesystem::exists("Shaders/postprocess.vert"))
+	for (int i = 0; i < argc; i++)
+	{
+		if (argv[i] == std::string("-systemtitlebar"))
+		{
+			UseSystemTitleBar = true;
+		}
+	}
+	
+
+	if (!std::filesystem::exists("Data/shaders/postprocess.vert"))
 	{
 		std::string ProgramLocation = argv[0];
 		std::filesystem::current_path(ProgramLocation.substr(0, ProgramLocation.find_last_of("/\\")));
@@ -308,7 +323,7 @@ int main(int argc, char** argv)
 		{
 			Window::ShowPopupError("-- Internal UI Error --\n\n" + Message);
 		});
-	Application::Initialize("TetherInstaller " + Installer::InstallerVersion, Application::BORDERLESS_BIT);
+	Application::Initialize("TetherInstaller " + Installer::InstallerVersion, UseSystemTitleBar ? 0 : Application::BORDERLESS_BIT);
 	Application::SetWindowMovableCallback([]() 
 		{ 
 			return WindowButtonBox->IsBeingHovered();
@@ -450,8 +465,18 @@ int main(int argc, char** argv)
 
 		bg->SetPosition(Vector2f(0.0) - bg->GetUsedSize() / 2);
 		BackgroundTask::UpdateTaskStatus();
-		AppTitle->SetPosition(Vector2f(SidebarBackground->GetUsedSize().X - 0.99, WindowButtonBox->GetPosition().Y + 0.001));
-		AppTitle->SetText("TetherInstaller - " + Tabs[SelectedTab]->Name + " - Profile: " + ProfileTab::CurrentProfile.DisplayName);
+
+		std::string Title = "TetherInstaller - " + Tabs[SelectedTab]->Name + " - Profile: " + ProfileTab::CurrentProfile.DisplayName;
+
+		if (UseSystemTitleBar)
+		{
+			Application::SetApplicationTitle(Title);
+		}
+		else
+		{
+			AppTitle->SetPosition(Vector2f(SidebarBackground->GetUsedSize().X - 0.99, WindowButtonBox->GetPosition().Y + 0.001));
+			AppTitle->SetText(Title);
+		}
 		DownloadWindow::Update(WindowButtonBox->GetUsedSize().Y);
 
 		if (Application::AspectRatio != PrevAspect)
