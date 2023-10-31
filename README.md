@@ -16,7 +16,7 @@ You can find pre-packaged releases of the installer [here](https://github.com/Kl
 - Support for installing Northstar prerelease versions and the
 [Vanilla+ mod](https://northstar.thunderstore.io/package/NanohmProtogen/VanillaPlus/)
 which enables the use of Northstar mods on Respawns vanilla servers.
-- An in-app server-browser that automatically downloads any required mods before joining the server.
+- An in-app server-browser that automatically downloads any required mods before joining a server.
 - Managing of Northstar profiles.
 
 ![preview image](.github/images/VanillaPlus.png)
