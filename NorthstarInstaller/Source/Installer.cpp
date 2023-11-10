@@ -296,8 +296,6 @@ void Installer::GenerateWindowButtons()
 }
 
 
-float BackgroundFade = 0;
-
 int main(int argc, char** argv)
 {
 	using namespace Installer;

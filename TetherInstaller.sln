@@ -11,8 +11,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5831024F-6555-4F2F-9017-A8AA7AB2059B}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
-		LICENSE.txt = LICENSE.txt
 		.github\workflows\build.yml = .github\workflows\build.yml
+		LICENSE.txt = LICENSE.txt
 		MakeRelease.ps1 = MakeRelease.ps1
 		Setup.ps1 = Setup.ps1
 		version.txt = version.txt
@@ -20,6 +20,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dependencies", "Dependencies", "{1E28D6DD-7759-4981-8E38-9F5042C0EC17}"
 	ProjectSection(SolutionItems) = preProject
+		NorthstarInstaller\Data\autojoin\mod\scripts\vscripts\autoJoinServer.gnut = NorthstarInstaller\Data\autojoin\mod\scripts\vscripts\autoJoinServer.gnut
 		json\single_include\nlohmann\json.hpp = json\single_include\nlohmann\json.hpp
 	EndProjectSection
 EndProject

@@ -88,8 +88,6 @@ void function joinFromConvarThread()
 		WaitFrame()
 	}
 
-
-
 	connectFromConvar()
 }
 
@@ -101,7 +99,7 @@ void function connectFromConvar()
 		return
 	}
 
-	DisplayLoadingDialog("#CONNECTING", "Connecting to server");
+	DisplayLoadingDialog("#CONNECTING", "Connecting to server.");
 	string Serv
 	try
 	{
@@ -253,7 +251,7 @@ void function connectFromConvar()
 		if ( modsChanged )
 			ReloadMods()
 
-		// TriggerConnectToServerCallbacks( server )
+		TriggerConnectToServerCallbacks( server )
 		NSConnectToAuthedServer()
 	}
 	else
