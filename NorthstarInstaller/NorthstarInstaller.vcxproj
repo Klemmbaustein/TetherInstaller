@@ -129,12 +129,14 @@
     <ClCompile Include="Source\Tabs\SettingsTab.cpp" />
     <ClCompile Include="Source\Tabs\UITab.cpp" />
     <ClCompile Include="Source\Thunderstore.cpp" />
+    <ClCompile Include="Source\Translation.cpp" />
     <ClCompile Include="Source\UI\Download.cpp" />
     <ClCompile Include="Source\UI\UIDef.cpp" />
     <ClCompile Include="Source\UI\Icon.cpp" />
     <ClCompile Include="Source\WindowFunctions.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Translation.h" />
     <ClInclude Include="Source\UI\Download.h" />
     <ClInclude Include="Source\Linux_PE.h" />
     <ClInclude Include="Source\BackgroundTask.h" />

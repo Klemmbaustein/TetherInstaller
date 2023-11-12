@@ -8,6 +8,8 @@
 #include "BackgroundTask.h"
 #include "Tabs/SettingsTab.h"
 #include "Linux_PE.h"
+#include "Translation.h"
+using namespace Translation;
 
 std::string Game::GamePath;
 bool Game::RequiresUpdate = false;
@@ -184,10 +186,9 @@ void Game::UpdateGame()
 {
 	try
 	{
-		BackgroundTask::SetStatus("dl_Downloading Northstar");
+		BackgroundTask::SetStatus("dl_" + GetTranslation("download_northstar"));
 		auto result = Networking::DownloadLatestReleaseOf("R2Northstar/Northstar");
 		BackgroundTask::SetProgress(0.9);
-		BackgroundTask::SetStatus("dl_Installing Northstar");
 		Log::Print("Extracting zip: " + result);
 
 		// Remove core mods before installing them again

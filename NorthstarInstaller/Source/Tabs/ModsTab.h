@@ -33,6 +33,7 @@ public:
 	void GenerateModImages();
 	void ShowLoadingText();
 	static void Reload();
+	void OnTranslationChanged() override;
 	void UpdateClickedCategoryButton();
 
 	static int GetModsPerPage(float Aspect);

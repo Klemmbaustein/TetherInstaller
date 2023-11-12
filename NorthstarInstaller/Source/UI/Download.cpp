@@ -7,6 +7,8 @@
 #include "../UI/UIDef.h"
 #include "../Installer.h"
 #include "../BackgroundTask.h"
+#include "../Translation.h"
+using namespace Translation;
 
 namespace DownloadWindow
 {
@@ -48,9 +50,10 @@ void DownloadWindow::Generate()
 			DownloadInfo NewDownload;
 			NewDownload.Task = i;
 			NewDownload.NameText = new UIText(0.3, 0, i->Status, UI::Text);
-			NewDownload.ProgressBar = new UIBackground(true, 0, Vector3f32(0.3, 0.5, 1), Vector2f(i->CurrentTaskProgress / 3, 0.05));
-			DownloadsBox->AddChild((new UIBackground(true, 0, 1, Vector2f(1.0f / 3.0f, 0)))
+			NewDownload.ProgressBar = new UIBackground(true, 0, Vector3f32(0.3, 0.5, 1), Vector2f(i->CurrentTaskProgress / 2.5, 0.05));
+			DownloadsBox->AddChild((new UIBackground(true, 0, 1, Vector2f(1.0 / 2.5, 0)))
 				->AddChild(NewDownload.ProgressBar
+					->SetVerticalAlign(UIBox::Align::Centered)
 					->SetPadding(0)
 					->AddChild(NewDownload.NameText
 						->SetPadding(0, 0, 0.01, 0))));
@@ -61,7 +64,7 @@ void DownloadWindow::Generate()
 
 	if (!IsDownloading)
 	{
-		DownloadFinishedText = new UIText(0.4, 1, "No downloads", UI::Text);
+		DownloadFinishedText = new UIText(0.4, 1, GetTranslation("download_no_downloads"), UI::Text);
 		DownloadsBox->AddChild(DownloadFinishedText);
 	}
 
@@ -75,15 +78,13 @@ void DownloadWindow::Update(float WindowBarSize)
 		DownloadsBox = new UIScrollBox(false, 0, true);
 		DownloadBackground = new UIBackground(false, 0, 0.1f, Vector2f(0.5, 0.25));
 		DownloadBackground->HasMouseCollision = true;
-		TitleText = new UIText(0.45, 1, "Downloads", UI::Text);
+		TitleText = new UIText(0.45, 1, GetTranslation("download_window_title"), UI::Text);
 		DownloadBackground
 			->SetBorder(UIBox::BorderType::DarkenedEdge, 0.3)
 			->AddChild((new UIBackground(true, 0, 1, Vector2f(0.5, 0.005)))
 				->SetPadding(0))
-			->SetAlign(UIBox::Align::Reverse)
 			->AddChild(TitleText)
 			->AddChild(DownloadsBox
-				->SetAlign(UIBox::Align::Reverse)
 				->SetPadding(0)
 				->SetMinSize(Vector2f(0.495, 0.15)));
 		SetWindowVisible(false);

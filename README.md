@@ -7,12 +7,14 @@ and is avaliable for Windows.
 
 ## Download
 
-You can find pre-packaged releases of the installer [here](https://github.com/Klemmbaustein/TetherInstaller/releases/tag/v1.1.1).
+You can find pre-packaged releases of the installer
+[here](https://github.com/Klemmbaustein/TetherInstaller/releases/tag/v1.1.1).
 
 ## Features
 
 - Launching and installing of [Northstar](https://github.com/R2Northstar/Northstar).
-- A mod browser for browsing and installing mods hosted on [thunderstore.io](https://northstar.thunderstore.io/).
+- A mod browser for browsing and installing mods hosted on
+- [thunderstore.io](https://northstar.thunderstore.io/).
 - Support for installing Northstar prerelease versions and the
 [Vanilla+ mod](https://northstar.thunderstore.io/package/NanohmProtogen/VanillaPlus/)
 which enables the use of Northstar mods on Respawns vanilla servers.
@@ -27,7 +29,8 @@ which enables the use of Northstar mods on Respawns vanilla servers.
 
 If you want to contribute to the installer, you will need to download and compile the source code.
 
-First, clone the repository with submodules. `git clone --recurse-submodules https://github.com/Klemmbaustein/TetherInstaller.git`
+First, clone the repository with submodules. 
+`git clone --recurse-submodules https://github.com/Klemmbaustein/TetherInstaller.git`
 
 ### Windows MSVC:
 
@@ -37,5 +40,6 @@ First, clone the repository with submodules. `git clone --recurse-submodules htt
 ### Linux GNU Makefile:
 
 1. Install cURL on your system.
-2. Follow [The steps detailed here](https://github.com/Klemmbaustein/KlemmUI#readme) to install the KlemmUI library on your system.
+2. Follow [The steps detailed here](https://github.com/Klemmbaustein/KlemmUI#readme)			
+   to install the KlemmUI library on your system.
 3. Run `make` in the `NorthstarInstaller` directory.

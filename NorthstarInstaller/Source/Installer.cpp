@@ -13,14 +13,16 @@
 #include "BackgroundTask.h"
 #include "WindowFunctions.h"
 #include "Thunderstore.h"
-#include "UI/Download.h"
+#include "Translation.h"
 
 #include "Tabs/LaunchTab.h"
 #include "Tabs/SettingsTab.h"
 #include "Tabs/ModsTab.h"
 #include "Tabs/ProfileTab.h"
 #include "Tabs/ServerBrowserTab.h"
+
 #include "UI/Icon.h"
+#include "UI/Download.h"
 
 namespace Installer
 {
@@ -66,18 +68,19 @@ namespace Installer
 					SelectedTab = Index;
 					GenerateTabs();
 				}, (int)i);
-			Button->BoxAlign = UIBox::Align::Centered;
+			Button->SetHorizontalAlign(UIBox::Align::Centered);
 			SidebarBackground->AddChild(Button
 				->SetSizeMode(UIBox::SizeMode::AspectRelative)
 				->SetPaddingSizeMode(UIBox::SizeMode::AspectRelative)
 				->SetBorder(UIBox::BorderType::Rounded, 0.3)
 				->SetPadding(0.01, 0.01, 0.01, 0.01)
 				->AddChild((new UIBackground(true, 0, 0, 0.1))
-					->SetUseTexture(true, Icon("Tab_" + Tabs[i]->Name).TextureID)
+					->SetUseTexture(true, Icon("tab_" + Tabs[i]->Name).TextureID)
 					->SetPaddingSizeMode(UIBox::SizeMode::AspectRelative)
 					->SetSizeMode(UIBox::SizeMode::AspectRelative)));
 			TabButtons.push_back(Button);
 		}
+		SidebarBackground->UpdateElement();
 	}
 
 	bool UpdateCheckedOnce = false;
@@ -151,6 +154,9 @@ namespace Installer
 
 	void CheckForInstallerUpdate()
 	{
+#if DEBUG
+		return;
+#endif
 		Log::Print("Checking for installer updates...");
 		BackgroundTask::SetStatus("Checking for installer updates");
 		BackgroundTask::SetProgress(0.999);
@@ -179,7 +185,7 @@ namespace Installer
 		Window::ShowPopupError("A new version of Tether is avaliable but updating the installer is not yet supported on linux.\nPlease update manually.");
 		return;
 #endif
-		BackgroundTask::SetStatus("dl_Updating installer");
+		BackgroundTask::SetStatus("dl_" + Translation::GetTranslation("download_update_installer"));
 		if (Window::ShowPopupQuestion("Update", "An update for the launcher is avaliabe.\nWould you like to install it?") != Window::PopupReply::Yes)
 		{
 			return;
@@ -213,9 +219,9 @@ namespace Installer
 		HoveredTabName
 			->SetOpacity(0.75)
 			->SetBorder(UIBox::BorderType::Rounded, 0.25)
-			->AddChild((new UIText(0.3, 0.8, Tabs[TabIndex]->Description, UI::Text))
-				->SetPadding(0, 0.01, 0.01, 0.01))
-			->AddChild((new UIText(0.4, 1, Tabs[TabIndex]->Name, UI::Text))
+			->AddChild((new UIText(0.4, 1, Translation::GetTranslation("tab_" + Tabs[TabIndex]->Name), UI::Text))
+				->SetPadding(0.01, 0.0, 0.01, 0.01))
+			->AddChild((new UIText(0.3, 0.8, Translation::GetTranslation("tab_" + Tabs[TabIndex]->Name + "_description"), UI::Text))
 				->SetPadding(0, 0.01, 0.01, 0.01));
 	}
 }
@@ -298,6 +304,7 @@ void Installer::GenerateWindowButtons()
 
 int main(int argc, char** argv)
 {
+	using namespace Translation;
 	using namespace Installer;
 
 	for (int i = 0; i < argc; i++)
@@ -314,6 +321,8 @@ int main(int argc, char** argv)
 		std::string ProgramLocation = argv[0];
 		std::filesystem::current_path(ProgramLocation.substr(0, ProgramLocation.find_last_of("/\\")));
 	}
+
+	LoadTranslation(GetLastTranslation());
 
 	Application::SetBorderlessWindowOutlineColor(Vector3f32(0.3f, 0.5f, 1));
 	Application::SetShaderPath("Data/shaders");
@@ -378,16 +387,13 @@ int main(int argc, char** argv)
 
 	WindowButtonBox = (new UIBackground(true, 0, 0.1))
 		->SetPadding(0)
-		->SetAlign(UIBox::Align::Reverse)
+		->SetHorizontalAlign(UIBox::Align::Reverse)
 		->SetMinSize(Vector2f(2, 0.0));
-	WindowButtonBox->BoxAlign = UIBox::Align::Reverse;
 	(new UIBox(false, Vector2f(-1, 0.7)))
 		->SetMinSize(Vector2f(2, 0.3))
-		->AddChild(WindowButtonBox)
-		->SetAlign(UIBox::Align::Reverse);
-
+		->AddChild(WindowButtonBox);
 	GenerateWindowButtons();
-
+	
 	AppTitle = new UIText(0.3, 1, "TetherInstaller - Loading...", UI::Text);
 	AppTitle->SetPosition(Vector2f(-1, 0.9));
 	AppTitle->SetTextSizeMode(UIBox::SizeMode::PixelRelative);
@@ -414,8 +420,7 @@ int main(int argc, char** argv)
 
 	SidebarBackground = new UIBackground(false, Vector2f(-1, -1), 0, Vector2f(0, 2));
 	SidebarBackground
-		->SetOpacity(0.75)
-		->SetAlign(UIBox::Align::Reverse);
+		->SetOpacity(0.75);
 	GenerateTabs();
 
 	if (std::filesystem::exists(ProfileTab::CurrentProfile.Path + "/mods/autojoin"))
@@ -464,7 +469,10 @@ int main(int argc, char** argv)
 		bg->SetPosition(Vector2f(0.0) - bg->GetUsedSize() / 2);
 		BackgroundTask::UpdateTaskStatus();
 
-		std::string Title = "TetherInstaller - " + Tabs[SelectedTab]->Name + " - Profile: " + ProfileTab::CurrentProfile.DisplayName;
+		std::string Title = Format(GetTranslation("title_bar"),
+			GetTranslation("app_name").c_str(),
+			GetTranslation("tab_" + Tabs[SelectedTab]->Name).c_str(),
+			ProfileTab::CurrentProfile.DisplayName.c_str());
 
 		if (UseSystemTitleBar)
 		{

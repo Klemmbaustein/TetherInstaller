@@ -9,6 +9,7 @@
 #include "../Installer.h"
 #include "../BackgroundTask.h"
 #include "../Thunderstore.h"
+#include "../Translation.h"
 
 #include <thread>
 #include <atomic>
@@ -90,13 +91,13 @@ void NorthstarLaunchTask()
 
 std::map<void (*)(), std::string> LaunchStoppingTasks =
 {
-	std::pair(Game::UpdateGame, "Updating Northstar"),
-	std::pair(NorthstarLaunchTask, "Game is running"),
-	std::pair(Installer::CheckForUpdates, "Checking for updates (1/3)"),
-	std::pair(Installer::CheckForInstallerUpdate, "Checking for updates (2/3)"),
-	std::pair(ModsTab::CheckForModUpdates, "Checking for updates (3/3)"),
-	std::pair(Installer::UpdateInstaller, "Updating installer"),
-	std::pair(Thunderstore::TSModFunc::InstallOrUninstallMod, "Downloading mod")
+	std::pair(Game::UpdateGame, "play_updating_game"),
+	std::pair(NorthstarLaunchTask, "play_game_running"),
+	std::pair(Installer::CheckForUpdates, "play_update_check"),
+	std::pair(Installer::CheckForInstallerUpdate, "play_update_check"),
+	std::pair(ModsTab::CheckForModUpdates, "play_update_check"),
+	std::pair(Installer::UpdateInstaller, "play_updating_installer"),
+	std::pair(Thunderstore::TSModFunc::InstallOrUninstallMod, "play_downloading_mod")
 };
 
 void LaunchTab::LaunchNorthstar()
@@ -141,15 +142,14 @@ void LaunchTab::OnClicked()
 
 LaunchTab::LaunchTab()
 {
-	Name = "Play";
-	Description = "Play Northstar";
+	Name = "play";
 	Log::Print("Loading launch tab...");
-	Background->BoxAlign = UIBox::Align::Default;
+	Background->SetVerticalAlign(UIBox::Align::Default);
 	auto TextBox = (new UIBackground(true, 0, 0, 0))->SetOpacity(0.65);
-	TextBox->BoxAlign = UIBox::Align::Centered;
+	TextBox->SetHorizontalAlign(UIBox::Align::Centered);
 
 	LaunchButton = new UIButton(true, 0, 1, LaunchNorthstar);
-	LaunchText = new UIText(0.7, 0, "Launch", UI::Text);
+	LaunchText = new UIText(0.7, 0, "", UI::Text);
 
 	Background->AddChild(TextBox
 		->SetMinSize(Vector2f(2, 0.2))
@@ -164,35 +164,37 @@ LaunchTab::LaunchTab()
 
 void LaunchTab::Tick()
 {
+	using namespace Translation;
+
 	IsGameRunning = BackgroundTask::IsFunctionRunningAsTask(NorthstarLaunchTask);
 	if (Game::GamePath.empty())
 	{
-		LaunchText->SetText("Titanfall 2 not found");
+		LaunchText->SetText(GetTranslation("play_game_not_found"));
 		return;
 	}
 	for (auto& i : LaunchStoppingTasks)
 	{
 		if (BackgroundTask::IsFunctionRunningAsTask(i.first))
 		{
-			LaunchText->SetText(i.second);
+			LaunchText->SetText(GetTranslation(i.second));
 			return;
 		}
 	}
 	if (Thunderstore::IsInstallingMod)
 	{
-		LaunchText->SetText("Downloading mod");
+		LaunchText->SetText(GetTranslation("play_downloading_mod"));
 	}
 	else if (Game::RequiresUpdate)
 	{
-		LaunchText->SetText("Update Northstar");
+		LaunchText->SetText(GetTranslation("play_update_required"));
 	}
 	else if (VanillaPlus)
 	{
-		LaunchText->SetText("Launch Vanilla+");
+		LaunchText->SetText(Format(GetTranslation("play_launch"), "Vanilla+"));
 	}
 	else
 	{
-		LaunchText->SetText("Launch Northstar");
+		LaunchText->SetText(Format(GetTranslation("play_launch"), "Northstar"));
 	}
 }
 

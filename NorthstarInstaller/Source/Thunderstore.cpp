@@ -841,10 +841,6 @@ namespace Thunderstore::TSModFunc
 				return;
 			}
 			Log::Print("Installing mod \"" + m.Name + "\"");
-			if (BackgroundTask::IsBackgroundTask() && !IsTemporary)
-			{
-				BackgroundTask::SetStatus("dl_Downloading mod");
-			}
 
 			std::string TargetZipName = "Data/temp/net/" + m.Author + "." + m.Name + ".zip";
 			Networking::Download(m.DownloadUrl, TargetZipName, "", BackgroundTask::IsBackgroundTask());

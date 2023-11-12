@@ -37,6 +37,8 @@ public:
 	void DisplayProfileInfo();
 	void UpdateProfilesList();
 	void OnClicked() override;
+	UIBackground* ProfileCreationBox = nullptr;
+	void GenerateProfileCreationBox();
 
 	void CreateNewProfile(std::string Name);
 	void SaveSelectedProfile();

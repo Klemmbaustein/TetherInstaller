@@ -17,6 +17,8 @@ class ServerBrowserTab : public UITab
 	UITextField* ServerSearchBox = nullptr;
 public:
 	UIText* ServerDescriptionText = nullptr;
+	UIText* ReloadText = nullptr;
+	UIText* ServerHeader = nullptr;
 	static bool ShouldLaunchGame;
 	struct ServerEntry
 	{
@@ -57,38 +59,12 @@ public:
 
 	bool IsInstalledAsServerMod(std::string Name);
 
-	static inline const std::map<std::string, std::string> MapNames = {
-		std::pair("mp_angel_city", "Angel City"),
-		std::pair("mp_black_water_canal" , "Black Water Canal"),
-		std::pair("mp_box" , "Box"),
-		std::pair("mp_coliseum" , "Coliseum"),
-		std::pair("mp_coliseum_column" , "Pillars"),
-		std::pair("mp_colony02" , "Colony"),
-		std::pair("mp_complex3" , "Complex"),
-		std::pair("mp_crashsite3" , "Crash Site"),
-		std::pair("mp_drydock" , "Drydock"),
-		std::pair("mp_eden" , "Eden"),
-		std::pair("mp_forwardbase_kodai" , "Forwardbase Kodai"),
-		std::pair("mp_glitch" , "Glitch"),
-		std::pair("mp_grave" , "Boomtown"),
-		std::pair("mp_homestead" , "Homestead"),
-		std::pair("mp_lf_deck" , "Deck"),
-		std::pair("mp_lf_meadow" , "Meadow"),
-		std::pair("mp_lf_stacks" , "Stacks"),
-		std::pair("mp_lf_township" , "Township"),
-		std::pair("mp_lf_traffic" , "Traffic"),
-		std::pair("mp_lf_uma" , "UMA"),
-		std::pair("mp_lobby" , "Lobby"),
-		std::pair("mp_relic02" , "Relic"),
-		std::pair("mp_rise" , "Rise"),
-		std::pair("mp_thaw" , "Exoplanet"),
-		std::pair("mp_wargames" , "War Games"),
-	};
-
 	unsigned int GetMapTexture(std::string Map);
 
 	static void LoadServers();
 	void DisplayServers();
 	void DisplayLoadingText();
 	void Tick() override;
+
+	void OnTranslationChanged() override;
 };

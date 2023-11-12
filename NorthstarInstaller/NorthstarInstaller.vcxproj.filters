@@ -49,6 +49,7 @@
     <ClCompile Include="Source\UI\Icon.cpp" />
     <ClCompile Include="..\tinyfiledialogs\tinyfiledialogs.c" />
     <ClCompile Include="Source\UI\Download.cpp" />
+    <ClCompile Include="Source\Translation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -115,6 +116,7 @@
     </ClInclude>
     <ClInclude Include="Source\UI\Icon.h" />
     <ClInclude Include="Source\UI\Download.h" />
+    <ClInclude Include="Source\Translation.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />

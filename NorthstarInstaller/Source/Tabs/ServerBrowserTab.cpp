@@ -20,59 +20,15 @@
 #include "../Thunderstore.h"
 #include "../WindowFunctions.h"
 #include "../Game.h"
+#include "../Translation.h"
+
+using namespace Translation;
 
 
 bool ServerBrowserTab::ShouldLaunchGame;
 ServerBrowserTab* ServerBrowserTab::CurrentServerTab = nullptr;
 std::vector<ServerBrowserTab::ServerEntry> ServerBrowserTab::Servers;
 constexpr unsigned int MaxServerNameSize = 40;
-const std::map<std::string, std::string> KNOWN_GAMEMODES = 
-{
-	std::pair("private_match", "Private Match"),
-	std::pair("aitdm" , "Attrition"),
-	std::pair("at" , "Bounty Hunt"),
-	std::pair("coliseum" , "Coliseum"),
-	std::pair("cp" , "Amped Hardpoint"),
-	std::pair("ctf" , "Capture the Flag"),
-	std::pair("fd_easy" , "Frontier Defense (Easy)"),
-	std::pair("fd_hard" , "Frontier Defense (Hard)"),
-	std::pair("fd_insane" , "Frontier Defense (Insane)"),
-	std::pair("fd_master" , "Frontier Defense (Master)"),
-	std::pair("fd_normal" , "Frontier Defense (Regular)"),
-	std::pair("lf" , "Live Fire"),
-	std::pair("lts" , "Last Titan Standing"),
-	std::pair("mfd" , "Marked for Death"),
-	std::pair("ps" , "Pilots vs. Pilots"),
-	std::pair("solo" , "Campaign"),
-	std::pair("tdm" , "Skirmish"),
-	std::pair("ttdm" , "Titan Brawl"),
-
-	std::pair("alts" , "Aegis Last Titan Standing"),
-	std::pair("attdm" , "Aegis Titan Brawl"),
-	std::pair("ffa" , "Free For All"),
-	std::pair("fra" , "Free Agents"),
-	std::pair("holopilot_lf" , "The Great Bamboozle"),
-	std::pair("rocket_lf" , "Rocket Arena"),
-	std::pair("turbo_lts" , "Turbo Last Titan Standing"),
-	std::pair("turbo_ttdm" , "Turbo Titan Brawl"),
-
-	std::pair("chamber" , "One in the Chamber"),
-	std::pair("ctf_comp" , "Competitive CTF"),
-	std::pair("fastball" , "Fastball"),
-	std::pair("gg" , "Gun Game"),
-	std::pair("hidden" , "The Hidden"),
-	std::pair("hs" , "Hide and Seek"),
-	std::pair("inf" , "Infection"),
-	std::pair("kr" , "Amped Killrace"),
-	std::pair("sbox" , "Sandbox"),
-	std::pair("sns" , "Sticks and Stones"),
-	std::pair("tffa" , "Titan FFA"),
-	std::pair("tt" , "Titan Tag"),
-	std::pair("fw" , "Frontier War"),
-	std::pair("pk", "Parkour"),
-
-	std::pair("sp_coop" , "Campaign Coop"),
-};
 
 std::string GetFile(std::string InFile)
 {
@@ -99,7 +55,7 @@ bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
 {
 	using namespace nlohmann;
 
-	BackgroundTask::SetStatus("dl_Loading required mods");
+	BackgroundTask::SetStatus("dl_" + GetTranslation("download_server_mods"));
 
 	Networking::Download(
 		"https://thunderstore.io/c/northstar/api/v1/package/",
@@ -185,7 +141,7 @@ bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
 		}
 		if (ClosestModScore != SIZE_MAX)
 		{
-			BackgroundTask::SetStatus("dl_Installing " + m.Name);
+			BackgroundTask::SetStatus("dl_" + Format(GetTranslation("download_install_mod"), Thunderstore::SelectedMod.Name.c_str()));
 			Thunderstore::InstallOrUninstallMod(m, true, false);
 			HasInstalledMod = true;
 		}
@@ -200,20 +156,20 @@ bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
 		return true;
 	}
 
-	std::string FailedModsString = "The following mods could not be installed:\n";
+	std::string FailedModsString;
 
 	for (auto& i : FailedMods)
 	{
 		FailedModsString.append("- " + i.ModName);
 		if (i.IsRequired)
 		{
-			FailedModsString.append(" (Required)");
+			FailedModsString.append(GetTranslation("servers_mod_required"));
 		}
 		FailedModsString.append("\n");
 	}
-	FailedModsString.append("Continue anyways?");
 
-	return Window::ShowPopupQuestion("Joining " + e.Name, FailedModsString) == Window::PopupReply::Yes;
+	return Window::ShowPopupQuestion(GetTranslation("servers_joining"),
+		Format(GetTranslation("servers_mod_join_failed"), FailedModsString.c_str())) == Window::PopupReply::Yes;
 }
 
 
@@ -229,11 +185,10 @@ void RefreshServerBrowser()
 ServerBrowserTab::ServerBrowserTab()
 {
 	CurrentServerTab = this;
-	Name = "Servers";
-	Description = "Browse Northstar servers";
+	Name = "servers";
 	Log::Print("Loading server browser tab...");
 
-	Background->BoxAlign = UIBox::Align::Centered;
+	Background->SetHorizontalAlign(UIBox::Align::Centered);
 	Background->SetHorizontal(true);
 
 	ServerBackground = new UIBackground(false, 0, 0, Vector2f(1.5, 1.85));
@@ -243,9 +198,12 @@ ServerBrowserTab::ServerBrowserTab()
 		->AddChild((new UIBackground(true, 0, 1, Vector2f(1.5, 0.005)))
 			->SetPadding(0))
 		->SetPadding(0));
-	ServerBackground->BoxAlign = UIBox::Align::Reverse;
-	ServerBackground->AddChild(new UIText(0.8, 1, "Server browser", UI::Text));
+	ServerBackground->SetVerticalAlign(UIBox::Align::Reverse);
+	TabTitle = new UIText(0.8, 1, GetTranslation("tab_servers"), UI::Text);
+	ServerBackground->AddChild(TabTitle);
 	
+	ReloadText = new UIText(0.3, 0, GetTranslation("servers_refresh"), UI::Text);
+
 	ServerBackground->AddChild((new UIBox(true, 0))
 		->AddChild(PlayerCountText->SetPadding(0.02, 0.02, 0.01, 0.02))
 		->AddChild((new UIButton(true, 0, 1, RefreshServerBrowser))
@@ -254,7 +212,7 @@ ServerBrowserTab::ServerBrowserTab()
 				->SetUseTexture(true, Icon("Settings/Reload").TextureID)
 				->SetPadding(0.01, 0.01, 0.01, 0)
 				->SetSizeMode(UIBox::SizeMode::AspectRelative))
-			->AddChild(new UIText(0.3, 0, "Refresh", UI::Text))));
+			->AddChild(ReloadText)));
 
 	ServerSearchBox = new UITextField(true, 0, 0, UI::Text, []() {
 		if (CurrentServerTab->SearchText != CurrentServerTab->ServerSearchBox->GetText())
@@ -264,16 +222,24 @@ ServerBrowserTab::ServerBrowserTab()
 		}});
 	ServerSearchBox->SetTextSize(0.3);
 	ServerSearchBox->SetMinSize(Vector2f(0.8, 0.02));
-	ServerSearchBox->SetHintText("Search");
+	ServerSearchBox->SetHintText(GetTranslation("search"));
 	ServerBackground->AddChild(ServerSearchBox);
 
-	ServerBox = new UIScrollBox(false, 0, true);
-	ServerBox->BoxAlign = UIBox::Align::Reverse;
-	ServerBackground->AddChild(new UIBackground(true, 0, 1, Vector2f(1.46, 0.005)));
-	ServerBackground->AddChild((new UIText(0.25,
+	std::string ServerHeaderText = GetTranslation("servers_region");
+	ServerHeaderText.resize(11, ' ');
+	ServerHeaderText += GetTranslation("servers_name");
+	ServerHeaderText.resize(53, ' ');
+	ServerHeaderText += GetTranslation("servers_players");
+
+	ServerHeader = new UIText(0.25,
 		1,
-		"Region     Name                                      Players",
-		UI::MonoText))
+		ServerHeaderText,
+		UI::MonoText);
+
+	ServerBox = new UIScrollBox(false, 0, true);
+	ServerBox->SetVerticalAlign(UIBox::Align::Reverse);
+	ServerBackground->AddChild(new UIBackground(true, 0, 1, Vector2f(1.46, 0.005)));
+	ServerBackground->AddChild(ServerHeader
 		->SetPadding(0.05, 0, 0.02, 0.02));
 
 	ServerBackground->AddChild((new UIBox(true, 0))
@@ -283,7 +249,6 @@ ServerBrowserTab::ServerBrowserTab()
 			->SetMinSize(Vector2f(0.825, 1.5)))
 		->AddChild(ServerDescriptionBox
 			->SetMinSize(Vector2f(0.3, 1.4))));
-	ServerDescriptionBox->BoxAlign = UIBox::Align::Reverse;
 	new BackgroundTask(LoadServers, []() {CurrentServerTab->DisplayServers(); });
 }
 
@@ -313,7 +278,7 @@ void ServerBrowserTab::DisplayServers()
 	ServerListBox = new UIBox(false, 0);
 	ServerBox->AddChild(ServerListBox
 		->SetPadding(0));
-	ServerListBox->BoxAlign = UIBox::Align::Reverse;
+	ServerListBox->SetVerticalAlign(UIBox::Align::Reverse);
 
 	std::string Filter = ServerSearchBox->GetText();
 	std::transform(Filter.begin(), Filter.end(), Filter.begin(),
@@ -418,10 +383,10 @@ void ServerBrowserTab::DisplayServers()
 
 	if (ServerBrowserButtons.empty())
 	{
-		ServerListBox->AddChild(new UIText(0.3, 1, "No servers found", UI::Text));
+		ServerListBox->AddChild(new UIText(0.3, 1, GetTranslation("servers_no_servers_found"), UI::Text));
 	}
 
-	PlayerCountText->SetText("Players in game: " + std::to_string(TotalPlayers));
+	PlayerCountText->SetText(Format(GetTranslation("servers_total_playercount"), (int)TotalPlayers));
 }
 
 void JoinCurrentServer()
@@ -445,24 +410,39 @@ void ServerBrowserTab::Tick()
 
 	if (BackgroundTask::IsFunctionRunningAsTask(JoinCurrentServer))
 	{
-		ServerDescriptionText->SetText("Joining server...");
+		ServerDescriptionText->SetText(GetTranslation("servers_joining"));
 	}
 	else if (LaunchTab::IsGameRunning)
 	{
-		ServerDescriptionText->SetText("Game is running");
+		ServerDescriptionText->SetText(GetTranslation("servers_game_running"));
 	}
 	else
 	{
-		ServerDescriptionText->SetText("Join server");
+		ServerDescriptionText->SetText(GetTranslation("servers_join"));
 
 	}
+}
+
+void ServerBrowserTab::OnTranslationChanged()
+{
+	ReloadText->SetText(GetTranslation("servers_refresh"));
+	ServerSearchBox->SetHintText(GetTranslation("search"));
+	std::string ServerHeaderText = GetTranslation("servers_region");
+	ServerHeaderText.resize(11, ' ');
+	ServerHeaderText += GetTranslation("servers_name");
+	ServerHeaderText.resize(53, ' ');
+	ServerHeaderText += GetTranslation("servers_players");
+
+	ServerHeader->SetText(ServerHeaderText);
+
+	RefreshServerBrowser();
 }
 
 void ServerBrowserTab::DisplayLoadingText()
 {
 	ServerListBox = nullptr;
 	ServerBox->DeleteChildren();
-	ServerBox->AddChild((new UIText(0.4, 1, "Loading...", UI::Text))->SetPadding(0.5));
+	ServerBox->AddChild((new UIText(0.4, 1, GetTranslation("loading"), UI::Text))->SetPadding(0.5));
 }
 
 void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
@@ -478,8 +458,7 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 	UIText* Descr = new UIText(0.3, 1, e.Description, UI::Text);
 	Descr->Wrap = true;
 	Descr->WrapDistance = 0.4;
-	std::string PlayerCount = "Players: " +
-	 std::to_string(e.PlayerCount) + "/" + std::to_string(e.MaxPlayerCount);
+	std::string PlayerCount = Format(GetTranslation("servers_match_playercount"), e.PlayerCount, e.MaxPlayerCount);
 
 	UIText* Title = new UIText(0.5, 1, e.Name, UI::Text);
 	Title->Wrap = true;
@@ -494,11 +473,10 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 	ServerDescriptionBox->AddChild(new UIBackground(true, 0, 1, Vector2f(0.6, 0.005)));
 
 	auto MapDescr = new UIBox(false, 0);
-	MapDescr->BoxAlign = UIBox::Align::Reverse;
 	MapDescr->SetPadding(0);
 	MapDescr->SetMinSize(9 * 0.025);
 
-	ServerDescriptionBox->AddChild((new UIText(0.5, 1, "Playing on: ", UI::Text)));
+	ServerDescriptionBox->AddChild((new UIText(0.5, 1, GetTranslation("servers_playing_on"), UI::Text)));
 	ServerDescriptionBox->AddChild((new UIBox(true, 0))
 		->AddChild((new UIBackground(true, 0, 1, Vector2f(16, 9) * 0.025))
 			->SetUseTexture(true, GetMapTexture(e.Map))
@@ -512,7 +490,7 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 				->SetPadding(0, 0, 0.01, 0.01))));
 
 	ServerDescriptionBox->AddChild(new UIBackground(true, 0, 1, Vector2f(0.6, 0.005)));
-	ServerDescriptionText = new UIText(0.4, 0, "Join server", UI::Text);
+	ServerDescriptionText = new UIText(0.4, 0, GetTranslation("servers_join"), UI::Text);
 	ServerDescriptionBox->AddChild((new UIBox(true, 0))
 		->AddChild((new UIButton(true, 0, Vector3f32(0.5, 0.6, 1), []() { new BackgroundTask(JoinCurrentServer,
 			[]() {
@@ -528,13 +506,12 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 			}))
 			->SetBorder(UIBox::BorderType::Rounded, 0.25)
 			->AddChild((new UIBackground(true, 0, 0, 0.055))
-				->SetUseTexture(true, Icon("Tab_Play").TextureID)
+				->SetUseTexture(true, Icon("tab_play").TextureID)
 				->SetPadding(0.01, 0.01, 0.01, 0)
 				->SetSizeMode(UIBox::SizeMode::AspectRelative))
 			->AddChild(ServerDescriptionText)));
 
-	ServerDescriptionBox->AddChild(new UIText(0.5, 1, "Mods: ", UI::Text));
-
+	ServerDescriptionBox->AddChild(new UIText(0.5, 1, GetTranslation("servers_mods"), UI::Text));
 	for (const auto& i : e.RequiredMods)
 	{
 		Thunderstore::Package m;
@@ -554,7 +531,7 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 
 		if (IsInstalledAsServerMod(m.Name) || Thunderstore::IsModInstalled(m))
 		{
-			ModName.append(" (installed)");
+			ModName.append(" " + GetTranslation("mod_installed"));
 		}
 		ServerDescriptionBox->AddChild((new UIText(0.3, 1, ModName, UI::Text))
 			->SetPadding(0.0, 0.005, 0.01, 0.01));
@@ -604,17 +581,10 @@ void ServerBrowserTab::LoadServers()
 		e.Map = i.at("map");
 		e.MapName = e.Map;
 		e.GameMode = i.at("playlist");
-		e.GameModeName = e.GameMode;
+		e.GameModeName = GetGameModeName(e.GameMode);
 
-		if (MapNames.contains(e.MapName))
-		{
-			e.MapName = MapNames.at(e.MapName);
-		}
+		e.MapName = GetMapName(e.MapName);
 
-		if (KNOWN_GAMEMODES.contains(e.GameModeName))
-		{
-			e.GameModeName = KNOWN_GAMEMODES.at(e.GameModeName);
-		}
 		e.ServerID = i.at("id");
 		e.Region = "Unknown";
 		try
