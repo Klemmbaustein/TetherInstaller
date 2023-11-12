@@ -42,7 +42,7 @@
 	"servers_no_servers_found": "Keine Server gefunden",
 	"servers_match_playercount": "Spieler: %i/%i",
 	"servers_mod_join_failed": "Diese Mods konnten nicht gefunden werden:\n%sTrotzdem fortfahren?",
-	"server_mods": "Mods:",
+	"servers_mods": "Mods:",
 	"servers_mod_required": "(Benötigt)",
 	"servers_mod_installed": "(Installiert)",
 	"servers_region": "Region",
