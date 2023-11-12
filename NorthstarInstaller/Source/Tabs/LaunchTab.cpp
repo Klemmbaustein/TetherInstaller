@@ -55,7 +55,7 @@ void NorthstarLaunchTask()
 		+ " "
 		+ Game::GetLaunchArgs();
 
-	system(("open \"" + Commad + "\"").c_str());
+	system(("xdg-open \"" + Commad + "\"").c_str());
 #elif _WIN32
 		STARTUPINFOA Startup;
 		PROCESS_INFORMATION pi;
