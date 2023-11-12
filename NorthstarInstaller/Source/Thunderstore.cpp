@@ -124,8 +124,11 @@ Thunderstore::InstalledModsResult Thunderstore::GetInstalledMods()
 			}
 		}
 	}
-
-	if (!std::filesystem::exists(ProfileTab::CurrentProfile.Path + "mods"))
+	if (!std::filesystem::exists(ProfileTab::CurrentProfile.Path))
+	{
+		return InstalledModsResult();
+	}
+	if (!std::filesystem::exists(ProfileTab::CurrentProfile.Path + "/mods"))
 	{
 		std::filesystem::create_directories(ProfileTab::CurrentProfile.Path + "/mods");
 	}

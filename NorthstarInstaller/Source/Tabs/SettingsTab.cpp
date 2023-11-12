@@ -71,6 +71,13 @@ void LocateTitanfall()
 	{
 		Game::SaveGameDir(NewPath);
 		Game::GamePath = Game::GetTitanfallLocation();
+		Installer::UpdateCheckedOnce = false;
+		new BackgroundTask(Installer::CheckForUpdates);
+		ProfileTab::CurrentProfileTab->DetectProfiles();
+		if (ProfileTab::AllProfiles.size())
+		{
+			ProfileTab::CurrentProfile = ProfileTab::AllProfiles[0];
+		}
 	}
 	else if (!NewPath.empty())
 	{
