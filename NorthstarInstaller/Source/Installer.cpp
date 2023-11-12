@@ -75,7 +75,7 @@ namespace Installer
 				->SetBorder(UIBox::BorderType::Rounded, 0.3)
 				->SetPadding(0.01, 0.01, 0.01, 0.01)
 				->AddChild((new UIBackground(true, 0, 0, 0.1))
-					->SetUseTexture(true, Icon("tab_" + Tabs[i]->Name).TextureID)
+					->SetUseTexture(true, Icon("itab_" + Tabs[i]->Name).TextureID)
 					->SetPaddingSizeMode(UIBox::SizeMode::AspectRelative)
 					->SetSizeMode(UIBox::SizeMode::AspectRelative)));
 			TabButtons.push_back(Button);

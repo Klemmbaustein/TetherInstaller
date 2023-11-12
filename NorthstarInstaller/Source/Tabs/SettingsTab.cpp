@@ -121,7 +121,7 @@ void SettingsTab::GenerateSettings()
 		ShortGamePath = ShortGamePath.substr(0, MAX_GAMEPATH_SIZE - 3) + "...";
 	}
 
-	AddCategoryHeader("settings_category_general", "tab_settings", SettingsBox);
+	AddCategoryHeader("settings_category_general", "itab_settings", SettingsBox);
 	AddSettingsButton("settings_locate_game", "Settings/Folder", LocateTitanfall, SettingsBox);
 
 	bool PathValid = true;
