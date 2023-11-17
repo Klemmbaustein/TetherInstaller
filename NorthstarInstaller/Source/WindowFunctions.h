@@ -3,7 +3,7 @@
 
 namespace Window
 {
-	std::string ShowSelectFolderDialog();
+	std::string ShowSelectFileDialog(bool PickFolders);
 
 	enum class PopupReply
 	{

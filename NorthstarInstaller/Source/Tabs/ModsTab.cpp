@@ -408,15 +408,15 @@ void ModsTab::GenerateModPage()
 
 		if (i == SelectedPage)
 		{
-			b->SetColor(Vector3f32(0.3f, 0.5f, 1.0f));
-			b->SetHoveredColor(Vector3f32(0.3f, 0.5f, 1.0f));
-			b->SetPressedColor(Vector3f32(0.3f, 0.5f, 1.0f));
+			b->SetColor(Installer::GetThemeColor());
+			b->SetHoveredColor(Installer::GetThemeColor());
+			b->SetPressedColor(Installer::GetThemeColor());
 		}
 		else
 		{
 			b->SetColor(Vector3f32(1.0f, 1.0f, 1.0f));
-			b->SetHoveredColor(Vector3f32(0.6f, 0.7f, 1.0f));
-			b->SetPressedColor(Vector3f32(0.3f, 0.5f, 1.0f));
+			b->SetHoveredColor(Vector3f32::Lerp(1.0f, Installer::GetThemeColor(), 0.5f));
+			b->SetPressedColor(Installer::GetThemeColor());
 		}
 
 		Rows[19]->AddChild(b
@@ -469,15 +469,15 @@ void ModsTab::UpdateClickedCategoryButton()
 	{
 		if (Thunderstore::TSCategoryNames[i].o == Thunderstore::SelectedOrdering)
 		{
-			CategoryButtons[i]->SetColor(Vector3f32(0.3f, 0.5f, 1.0f));
-			CategoryButtons[i]->SetHoveredColor(Vector3f32(0.3f, 0.5f, 1.0f));
-			CategoryButtons[i]->SetPressedColor(Vector3f32(0.3f, 0.5f, 1.0f));
+			CategoryButtons[i]->SetColor(Installer::GetThemeColor());
+			CategoryButtons[i]->SetHoveredColor(Installer::GetThemeColor());
+			CategoryButtons[i]->SetPressedColor(Installer::GetThemeColor());
 		}
 		else
 		{
 			CategoryButtons[i]->SetColor(Vector3f32(1.0f, 1.0f, 1.0f));
-			CategoryButtons[i]->SetHoveredColor(Vector3f32(0.6f, 0.7f, 1.0f));
-			CategoryButtons[i]->SetPressedColor(Vector3f32(0.3f, 0.5f, 1.0f));
+			CategoryButtons[i]->SetHoveredColor(Vector3f32::Lerp(1.0f, Installer::GetThemeColor(), 0.5f));
+			CategoryButtons[i]->SetPressedColor(Installer::GetThemeColor());
 		}
 	}
 }

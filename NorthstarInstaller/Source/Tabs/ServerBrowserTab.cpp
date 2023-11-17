@@ -492,7 +492,7 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 	ServerDescriptionBox->AddChild(new UIBackground(true, 0, 1, Vector2f(0.6, 0.005)));
 	ServerDescriptionText = new UIText(0.4, 0, GetTranslation("servers_join"), UI::Text);
 	ServerDescriptionBox->AddChild((new UIBox(true, 0))
-		->AddChild((new UIButton(true, 0, Vector3f32(0.5, 0.6, 1), []() { new BackgroundTask(JoinCurrentServer,
+		->AddChild((new UIButton(true, 0, Installer::GetThemeColor(), []() { new BackgroundTask(JoinCurrentServer,
 			[]() {
 				ServerBrowserTab::CurrentServerTab->DisplayServerDescription(ServerBrowserTab::CurrentServerTab->SelectedServer);
 				if (ServerBrowserTab::ShouldLaunchGame)
@@ -506,7 +506,7 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 			}))
 			->SetBorder(UIBox::BorderType::Rounded, 0.25)
 			->AddChild((new UIBackground(true, 0, 0, 0.055))
-				->SetUseTexture(true, Icon("tab_play").TextureID)
+				->SetUseTexture(true, Icon("itab_play").TextureID)
 				->SetPadding(0.01, 0.01, 0.01, 0)
 				->SetSizeMode(UIBox::SizeMode::AspectRelative))
 			->AddChild(ServerDescriptionText)));

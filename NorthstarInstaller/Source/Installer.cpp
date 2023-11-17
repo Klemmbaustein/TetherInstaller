@@ -26,6 +26,8 @@
 
 namespace Installer
 {
+	std::string TitleText = "";
+
 	UIBox* WindowButtonBox = nullptr;
 	size_t SelectedTab = 0;
 	std::vector<UIButton*> TabButtons;
@@ -33,6 +35,8 @@ namespace Installer
 	UIBackground* SidebarBackground = nullptr;
 	size_t HoveredTab = 0;
 	bool UseSystemTitleBar = false;
+
+	Vector3f32 InstallerThemeColor = Vector3f32(0.3f, 0.5f, 1);
 
 	UIButtonStyle* TabStyles[2] = { new UIButtonStyle("Tab default style"), new UIButtonStyle("Tab selected style")};
 
@@ -55,8 +59,14 @@ namespace Installer
 #endif
 	void GenerateTabs()
 	{
+		if (!SidebarBackground)
+		{
+			return;
+		}
+
 		Log::Print("Generating tab bar layout");
 		TabButtons.clear();
+
 		SidebarBackground->DeleteChildren();
 		for (size_t i = 0; i < Tabs.size(); i++)
 		{
@@ -182,11 +192,14 @@ namespace Installer
 	void UpdateInstaller()
 	{
 #if __linux__
-		Window::ShowPopupError("A new version of Tether is avaliable but updating the installer is not yet supported on linux.\nPlease update manually.");
+		Window::ShowPopupError(Translation::GetTranslation("popup_linux_update"));
 		return;
 #endif
 		BackgroundTask::SetStatus("dl_" + Translation::GetTranslation("download_update_installer"));
-		if (Window::ShowPopupQuestion("Update", "An update for the launcher is avaliabe.\nWould you like to install it?") != Window::PopupReply::Yes)
+		if (Window::ShowPopupQuestion(
+			Translation::GetTranslation("popup_windows_update_title"),
+			Translation::GetTranslation("popup_windows_update"))
+			!= Window::PopupReply::Yes)
 		{
 			return;
 		}
@@ -195,6 +208,20 @@ namespace Installer
 
 		system("start update.bat");
 		exit(0);
+	}
+
+	UIBackground* InstallerBackground = nullptr;
+	Texture::TextureInfo BackgroundImage;
+
+	void SetInstallerBackgroundImage(std::string Image)
+	{
+		if (BackgroundImage.ID)
+		{
+			Texture::UnloadTexture(BackgroundImage.ID);
+		}
+		BackgroundImage = Texture::LoadTextureWithInfo(Image);
+		InstallerBackground->SetUseTexture(true, BackgroundImage.ID);
+		InstallerBackground->SetMinSize(Vector2f(2.5 * ((float)BackgroundImage.Width / (float)BackgroundImage.Height), 2.5));
 	}
 
 	UIBackground* HoveredTabName = nullptr;
@@ -226,8 +253,47 @@ namespace Installer
 	}
 }
 
+void Installer::UpdateWindowFlags()
+{
+	Application::SetWindowFlags(UseSystemTitleBar ? 0 : Application::BORDERLESS_BIT);
+	GenerateWindowButtons();
+}
+
+void Installer::SetThemeColor(Vector3f32 NewColor)
+{
+	InstallerThemeColor = NewColor;
+	TabStyles[0]->Color = Vector3f32(1.0f, 1.0f, 1.0f);
+	TabStyles[0]->HoveredColor = Vector3f32::Lerp(1.0f, InstallerThemeColor, 0.5f);
+	TabStyles[0]->PressedColor = InstallerThemeColor;
+	TabStyles[0]->SetPadding(0.005);
+	TabStyles[0]->Border = UIBox::BorderType::Rounded;
+	TabStyles[0]->BorderSize = 0.4;
+
+	TabStyles[1]->Color = InstallerThemeColor;
+	TabStyles[1]->HoveredColor = InstallerThemeColor;
+	TabStyles[1]->PressedColor = InstallerThemeColor;
+	TabStyles[1]->SetPadding(0.005);
+	TabStyles[1]->Border = UIBox::BorderType::Rounded;
+	TabStyles[1]->BorderSize = 0.4;
+
+	GenerateTabs();
+	Application::SetBorderlessWindowOutlineColor(NewColor);
+}
+
+Vector3f32 Installer::GetThemeColor()
+{
+	return InstallerThemeColor;
+}
+
 void Installer::GenerateWindowButtons()
 {
+	WindowButtonBox->DeleteChildren();
+	if (UseSystemTitleBar)
+	{
+		return;
+	}
+
+
 	std::vector<int> Buttons;
 	if (Application::GetFullScreen())
 	{
@@ -236,11 +302,6 @@ void Installer::GenerateWindowButtons()
 	else
 	{
 		Buttons = { 0, 1, 3 };
-	}
-	WindowButtonBox->DeleteChildren();
-	if (UseSystemTitleBar)
-	{
-		return;
 	}
 	for (int i : Buttons)
 	{
@@ -322,9 +383,11 @@ int main(int argc, char** argv)
 		std::filesystem::current_path(ProgramLocation.substr(0, ProgramLocation.find_last_of("/\\")));
 	}
 
+	SetThemeColor(GetThemeColor());
+
 	LoadTranslation(GetLastTranslation());
 
-	Application::SetBorderlessWindowOutlineColor(Vector3f32(0.3f, 0.5f, 1));
+	Application::SetBorderlessWindowOutlineColor(InstallerThemeColor);
 	Application::SetShaderPath("Data/shaders");
 	Application::SetErrorMessageCallback([](std::string Message)
 		{
@@ -336,21 +399,6 @@ int main(int argc, char** argv)
 			return WindowButtonBox->IsBeingHovered();
 		});
 	Log::Print("Created app window");
-
-	TabStyles[0]->Color			= Vector3f32(1.0f, 1.0f, 1.0f);
-	TabStyles[0]->HoveredColor	= Vector3f32(0.6f, 0.7f, 1.0f);
-	TabStyles[0]->PressedColor	= Vector3f32(0.3f, 0.5f, 1.0f);
-	TabStyles[0]->SetPadding(0.005);
-	TabStyles[0]->Border = UIBox::BorderType::Rounded;
-	TabStyles[0]->BorderSize = 0.4;
-
-	TabStyles[1]->Color			= Vector3f32(0.3f, 0.5f, 1.0f);
-	TabStyles[1]->HoveredColor	= Vector3f32(0.3f, 0.5f, 1.0f);
-	TabStyles[1]->PressedColor	= Vector3f32(0.3f, 0.5f, 1.0f);
-	TabStyles[1]->SetPadding(0.005);
-	TabStyles[1]->Border = UIBox::BorderType::Rounded;
-	TabStyles[1]->BorderSize = 0.4;
-
 	UI::LoadFonts();
 
 
@@ -381,9 +429,16 @@ int main(int argc, char** argv)
 		}
 	}
 	Vector2f bgCenter = Vector2f(-0.3, 0);
-	auto bg = new UIBackground(true, 0, 1, Vector2f(2.5 * (16.f/9.f), 2.5));
-	bg->SetSizeMode(UIBox::SizeMode::AspectRelative);
-	bg->SetUseTexture(true, Texture::LoadTexture("Data/Game.png"));
+	InstallerBackground = new UIBackground(true, 0, 1, 0);
+	InstallerBackground->SetSizeMode(UIBox::SizeMode::AspectRelative);
+	if (std::filesystem::exists("Data/var/custom_background.png"))
+	{
+		SetInstallerBackgroundImage("Data/var/custom_background.png");
+	}
+	else
+	{
+		SetInstallerBackgroundImage("Data/Game.png");
+	}
 
 	WindowButtonBox = (new UIBackground(true, 0, 0.1))
 		->SetPadding(0)
@@ -399,7 +454,7 @@ int main(int argc, char** argv)
 	AppTitle->SetTextSizeMode(UIBox::SizeMode::PixelRelative);
 
 	Application::UpdateWindow();
-	bg->SetPosition(Vector2f(0.0) - bg->GetUsedSize() / 2);
+	InstallerBackground->SetPosition(Vector2f(0.0) - InstallerBackground->GetUsedSize() / 2);
 	AppTitle->SetPosition(Vector2f(-1, WindowButtonBox->GetPosition().Y));
 
 	Application::UpdateWindow();
@@ -466,23 +521,30 @@ int main(int argc, char** argv)
 			GenerateTabName(HoveredTab);
 		}
 
-		bg->SetPosition(Vector2f(0.0) - bg->GetUsedSize() / 2);
+		InstallerBackground->SetPosition(Vector2f(0.0) - InstallerBackground->GetUsedSize() / 2);
 		BackgroundTask::UpdateTaskStatus();
+
+		std::string ProfileName = ProfileTab::CurrentProfile.DisplayName;
+		if (ProfileName.empty())
+		{
+			ProfileName = "None";
+		}
 
 		std::string Title = Format(GetTranslation("title_bar"),
 			GetTranslation("app_name").c_str(),
 			GetTranslation("tab_" + Tabs[SelectedTab]->Name).c_str(),
-			ProfileTab::CurrentProfile.DisplayName.c_str());
+			ProfileName.c_str());
 
-		if (UseSystemTitleBar)
+		if (UseSystemTitleBar && TitleText != Title)
 		{
+			TitleText = Title;
 			Application::SetApplicationTitle(Title);
 		}
-		else
+		else if (!UseSystemTitleBar)
 		{
-			AppTitle->SetPosition(Vector2f(SidebarBackground->GetUsedSize().X - 0.99, WindowButtonBox->GetPosition().Y + 0.001));
 			AppTitle->SetText(Title);
 		}
+		AppTitle->SetPosition(Vector2f(SidebarBackground->GetUsedSize().X - 0.99, WindowButtonBox->GetPosition().Y + 0.001));
 		DownloadWindow::Update(WindowButtonBox->GetUsedSize().Y);
 
 		if (Application::AspectRatio != PrevAspect)

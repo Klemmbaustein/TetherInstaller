@@ -8,6 +8,7 @@
 #include <sstream>
 #include <fstream>
 #include <stdlib.h>
+#include <cmath>
 #include <filesystem>
 
 #include "../Log.h"
@@ -20,6 +21,89 @@
 #include "../Translation.h"
 
 using namespace Translation;
+
+static char HexChar(uint8_t val)
+{
+	if (val < 10)
+	{
+		return val + '0';
+	}
+	return val - 10 + 'a';
+}
+
+uint8_t CharHex(std::string hex)
+{
+	uint8_t result = 0;
+	for (int i = 0; i < hex.length(); i++)
+	{
+		if (hex[i] >= 48 && hex[i] <= 57)
+		{
+			result += (hex[i] - 48) * pow(16, hex.length() - i - 1);
+		}
+		else if (hex[i] >= 65 && hex[i] <= 70)
+		{
+			result += (hex[i] - 55) * pow(16, hex.length() - i - 1);
+		}
+		else if (hex[i] >= 97 && hex[i] <= 102)
+		{
+			result += (hex[i] - 87) * pow(16, hex.length() - i - 1);
+		}
+	}
+	return result;
+}
+
+
+static std::string UintToHex(uint8_t Uint)
+{
+	return std::string({ HexChar(Uint / 16), HexChar(Uint % 16)});
+}
+
+static std::string ColorToRgb(Vector3f32 Color)
+{
+	Vector3<uint8_t> RgbColor = Color * 255;
+	return "#" + UintToHex(RgbColor.X) + UintToHex(RgbColor.Y) + UintToHex(RgbColor.Z);
+}
+
+static Vector3f32 RgbToColor(std::string Rgb)
+{
+	if (Rgb.empty() || Rgb[0] != '#')
+	{
+		return -1;
+	}
+	Rgb.resize(7, '0');
+
+	uint8_t x = CharHex(Rgb.substr(1, 2));
+	uint8_t y = CharHex(Rgb.substr(3, 2));
+	uint8_t z = CharHex(Rgb.substr(5, 2));
+
+	return Vector3f32(x / 255.0f, y / 255.0f, z / 255.0f);
+}
+
+
+static void SaveSettings()
+{
+	std::ofstream out = std::ofstream("Data/var/appearance.txt");
+	out << Installer::GetThemeColor().X << " " << Installer::GetThemeColor().Y << " " << Installer::GetThemeColor().Z << std::endl;
+	out << (Installer::UseSystemTitleBar ? "system" : "custom");
+	out.close();
+}
+
+static void LoadSettings()
+{
+	if (!std::filesystem::exists("Data/var/appearance.txt"))
+	{
+		return;
+	}
+
+	std::ifstream in = std::ifstream("Data/var/appearance.txt");
+	char Buffer[2048];
+	in.getline(Buffer, 2048);
+	Installer::SetThemeColor(Vector3f32::FromString(std::string(Buffer)));
+	in.getline(Buffer, 2048);
+	Installer::UseSystemTitleBar = std::string("system") == Buffer;
+	Installer::UpdateWindowFlags();
+	in.close();
+}
 
 SettingsTab* SettingsTab::CurrentSettingsTab = nullptr;
 SettingsTab::SettingsTab()
@@ -43,6 +127,8 @@ SettingsTab::SettingsTab()
 	SettingsBox->SetMinSize(Vector2f(0, 1.78));
 	SettingsBox->SetMaxSize(Vector2f(2, 1.78));
 	SettingsBackground->AddChild(SettingsBox);
+	LoadSettings();
+	
 	GenerateSettings();
 }
 
@@ -51,7 +137,7 @@ void SettingsTab::Tick()
 	SettingsBackground->SetMinSize(Vector2f(1, Background->GetUsedSize().Y));
 }
 
-void DeleteAllMods()
+static void DeleteAllMods()
 {
 	for (const auto& m : std::filesystem::directory_iterator(ProfileTab::CurrentProfile.Path + "/mods/"))
 	{
@@ -66,7 +152,7 @@ void DeleteAllMods()
 
 void LocateTitanfall()
 {
-	std::string NewPath = Window::ShowSelectFolderDialog();
+	std::string NewPath = Window::ShowSelectFileDialog(true);
 	if (Game::IsValidTitanfallLocation(NewPath))
 	{
 		Game::SaveGameDir(NewPath);
@@ -210,6 +296,102 @@ void SettingsTab::GenerateSettings()
 		->SetTextSize(0.3, 0.005)
 		->SetPadding(0.01, 0.01, 0.06, 0.01));
 	LanguageDropdown->SelectOption(Selected, false);
+
+	AddCategoryHeader("settings_category_appearance", "Settings/App", SettingsBox);
+
+	AddSettingsButton("settings_appearance_background", "Settings/Image", []() {
+		std::string NewPicture = Window::ShowSelectFileDialog(false);
+		if (!std::filesystem::exists(NewPicture))
+		{
+			return;
+		}
+
+		try
+		{
+			std::filesystem::copy(NewPicture, "Data/var/custom_background.png", std::filesystem::copy_options::overwrite_existing);
+			Installer::SetInstallerBackgroundImage("Data/var/custom_background.png");
+		}
+		catch (std::exception& e)
+		{
+			Log::Print(e.what(), Log::Error);
+		}
+		CurrentSettingsTab->GenerateSettings();
+		}, SettingsBox);
+
+
+	if (std::filesystem::exists("Data/var/custom_background.png"))
+	{
+		SettingsBox->AddChild((new UIButton(true, 0, 0.75, []() 
+			{
+				std::filesystem::remove("Data/var/custom_background.png.png");
+				Installer::SetInstallerBackgroundImage("Data/Game.png");
+				CurrentSettingsTab->GenerateSettings();
+			}))
+			->SetMinSize(Vector2f(0.6, 0))
+			->SetPadding(0, 0.05, 0.06, 0)
+			->SetBorder(UIBox::BorderType::Rounded, 0.25)
+			->AddChild((new UIBackground(true, 0, 0, 0.04))
+				->SetUseTexture(true, Icon("Revert").TextureID)
+				->SetSizeMode(UIBox::SizeMode::AspectRelative)
+				->SetPadding(0.01, 0.01, 0.01, 0.01))
+			->AddChild((new UIText(0.3, 0, GetTranslation("settings_appearance_background_revert"), UI::Text))));
+	}
+
+	std::vector<UIDropdown::Option> TitleBarOptions = 
+	{
+		UIDropdown::Option(GetTranslation("settings_title_bar_custom")),
+		UIDropdown::Option(GetTranslation("settings_title_bar_system"))
+	};
+
+	SettingsBox->AddChild((new UIBox(true, 0))
+		->SetPadding(0.05, 0.01, 0.06, 0.01)
+		->AddChild((new UIBackground(true, 0, 1, 0.05))
+			->SetUseTexture(true, Icon("Settings/App").TextureID)
+			->SetPadding(0.01, 0.01, 0, 0)
+			->SetSizeMode(UIBox::SizeMode::AspectRelative))
+		->AddChild((new UIText(0.4, 1, GetTranslation("settings_title_bar"), UI::Text))
+			->SetPadding(0.01)));
+
+	TitleBarDropdown = new UIDropdown(0, 0.6, 1, 0, TitleBarOptions, []()
+		{
+			Installer::UseSystemTitleBar = CurrentSettingsTab->TitleBarDropdown->SelectedIndex == 1;
+			Installer::UpdateWindowFlags();
+			SaveSettings();
+		}, UI::Text);
+	SettingsBox->AddChild(TitleBarDropdown
+		->SetTextSize(0.3, 0.005)
+		->SetPadding(0.01, 0.01, 0.06, 0.01));
+	TitleBarDropdown->SelectOption(Installer::UseSystemTitleBar, false);
+
+	SettingsBox->AddChild((new UIBox(true, 0))
+		->SetPadding(0.05, 0.01, 0.06, 0.01)
+		->AddChild((new UIBackground(true, 0, 1, 0.05))
+			->SetUseTexture(true, Icon("Settings/Color").TextureID)
+			->SetPadding(0.01, 0.01, 0, 0)
+			->SetSizeMode(UIBox::SizeMode::AspectRelative))
+		->AddChild((new UIText(0.4, 1, GetTranslation("settings_appearance_color"), UI::Text))
+			->SetPadding(0.01)));
+
+	ColorText = new UITextField(true, 0, 1, UI::MonoText, []() 
+		{ 
+			auto Color = RgbToColor(CurrentSettingsTab->ColorText->GetText());
+			if (Color == Vector3f32(-1))
+			{
+				CurrentSettingsTab->ColorText->SetText(ColorToRgb(Installer::GetThemeColor()));
+				return;
+			}
+			Installer::SetThemeColor(Color);
+			SaveSettings();
+			CurrentSettingsTab->ColorText->SetText(ColorToRgb(Color));
+		});
+
+	SettingsBox->AddChild(ColorText
+		->SetTextColor(0)
+		->SetTextSize(0.3)
+		->SetText(ColorToRgb(Installer::GetThemeColor()))
+		->SetPadding(0.01, 0.01, 0.06, 0.01)
+		->SetMinSize(Vector2f(0.6, 0.05)));
+
 
 	if (Game::IsValidTitanfallLocation(Game::GamePath))
 	{

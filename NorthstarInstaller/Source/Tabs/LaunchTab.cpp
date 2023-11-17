@@ -48,14 +48,16 @@ void NorthstarLaunchTask()
 
 #if __linux__
 
-	std::string Commad = "steam://run/1237970/-northstar -profile=\\\""
+	std::string Command = "steam://run/1237970/-northstar -profile=\\\""
 		+ ProfileTab::CurrentProfile.DisplayName
 		+ "\\\" "
 		+ NorthstarLaunchArgs
 		+ " "
 		+ Game::GetLaunchArgs();
 
-	system(("xdg-open \"" + Commad + "\"").c_str());
+	// std::string Command = "https://northstar.tf/";
+
+	system(("xdg-open \"" + Command + "\"").c_str());
 #elif _WIN32
 		STARTUPINFOA Startup;
 		PROCESS_INFORMATION pi;
@@ -148,7 +150,7 @@ LaunchTab::LaunchTab()
 	auto TextBox = (new UIBackground(true, 0, 0, 0))->SetOpacity(0.65);
 	TextBox->SetHorizontalAlign(UIBox::Align::Centered);
 
-	LaunchButton = new UIButton(true, 0, 1, LaunchNorthstar);
+	LaunchButton = new UIButton(true, 0, Installer::GetThemeColor(), LaunchNorthstar);
 	LaunchText = new UIText(0.7, 0, "", UI::Text);
 
 	Background->AddChild(TextBox
@@ -165,6 +167,10 @@ LaunchTab::LaunchTab()
 void LaunchTab::Tick()
 {
 	using namespace Translation;
+
+	LaunchButton->SetColor(1.0f);
+	LaunchButton->SetHoveredColor(Vector3f32::Lerp(1.0f, Installer::GetThemeColor(), 0.5f));
+	LaunchButton->SetPressedColor(Installer::GetThemeColor());
 
 	IsGameRunning = BackgroundTask::IsFunctionRunningAsTask(NorthstarLaunchTask);
 	if (Game::GamePath.empty())

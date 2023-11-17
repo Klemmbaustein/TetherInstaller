@@ -16,7 +16,7 @@ std::string wstrtostr(const std::wstring& wstr)
 	delete[] szTo;
 	return strTo;
 }
-std::string Window::ShowSelectFolderDialog()
+std::string Window::ShowSelectFileDialog(bool PickFolders)
 {
 	std::string FilePath = "";
 	HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED |
@@ -32,7 +32,10 @@ std::string Window::ShowSelectFolderDialog()
 		if (SUCCEEDED(hr))
 		{
 			// Show the Open dialog box.
-			pFileOpen->SetOptions(FOS_PICKFOLDERS);
+			if (PickFolders)
+			{
+				pFileOpen->SetOptions(FOS_PICKFOLDERS);
+			}
 			hr = pFileOpen->Show(NULL);
 			// Get the file name from the dialog box.
 			if (SUCCEEDED(hr))
@@ -58,11 +61,27 @@ std::string Window::ShowSelectFolderDialog()
 	}
 	return FilePath;
 }
+
 #else
-// tinyfd does *not* use the regular win32 open file dialog on windows.
-std::string Window::ShowSelectFolderDialog()
+// tinyfd does *not* use the regular open file dialog on windows.
+std::string Window::ShowSelectFileDialog(bool PickFolders)
 {
-	char* ret = tinyfd_selectFolderDialog("Locate Titanfall 2", nullptr);
+	if (PickFolders)
+	{
+		char* ret = tinyfd_selectFolderDialog("Tether Installer", nullptr);
+		if (ret)
+		{
+			return ret;
+		}
+		return "";
+	}
+
+	char* ret = tinyfd_openFileDialog("Tether Installer",
+		nullptr,
+		0,
+		nullptr,
+		nullptr,
+		0);
 	if (ret)
 	{
 		return ret;
@@ -87,5 +106,5 @@ void Window::ShowPopup(std::string Title, std::string Message)
 void Window::ShowPopupError(std::string Message)
 {
 	Log::Print(Message, Log::Error);
-	tinyfd_messageBox("Tether Installer Error", Message.c_str(), "ok", "error", 1);
+	tinyfd_messageBox("Tether Installer", Message.c_str(), "ok", "error", 1);
 }

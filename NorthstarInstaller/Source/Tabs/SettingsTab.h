@@ -11,7 +11,9 @@ class SettingsTab : public UITab
 	UIScrollBox* SettingsBox = nullptr;
 public:
 	UITextField* LaunchArgsText = nullptr;
+	UITextField* ColorText = nullptr;
 	UIDropdown* LanguageDropdown = nullptr;
+	UIDropdown* TitleBarDropdown = nullptr;
 	SettingsTab();
 	void Tick() override;
 	void GenerateSettings();

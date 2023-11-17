@@ -78,9 +78,6 @@ ProfileTab::ProfileTab()
 			->SetMinSize(Vector2f(0.85, 1.55)))
 		->AddChild(ProfileInfoBox
 			->SetMinSize(Vector2f(0, 1.55))));
-
-	NewProfileTextField = new UITextField(true, 0, 0, UI::Text, nullptr);
-
 	ProfileCreationBox = new UIBackground(false, 0, 0);
 	ProfileBackground->AddChild(ProfileCreationBox);
 		
@@ -263,7 +260,7 @@ void ProfileTab::DisplayProfileInfo()
 		if (!Thunderstore::VanillaPlusInstalled())
 		{
 			
-			OptionsBox->AddChild((new UIButton(true, 0, Vector3f32(0, 0.5, 1), []()
+			OptionsBox->AddChild((new UIButton(true, 0, Installer::GetThemeColor(), []()
 				{
 					new BackgroundTask([]()
 						{
@@ -341,11 +338,15 @@ void ProfileTab::UpdateProfilesList()
 
 void ProfileTab::OnClicked()
 {
+	UpdateProfilesList();
 	DisplayProfileInfo();
+	GenerateProfileCreationBox();
 }
 
 void ProfileTab::GenerateProfileCreationBox()
 {
+	NewProfileTextField = new UITextField(true, 0, 0, UI::Text, nullptr);
+
 	ProfileCreationBox->DeleteChildren();
 	ProfileCreationBox->SetOpacity(0.5)
 		->AddChild(new UIText(0.4, 1, GetTranslation("profile_create_new"), UI::Text))
@@ -356,7 +357,7 @@ void ProfileTab::GenerateProfileCreationBox()
 				->SetHintText(GetTranslation("profile_create_name"))
 				->SetPadding(0.01, 0.01, 0.01, 0.01)
 				->SetMinSize(Vector2f(0.5, 0.055)))
-			->AddChild((new UIButton(true, 0, Vector3f32(0, 0.5, 1), []()
+			->AddChild((new UIButton(true, 0, Installer::GetThemeColor(), []()
 				{
 					CurrentProfileTab->CreateNewProfile(CurrentProfileTab->NewProfileTextField->GetText());
 				}))
