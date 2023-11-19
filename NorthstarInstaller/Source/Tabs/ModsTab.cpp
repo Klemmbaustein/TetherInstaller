@@ -322,6 +322,14 @@ void ModsTab::GenerateModPage()
 
 	size_t it = 0;
 	ModButtons.clear();
+
+	if (Filter == "feet" || Filter == "Feet")
+	{
+		Thunderstore::FoundMods.clear();
+		Rows[0]->AddChild((new UIText(1, 1, "Nuh-uh", UI::Text))
+			->SetPadding(0.45));
+	}
+
 	for (const auto& i : Thunderstore::FoundMods)
 	{
 		bool UseTexture = std::filesystem::exists(i.Img) && !i.IsNSFW;
