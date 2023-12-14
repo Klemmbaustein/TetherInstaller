@@ -515,7 +515,7 @@ void ModsTab::CheckForModUpdates()
 {
 	using namespace nlohmann;
 
-	BackgroundTask::SetStatus("dl_Checking for mod updates");
+	BackgroundTask::SetStatus("Checking for mod updates");
 
 	std::vector<Thunderstore::Package> Mods = Thunderstore::GetInstalledMods().Managed;
 
