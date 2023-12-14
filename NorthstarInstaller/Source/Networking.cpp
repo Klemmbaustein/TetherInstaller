@@ -20,8 +20,8 @@
 #include <wtsapi32.h>
 #include <iostream>
 #pragma comment(lib, "Wtsapi32.lib")
-#pragma comment(lib, "wldap32.lib" )
-#pragma comment(lib, "crypt32.lib" )
+#pragma comment(lib, "wldap32.lib")
+#pragma comment(lib, "crypt32.lib")
 #pragma comment(lib, "Ws2_32.lib")
 
 #endif
@@ -164,14 +164,14 @@ namespace Networking
 	{
 #if _WIN32
 		DWORD pCount = 0;
-		PWTS_PROCESS_INFO ppProcessInfo, pProcess;
-		WTSEnumerateProcesses(WTS_CURRENT_SERVER_HANDLE, 0, 1, &ppProcessInfo, &pCount);
+		PWTS_PROCESS_INFOA ppProcessInfo, pProcess;
+		WTSEnumerateProcessesA(WTS_CURRENT_SERVER_HANDLE, 0, 1, &ppProcessInfo, &pCount);
 		pProcess = ppProcessInfo;
 
 		for (int i = 0; i < pCount; i++)
 		{
-			std::wstring pName = pProcess->pProcessName;
-			if (ToLowerCase(Name) == ToLowerCase(std::string(pName.begin(), pName.end())))
+			std::string pName = pProcess->pProcessName;
+			if (ToLowerCase(Name) == ToLowerCase(pName))
 			{
 				return true;
 			}

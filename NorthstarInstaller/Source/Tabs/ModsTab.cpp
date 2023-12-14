@@ -326,7 +326,7 @@ void ModsTab::GenerateModPage()
 	if (Filter == "feet" || Filter == "Feet")
 	{
 		Thunderstore::FoundMods.clear();
-		Rows[0]->AddChild((new UIText(1, 1, "Nuh-uh", UI::Text))
+		Rows[0]->AddChild((new UIText(1, Vector3f32(1), "Nuh-uh", UI::Text))
 			->SetPadding(0.45));
 	}
 
@@ -515,7 +515,7 @@ void ModsTab::CheckForModUpdates()
 {
 	using namespace nlohmann;
 
-	BackgroundTask::SetStatus("Checking for mod updates");
+	BackgroundTask::SetStatus("dl_Checking for mod updates");
 
 	std::vector<Thunderstore::Package> Mods = Thunderstore::GetInstalledMods().Managed;
 
@@ -550,7 +550,7 @@ void ModsTab::CheckForModUpdates()
 				Thunderstore::Package NewMod = m;
 				NewMod.DownloadUrl = response.at("versions")[0].at("download_url");
 				NewMod.Version = response.at("versions")[0].at("version_number").get<std::string>();
-
+				BackgroundTask::SetStatus("dl_Updating " + m.Name);
 				Thunderstore::InstallOrUninstallMod(NewMod, true, false);
 				Thunderstore::InstallOrUninstallMod(NewMod, false, false);
 			}
