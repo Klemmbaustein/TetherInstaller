@@ -274,6 +274,12 @@ void ModsTab::GenerateModInfo()
 	Markdown::MarkdownStyling Style;
 	Style.Text = UI::Text;
 	Style.Width = 1.1;
+	Markdown::MarkdownStyling::CodeStyling CodeStyle;
+	CodeStyle.BackgroundColor = 0;
+	CodeStyle.Color = 1;
+	CodeStyle.Rounding = 0.25f;
+	CodeStyle.CodeText = UI::MonoText;
+	Style.Code = CodeStyle;
 
 	Markdown::RenderMarkdown(Thunderstore::SelectedMod.Description, MarkdownBackground, Style);
 }
