@@ -113,7 +113,7 @@ void LaunchTab::LaunchNorthstar(std::string Args)
 	NorthstarLaunchArgs = Args;
 	if (Thunderstore::VanillaPlusInstalled())
 	{
-		NorthstarLaunchArgs.append(" -norestrictservercommands ");
+		NorthstarLaunchArgs.append(" -vanilla ");
 	}
 	for (auto& i : LaunchStoppingTasks)
 	{
