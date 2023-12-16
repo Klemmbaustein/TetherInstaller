@@ -22,9 +22,10 @@
 
 #include "ModsTab.h"
 
-std::string NorthstarLaunchArgs;
+static bool CheckedForVanillaPlus = false;
+static std::string NorthstarLaunchArgs;
 bool LaunchTab::IsGameRunning = false;
-void NorthstarLaunchTask()
+static void NorthstarLaunchTask()
 {
 	BackgroundTask::SetStatus("Northstar is running");
 	Log::Print("Game has started");
@@ -160,13 +161,17 @@ LaunchTab::LaunchTab()
 			->SetPadding(0.03)
 			->SetBorder(UIBox::BorderType::Rounded, 0.5)
 			->AddChild(LaunchText)));
-
-	OnClicked();
 }
 
 void LaunchTab::Tick()
 {
 	using namespace Translation;
+
+	if (!CheckedForVanillaPlus)
+	{
+		CheckedForVanillaPlus = true;
+		OnClicked();
+	}
 
 	LaunchButton->SetColor(1.0f);
 	LaunchButton->SetHoveredColor(Vector3f32::Lerp(1.0f, Installer::GetThemeColor(), 0.5f));

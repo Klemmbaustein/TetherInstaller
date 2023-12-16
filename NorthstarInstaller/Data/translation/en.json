@@ -70,8 +70,8 @@
     "mod_deprecation_warning": "This mod is deprecated\nDeprecated mods are no longer supported and might have issues.",
     "mod_is_enabled": "This mod is enabled",
     "mod_is_disabled": "This mod is disabled",
-    "mod_release_canidate_message": "This is a Northstar release canidate.\nRelease canidates are versions of Northstar that are almost ready to release.\nIf you notice any issues with it, please report them to github or the Northstar discord server.",
-    "mod_vanillaplus_message": "Vanilla+ enables you to use Northstar mods on vanilla servers.\nInstalling this mod will turn this profile into a Vanilla+ profile.\nThis cannot be done on the default R2Northstar profile.",
+    "mod_release_canidate_message": "This is a Northstar release canidate.\nRelease canidates are versions of Northstar that are almost ready to release. If you notice any issues with it, please report them to github or the Northstar discord server.",
+    "mod_vanillaplus_message": "Vanilla+ enables you to use Northstar mods on vanilla servers.\nInstalling this mod will turn this profile into a Vanilla+ profile. This cannot be done on the default R2Northstar profile.",
     "mod_release_canidate_open_discord": "Open discord channel",
 
     // "Profile" tab strings

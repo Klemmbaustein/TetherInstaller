@@ -261,20 +261,6 @@ namespace Networking
 		Log::Print("Initialised cURL");
 		std::filesystem::create_directories("Data/temp/net/");
 		curl_global_init(CURL_GLOBAL_ALL);
-		Networking::Download("https://northstar.tf", "Data/temp/net/ntf.html", "");
-		if (std::filesystem::is_empty("Data/temp/net/ntf.html"))
-		{
-			std::filesystem::remove("Data/temp/net/ntf.html");
-			Window::ShowPopup("Error", "Failed to ping https://northstar.tf\n\n\
-What this could mean:\n\
-- No internet connection\n\
-- The Northstar master server is currently offline\n\n\
-What you can do:\n\
-- Check your internet connection\n\
-- Wait (Up to a few hours)");
-			exit(0);
-		}
-		std::filesystem::remove("Data/temp/net/ntf.html");
 
 #if _WIN32
 		if (IsProcessRunning("EADesktop.exe"))
