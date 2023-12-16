@@ -323,7 +323,7 @@ void SettingsTab::GenerateSettings()
 	{
 		SettingsBox->AddChild((new UIButton(true, 0, 0.75, []() 
 			{
-				std::filesystem::remove("Data/var/custom_background.png.png");
+				std::filesystem::remove("Data/var/custom_background.png");
 				Installer::SetInstallerBackgroundImage("Data/Game.png");
 				CurrentSettingsTab->GenerateSettings();
 			}))
