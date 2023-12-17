@@ -13,8 +13,7 @@ You can find pre-packaged releases of the installer
 ## Features
 
 - Launching and installing of [Northstar](https://github.com/R2Northstar/Northstar).
-- A mod browser for browsing and installing mods hosted on
-- [thunderstore.io](https://northstar.thunderstore.io/).
+- A mod browser for browsing and installing mods hosted on [thunderstore.io](https://northstar.thunderstore.io/).
 - Support for installing Northstar prerelease versions and the
 [Vanilla+ mod](https://northstar.thunderstore.io/package/NanohmProtogen/VanillaPlus/)
 which enables the use of Northstar mods on Respawns vanilla servers.
