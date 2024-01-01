@@ -2,6 +2,7 @@
 #include "Log.h"
 #include <tinyfiledialogs.h>
 #include <algorithm>
+#include <cstring>
 
 #if _WIN32
 #include <Windows.h>
