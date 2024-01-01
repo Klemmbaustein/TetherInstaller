@@ -89,6 +89,7 @@
     "profile_create_name": "New profile name",
     "profile_create": "Create",
     "profile_create_no_name_entered": "Please enter a profile name",
+    "profile_create_already_exists": "The profile %s already exists.",
     "profile_update_complete": "Updated profile %s to latest version.",
 
     // "Settings" tab strings
@@ -116,6 +117,8 @@
     "settings_title_bar_system": "System",
     "settings_about_version": "Installer version",
     "settings_about_ns_version": "Installed Northstar version",
+    "settings_update_required": "A northstar update is required.",
+    "settings_update_not_required": "No northstar update is required.",
 
     // Download panel strings
     "download_install_mod": "Installing %s",

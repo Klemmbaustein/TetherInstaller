@@ -129,7 +129,6 @@ bool ProfileTab::IsFolderValidProfilePath(std::string FolderPath)
 void ProfileTab::OnProfileSwitched()
 {
 	LOG_PRINTF("Switched profile to \"{}\"", CurrentProfile.DisplayName);
-	Installer::UpdateCheckedOnce = false;
 	ModsTab::Reload();
 	new BackgroundTask(Installer::CheckForUpdates);
 	if (!BackgroundTask::IsFunctionRunningAsTask(ModsTab::CheckForModUpdates))
@@ -383,7 +382,13 @@ void ProfileTab::CreateNewProfile(std::string Name)
 	{
 		return;
 	}
-	std::filesystem::create_directories(Game::GamePath + Name + "/mods");
+	if (std::filesystem::exists(Game::GamePath + "/" + Name))
+	{
+		Window::ShowPopupError(Format(GetTranslation("profile_create_already_exists"), Name.c_str()));
+		return;
+	}
+
+	std::filesystem::create_directories(Game::GamePath + "/" + Name + "/mods");
 
 	for (auto& i : Game::CoreModNames)
 	{

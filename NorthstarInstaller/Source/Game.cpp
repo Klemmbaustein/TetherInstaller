@@ -170,7 +170,10 @@ int Game::GetFileVersion(const char* filename, char* ver)
 
 std::string Game::GetCurrentVersion()
 {
-
+	if (GamePath.empty())
+	{
+		return "None";
+	}
 #if _WIN32
 	char Ver[100];
 	GetFileVersion(std::filesystem::path(GamePath + "/NorthstarLauncher.exe").u8string().c_str(), Ver);
@@ -191,14 +194,17 @@ void Game::UpdateGame()
 		BackgroundTask::SetProgress(0.9);
 		Log::Print("Extracting zip: " + result);
 
-		// Remove core mods before installing them again
-		for (auto& i : std::filesystem::directory_iterator(Game::GamePath + "/R2Northstar/mods"))
+		if (std::filesystem::exists(Game::GamePath + "/R2Northstar/mods"))
 		{
-			std::string File = i.path().filename().u8string();
-			std::string Author = File.substr(0, File.find_first_of("."));
-			if (Author == "Northstar")
+			// Remove core mods before installing them again
+			for (auto& i : std::filesystem::directory_iterator(Game::GamePath + "/R2Northstar/mods"))
 			{
-				std::filesystem::remove(File);
+				std::string File = i.path().filename().u8string();
+				std::string Author = File.substr(0, File.find_first_of("."));
+				if (Author == "Northstar")
+				{
+					std::filesystem::remove(File);
+				}
 			}
 		}
 		Networking::ExtractZip(result, Game::GamePath);

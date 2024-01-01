@@ -93,8 +93,6 @@ namespace Installer
 		SidebarBackground->UpdateElement();
 	}
 
-	bool UpdateCheckedOnce = false;
-
 	void CheckForUpdates()
 	{
 		Log::Print("Checking for updates...");
@@ -119,14 +117,6 @@ namespace Installer
 			Log::Print("Could not get the latest game version",  Log::Error);
 			BackgroundTask::SetStatus("Could not get the latest game version");
 			BackgroundTask::SetProgress(1);
-			if (!UpdateCheckedOnce)
-			{
-				UpdateCheckedOnce = true;
-			}
-			else
-			{
-				Window::ShowPopupError("Could not get the latest game version. Possible rate limit.");
-			}
 			return;
 		}
 
@@ -137,27 +127,11 @@ namespace Installer
 			Log::Print("Game needs to be updated. Installed: " + InstalledVersion + ", latest: " + Latest, Log::Warning);
 			Game::RequiresUpdate = true;
 			BackgroundTask::SetStatus("Update required");
-			BackgroundTask::SetProgress(1);
-			if (!UpdateCheckedOnce)
-			{
-				UpdateCheckedOnce = true;
-			}
-			else
-			{
-				Window::ShowPopup("Northstar update", "Northstar update required.");
-			}
+			BackgroundTask::SetProgress(1);			
 			return;
 		}
 		BackgroundTask::SetStatus("No update required");
 		Log::Print("No update required");
-		if (!UpdateCheckedOnce)
-		{
-			UpdateCheckedOnce = true;
-		}
-		else
-		{
-			Window::ShowPopup("Northstar update", "No Northstar update required.");
-		}
 	}
 
 	std::atomic<bool> RequiresUpdate = false;
@@ -583,6 +557,13 @@ int main(int argc, char** argv)
 #if _WIN32
 int WinMain()
 {
-	main(__argc, __argv);
+	try
+	{
+		main(__argc, __argv);
+	}
+	catch (std::exception& e)
+	{
+		Window::ShowPopupError(e.what());
+	}
 }
 #endif

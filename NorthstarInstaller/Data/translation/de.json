@@ -89,6 +89,7 @@
     "profile_create_new": "Neues Profil",
     "profile_create_name": "Neuer Profilname",
     "profile_create": "Erstellen",
+    "profile_create_already_exists": "Das Profil %s gibt es schon.",
     "profile_create_no_name_entered": "Bitte geben sie ein Profilnamen ein",
     "profile_update_complete": "Profil wurde zu der neusten Version aktualisiert.",
 
@@ -117,6 +118,8 @@
     "settings_reset_installer": "Installer zurücksetzen",
     "settings_about_version": "Installer-Version",
     "settings_about_ns_version": "Installierte Northstar-Version",
+    "settings_update_required": "Ein Northstar-Update ist benötigt.",
+    "settings_update_not_required": "Kein Northstar-Update ist benötigt.",
 
     // Download panel strings
     "download_install_mod": "Installiere %s",

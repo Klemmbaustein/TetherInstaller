@@ -157,7 +157,6 @@ void LocateTitanfall()
 	{
 		Game::SaveGameDir(NewPath);
 		Game::GamePath = Game::GetTitanfallLocation();
-		Installer::UpdateCheckedOnce = false;
 		new BackgroundTask(Installer::CheckForUpdates);
 		ProfileTab::CurrentProfileTab->DetectProfiles();
 		if (ProfileTab::AllProfiles.size())
@@ -236,8 +235,19 @@ void SettingsTab::GenerateSettings()
 	if (Game::IsValidTitanfallLocation(Game::GamePath))
 	{
 		AddSettingsButton("settings_recheck_updates", "Settings/Reload", []() {
-			new BackgroundTask(Installer::CheckForUpdates);
-			}, SettingsBox);
+			new BackgroundTask([]()
+				{
+					Installer::CheckForUpdates();
+					if (Game::RequiresUpdate)
+					{
+						Window::ShowPopup(GetTranslation("app_name"), GetTranslation("settings_update_required"));
+					}
+					else
+					{
+						Window::ShowPopup(GetTranslation("app_name"), GetTranslation("settings_update_not_required"));
+					}
+				});
+				}, SettingsBox);
 
 
 		AddSettingsButton("settings_reinstall_northstar", "Download", Game::UpdateGameAsync, SettingsBox);

@@ -1,6 +1,7 @@
 #include "WindowFunctions.h"
 #include "Log.h"
 #include <tinyfiledialogs.h>
+#include <algorithm>
 
 #if _WIN32
 #include <Windows.h>
@@ -92,6 +93,12 @@ std::string Window::ShowSelectFileDialog(bool PickFolders)
 
 Window::PopupReply Window::ShowPopupQuestion(std::string Title, std::string Message)
 {
+	char chars[] = "'\"";
+	for (unsigned int i = 0; i < strlen(chars); ++i)
+	{
+		// you need include <algorithm> to use general algorithms like std::remove()
+		Message.erase(std::remove(Message.begin(), Message.end(), chars[i]), Message.end());
+	}
 	int a = tinyfd_messageBox(Title.c_str(), Message.c_str(), "yesno", "question", 1);
 	if (a == 1)
 	{
@@ -101,10 +108,23 @@ Window::PopupReply Window::ShowPopupQuestion(std::string Title, std::string Mess
 }
 void Window::ShowPopup(std::string Title, std::string Message)
 {
+	char chars[] = "'\"";
+	for (unsigned int i = 0; i < strlen(chars); ++i)
+	{
+		// you need include <algorithm> to use general algorithms like std::remove()
+		Message.erase(std::remove(Message.begin(), Message.end(), chars[i]), Message.end());
+	}
 	tinyfd_messageBox(Title.c_str(), Message.c_str(), "ok", "info", 1);
 }
 void Window::ShowPopupError(std::string Message)
 {
+	char chars[] = "'\"";
+	for (unsigned int i = 0; i < strlen(chars); ++i)
+	{
+		// you need include <algorithm> to use general algorithms like std::remove()
+		Message.erase(std::remove(Message.begin(), Message.end(), chars[i]), Message.end());
+	}
+
 	Log::Print(Message, Log::Error);
 	tinyfd_messageBox("Tether Installer", Message.c_str(), "ok", "error", 1);
 }

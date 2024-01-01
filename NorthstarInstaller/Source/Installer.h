@@ -11,7 +11,6 @@ namespace Installer
 	extern size_t SelectedTab;
 	extern std::vector<UITab*> Tabs;
 	extern const std::string InstallerVersion;
-	extern bool UpdateCheckedOnce;
 	extern const std::string UserAgent;
 	extern UIButtonStyle* TabStyles[2];
 	extern bool UseSystemTitleBar;
