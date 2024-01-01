@@ -8,7 +8,7 @@ and is avaliable for Windows.
 ## Download
 
 You can find pre-packaged releases of the installer
-[here](https://github.com/Klemmbaustein/TetherInstaller/releases/tag/v1.1.1).
+[here](https://github.com/Klemmbaustein/TetherInstaller/releases/latest).
 
 ## Features
 
