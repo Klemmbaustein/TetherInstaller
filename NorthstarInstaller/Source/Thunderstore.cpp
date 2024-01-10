@@ -24,6 +24,7 @@ std::atomic<bool> Thunderstore::IsInstallingMod = false;
 std::vector<Thunderstore::Package> Thunderstore::FoundMods;
 Thunderstore::Package Thunderstore::SelectedMod;
 std::atomic<size_t> Thunderstore::CurrentlyLoadedPageID = 0;
+static const std::string PackagePaths[2] = { "/packages/", "/runtime/remote/mods/" /* Called mods/, contains packages..? */ };
 
 #define INSTALL_AS_PACKAGES 1
 
@@ -161,32 +162,40 @@ Thunderstore::InstalledModsResult Thunderstore::GetInstalledMods()
 		}
 	}
 
-	for (auto& i : std::filesystem::directory_iterator(ProfileTab::CurrentProfile.Path + "/packages"))
+	for (const auto& PackagePath : PackagePaths)
 	{
-		std::string ModName = i.path().filename().u8string();
-		std::string Author = ModName.substr(0, ModName.find_first_of("-"));
-		std::string Name = ModName.substr(ModName.find_first_of("-") + 1);
-		std::string Version = Name.substr(Name.find_last_of("-") + 1);
-			
-		Name = Name.substr(0, Name.find_last_of("-"));
-
-		if (!ManagedMods.contains("/packages/" + ModName) && std::filesystem::is_directory(i) && Author != "Northstar" && Name != "autojoin")
+		if (!std::filesystem::exists(ProfileTab::CurrentProfile.Path + PackagePath))
 		{
-			std::ifstream DescriptionMarkdown = std::ifstream(i.path().u8string() + "/README.md");
-			std::stringstream MarkdownStream;
-			MarkdownStream << DescriptionMarkdown.rdbuf();
-			DescriptionMarkdown.close();
-			Package p;
-			p.Name = Name;
-			p.Author = Author;
-			p.Description = MarkdownStream.str();
-			p.Namespace = Author;
-			p.IsPackage = true;
-			p.Version = Version;
-			p.IsUnknownLocalMod = true;
-			p.DownloadUrl = i.path().u8string();
-			p.Img = i.path().u8string() + "/icon.png";
-			UnmanagedMods.push_back(p);
+			Log::Print("Path: " + ProfileTab::CurrentProfile.Path + PackagePath + " does not exist", Log::Warning);
+			continue;
+		}
+		for (auto& i : std::filesystem::directory_iterator(ProfileTab::CurrentProfile.Path + PackagePath))
+		{
+			std::string ModName = i.path().filename().u8string();
+			std::string Author = ModName.substr(0, ModName.find_first_of("-"));
+			std::string Name = ModName.substr(ModName.find_first_of("-") + 1);
+			std::string Version = Name.substr(Name.find_last_of("-") + 1);
+
+			Name = Name.substr(0, Name.find_last_of("-"));
+
+			if (!ManagedMods.contains(PackagePath + ModName) && std::filesystem::is_directory(i) && Author != "Northstar" && Name != "autojoin")
+			{
+				std::ifstream DescriptionMarkdown = std::ifstream(i.path().u8string() + "/README.md");
+				std::stringstream MarkdownStream;
+				MarkdownStream << DescriptionMarkdown.rdbuf();
+				DescriptionMarkdown.close();
+				Package p;
+				p.Name = Name;
+				p.Author = Author;
+				p.Description = MarkdownStream.str();
+				p.Namespace = Author;
+				p.IsPackage = true;
+				p.Version = Version;
+				p.IsUnknownLocalMod = true;
+				p.DownloadUrl = i.path().u8string();
+				p.Img = i.path().u8string() + "/icon.png";
+				UnmanagedMods.push_back(p);
+			}
 		}
 	}
 
@@ -232,9 +241,15 @@ bool Thunderstore::IsModInstalled(Package m)
 			}
 		}
 	}
-	if (std::filesystem::exists(ProfileTab::CurrentProfile.Path + "/packages"))
+
+
+	for (const auto& PackagePath : PackagePaths)
 	{
-		for (auto& i : std::filesystem::directory_iterator(ProfileTab::CurrentProfile.Path + "/packages"))
+		if (!std::filesystem::exists(ProfileTab::CurrentProfile.Path + PackagePath))
+		{
+			continue;
+		}
+		for (auto& i : std::filesystem::directory_iterator(ProfileTab::CurrentProfile.Path + PackagePath))
 		{
 			Package FoundMod;
 			std::string FileName = i.path().filename().u8string();

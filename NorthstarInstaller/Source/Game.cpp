@@ -9,6 +9,7 @@
 #include "Tabs/SettingsTab.h"
 #include "Linux_PE.h"
 #include "Translation.h"
+#include "WindowFunctions.h"
 using namespace Translation;
 
 std::string Game::GamePath;
@@ -197,7 +198,7 @@ void Game::UpdateGame()
 		if (std::filesystem::exists(Game::GamePath + "/R2Northstar/mods"))
 		{
 			// Remove core mods before installing them again
-			for (auto& i : std::filesystem::directory_iterator(Game::GamePath + "/R2Northstar/mods"))
+			for (const auto& i : std::filesystem::directory_iterator(Game::GamePath + "/R2Northstar/mods"))
 			{
 				std::string File = i.path().filename().u8string();
 				std::string Author = File.substr(0, File.find_first_of("."));
@@ -212,7 +213,7 @@ void Game::UpdateGame()
 	}
 	catch (std::exception& e)
 	{
-		Log::Print(e.what(), Log::Error);
+		Window::ShowPopupError(Format("Error updating game: %s", e.what()));
 	}
 }
 
