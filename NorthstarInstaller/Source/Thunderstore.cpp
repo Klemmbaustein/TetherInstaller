@@ -13,7 +13,7 @@
 #include "WindowFunctions.h"
 #include "Tabs/ProfileTab.h"
 
-constexpr const char* MOD_DESCRIPTOR_FILE_FORMAT_VERSION = "v3";
+constexpr const char* MOD_DESCRIPTOR_FILE_FORMAT_VERSION = "v4";
 
 Thunderstore::Ordering Thunderstore::SelectedOrdering = Ordering::Last_Updated;
 std::atomic<bool> Thunderstore::IsDownloading = false;
@@ -88,7 +88,7 @@ Thunderstore::InstalledModsResult Thunderstore::GetInstalledMods()
 				p.Description = modinfo.at("description");
 				p.Img = modinfo.at("image");
 				p.Version = modinfo.at("version");
-				p.UUID = modinfo.at("UUID");
+				p.UUID = modinfo.at("thunderstore_mod_identifier");
 				p.FileVersion = modinfo.at("file_format_version");
 				p.IsTemporary = modinfo.at("is_temporary");
 				p.IsPackage = INSTALL_AS_PACKAGES;
@@ -668,7 +668,8 @@ void Thunderstore::SaveModInfo(Package m, std::vector<std::string> ModFiles, boo
 		{"image", Image},
 		{"is_temporary", Temporary},
 		{"file_format_version", MOD_DESCRIPTOR_FILE_FORMAT_VERSION},
-		{"UUID", m.UUID}
+		{"thunderstore_mod_identifier", m.UUID},
+		{"mod_source", "thunderstore"}
 		}));
 	Log::Print("Saving mod info - Data/var/modinfo/" + ProfileTab::CurrentProfile.DisplayName + "/" + m.Namespace + "." + m.Name + ".json");
 

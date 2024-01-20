@@ -10,6 +10,7 @@
 #include "Linux_PE.h"
 #include "Translation.h"
 #include "WindowFunctions.h"
+#include "Tabs/ProfileTab.h"
 using namespace Translation;
 
 std::string Game::GamePath;
@@ -210,6 +211,7 @@ void Game::UpdateGame()
 		}
 		Networking::ExtractZip(result, Game::GamePath);
 		Game::RequiresUpdate = false;
+		ProfileTab::DetectProfiles();
 	}
 	catch (std::exception& e)
 	{
