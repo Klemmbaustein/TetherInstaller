@@ -329,13 +329,6 @@ void ModsTab::GenerateModPage()
 	size_t it = 0;
 	ModButtons.clear();
 
-	if (Filter == "feet" || Filter == "Feet")
-	{
-		Thunderstore::FoundMods.clear();
-		Rows[0]->AddChild((new UIText(1, Vector3f32(1), "Nuh-uh", UI::Text))
-			->SetPadding(0.45));
-	}
-
 	for (const auto& i : Thunderstore::FoundMods)
 	{
 		bool UseTexture = std::filesystem::exists(i.Img) && !i.IsNSFW;
@@ -376,18 +369,22 @@ void ModsTab::GenerateModPage()
 			tex = Texture::LoadTexture(i.Img);
 			ModTextures.push_back(tex);
 		}
+
 		auto NameText = new UIText(0.225, 0, i.Name, UI::Text);
 		Rows[it++ / SlotsPerRow]->AddChild(b
 			->SetBorder(UIBox::BorderType::Rounded, 0.5)
-			->AddChild(Image
-				->SetUseTexture(UseTexture, tex)
+			->AddChild((new UIBackground(false, 0, 0.1))
 				->SetPadding(0)
-				->SetSizeMode(UIBox::SizeMode::AspectRelative))
+				->AddChild(Image
+					->SetUseTexture(UseTexture, tex)
+					->SetPadding(0)
+					->SetSizeMode(UIBox::SizeMode::AspectRelative)))
 			->AddChild(NameText
-					->SetPadding(0.005)));
+				->SetPaddingSizeMode(UIBox::SizeMode::AspectRelative)
+				->SetPadding(0.005)));
 
 		NameText->Wrap = true;
-		NameText->WrapDistance = 0.2 / Application::AspectRatio;
+		NameText->WrapDistance = 0.19f / Application::AspectRatio;
 
 		if (!UseTexture)
 		{

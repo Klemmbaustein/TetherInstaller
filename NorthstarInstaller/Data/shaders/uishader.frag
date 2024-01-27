@@ -13,6 +13,9 @@ uniform int u_borderType = 1;
 uniform float u_borderScale = 0.1;
 uniform vec4 u_transform = vec4(vec2(0), vec2(1));
 uniform float u_aspectratio = 16.0/9.0;
+uniform vec2 u_screenRes = vec2(1600, 900);
+
+#define NUM_SAMPLES 2
 
 void main()
 {
@@ -22,6 +25,7 @@ void main()
 	vec2 borderTexCoords = vec2(0);
 	vec4 drawnColor = u_color;
 	bool IsInEdge = false;
+	float opacity = u_opacity;
 	if(centeredTexCoords.x > scale.x - u_borderScale)
 	{
 		IsInEdge = true;
@@ -30,9 +34,9 @@ void main()
 	if(centeredTexCoords.y > scale.y - u_borderScale)
 	{
 		if(u_borderType == 2) drawnColor = u_color * 0.75;
-		if(IsInEdge && u_borderType == 1)
+		if (IsInEdge && u_borderType == 1)
 		{
-			if(length((scale - u_borderScale) - centeredTexCoords) > u_borderScale) discard;
+			opacity *= clamp(1.0 / pow((length((scale - u_borderScale) - centeredTexCoords) / u_borderScale), 1000 * u_borderScale), 0, 1);
 		}
 	}
 	if(u_offset.y > v_position.y)
@@ -43,12 +47,31 @@ void main()
 	{
 		discard;
 	}
-	if(u_usetexture == 1)
+	if (u_usetexture == 1)
 	{
-		f_color = vec4(drawnColor.xyz, u_opacity) * texture(u_texture, v_texcoords);
+		vec4 sampled = vec4(0);
+		vec2 offset = (0.5 / scale) / u_screenRes;
+		int samples = 0;
+		for (int x = -NUM_SAMPLES; x < NUM_SAMPLES; x++)
+		{
+			for (int y = -NUM_SAMPLES; y < NUM_SAMPLES; y++)
+			{
+				vec4 newS = texture(u_texture, v_texcoords + offset * vec2(x, y));
+				if (newS.a > 0)
+				{
+					sampled.xyz += newS.xyz;
+					samples++;
+				}
+				sampled.w += newS.w;
+			}
+		}
+		sampled.xyz /= samples;
+		sampled.w /= NUM_SAMPLES * NUM_SAMPLES * 2 * 2;
+		opacity *= sampled.w;
+		f_color = vec4(clamp(drawnColor.xyz * sampled.xyz, vec3(0), vec3(1)), opacity);
 	}
 	else
 	{
-		f_color = vec4(drawnColor.xyz, u_opacity);
+		f_color = vec4(drawnColor.xyz, opacity);
 	}
 }

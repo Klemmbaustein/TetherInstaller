@@ -524,7 +524,7 @@ int main(int argc, char** argv)
 		if (Application::AspectRatio != PrevAspect)
 		{
 			PrevAspect = Application::AspectRatio;
-			AppTitle->SetTextSize(Application::GetFullScreen() ? 0.5 : 0.3);
+			AppTitle->SetTextSize(Application::GetFullScreen() ? 0.4 : 0.3);
 			GenerateWindowButtons();
 		}
 

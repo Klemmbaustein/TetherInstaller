@@ -8,13 +8,7 @@ uniform vec3 u_borderColor = vec3(1);
 
 vec3 sampleUI()
 {
-	vec4 UIsample = vec4(0);
-	vec2 texSize = 1.f / textureSize(u_ui, 0);
-	UIsample += texture(u_ui, v_texcoords);
-	UIsample += texture(u_ui, v_texcoords + vec2(texSize.x, 0));
-	UIsample += texture(u_ui, v_texcoords + vec2(texSize.x, 0));
-	UIsample += texture(u_ui, v_texcoords + texSize);
-	return vec3(UIsample.xyz / 4.f);
+	return texture(u_ui, v_texcoords).xyz;
 }
 void main()
 {
@@ -23,7 +17,7 @@ void main()
 
 	if (u_hasWindowBorder)
 	{
-		vec2 EdgeSize = vec2(2.0) / textureSize(u_ui, 0);
+		vec2 EdgeSize = vec2(1.0) / textureSize(u_ui, 0);
 		if (v_texcoords.x <= EdgeSize.x)
 		{
 			f_color = vec4(u_borderColor, 1);

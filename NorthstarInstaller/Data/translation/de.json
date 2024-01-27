@@ -8,7 +8,7 @@
     // Search prompt displayed in the search bars in the mod and server browser.
     "search": "Suche",
     "loading": "Lade...",
-    "mod_installed": "(Installed)",
+    "mod_installed": "(Installiert)",
 
     // Tab names/descriptions
     "tab_play": "Spielen",
@@ -73,7 +73,7 @@
     "mod_is_disabled": "Diese Mod ist Deaktiviert",
     "mod_release_canidate_message": "Dies ist ein Northstar Release-Kanidat.\nRelease-Kanidaten sind Versionen von Northstar, welche fast bereit für den Release sind.\nFalls sie Probleme entdecken, erstellen sie entweder ein Github-Issue.",
     "mod_vanillaplus_message": "Vanilla+ ermöglicht das Spielen auf Vanilla-Server mit Northstar.\nWenn diese Mod installier wird, wird dieses Profil zu einem Vanilla+-Profil.\nDas kann nicht auf dem R2Northstar-Profil gemacht werden.",
-    "mod_release_canidate_open_discord": "Discord-Kanal äffnen",
+    "mod_release_canidate_open_discord": "Discord-Kanal öffnen",
 
     // "Profile" tab strings
     "profile_current": "Ausgewähltes Profil:",

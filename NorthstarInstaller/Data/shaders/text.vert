@@ -10,7 +10,7 @@ uniform vec3 transform;
 uniform float u_aspectratio;
 void main()
 {
-	vec2 pos = vertex; pos *= transform.z * vec2(2, 2);
+	vec2 pos = vertex; pos *= transform.z;
 	pos += transform.xy;
 	gl_Position = (vec4(pos / 450 / vec2(u_aspectratio, -1), 0.0, 1.0)) + vec4(0, -u_offset.x, 0, 0);
 	v_position = gl_Position.xy;
