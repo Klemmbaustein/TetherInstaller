@@ -59,7 +59,7 @@ UIBox* ModsTab::GenerateModInfoText(std::vector<std::string> Text, Vector3f32 Co
 	for (const auto& i : Text)
 	{
 		TextBox->AddChild((new UIText(0.35, 1, i, UI::Text))
-			->SetWrapEnabled(true, 0.55, UIBox::SizeMode::ScreenRelative)
+			->SetWrapEnabled(true, 0.5, UIBox::SizeMode::ScreenRelative)
 			->SetPadding(0.0025, 0.0025, 0.01, 0.01));
 	}
 	return TextBox;
