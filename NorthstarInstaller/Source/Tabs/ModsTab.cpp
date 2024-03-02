@@ -12,6 +12,7 @@
 
 #include "../UI/Icon.h"
 #include "../UI/UIDef.h"
+#include "../UI/FullScreenNotify.h"
 #include "../Networking.h"
 #include "../Installer.h"
 #include "../Log.h"
@@ -63,6 +64,20 @@ UIBox* ModsTab::GenerateModInfoText(std::vector<std::string> Text, Vector3f32 Co
 			->SetPadding(0.0025, 0.0025, 0.01, 0.01));
 	}
 	return TextBox;
+}
+
+void ModsTab::InstallMod()
+{
+	new BackgroundTask([]() {
+		BackgroundTask::SetStatus("dl_" + Format(GetTranslation("download_install_mod"), Thunderstore::SelectedMod.Name.c_str()));
+		Thunderstore::InstallOrUninstallMod(Thunderstore::SelectedMod, false, false);
+		},
+		[]() {
+			if (ModsTab::CurrentModsTab->IsInModInfo)
+			{
+				Thunderstore::LoadedSelectedMod = true;
+			}
+		});
 }
 
 void ModsTab::GenerateModInfo()
@@ -149,25 +164,71 @@ void ModsTab::GenerateModInfo()
 			Thunderstore::LoadedSelectedMod = true;
 			return;
 		}
-		new BackgroundTask([]() {
-			if (!Thunderstore::IsModInstalled(Thunderstore::SelectedMod))
-			{
-				BackgroundTask::SetStatus("dl_" + Format(GetTranslation("download_install_mod"), Thunderstore::SelectedMod.Name.c_str()));
-			}
+
+		if (Thunderstore::IsModInstalled(Thunderstore::SelectedMod))
+		{
 			Thunderstore::InstallOrUninstallMod(Thunderstore::SelectedMod, false, false);
-			},
-			[]() {
-				if (!Thunderstore::IsModInstalled(Thunderstore::SelectedMod) && Thunderstore::SelectedOrdering == Thunderstore::Ordering::Installed)
-				{
-					Thunderstore::DownloadThunderstoreInfo(Thunderstore::SelectedOrdering, Thunderstore::CurrentlyLoadedPageID, CurrentModsTab->Filter, true);
-					CurrentModsTab->DownloadingPage = true;
-					CurrentModsTab->LoadedModList = true;
-					Thunderstore::IsDownloading = true;
-				}
-				else if (CurrentModsTab->IsInModInfo)
-				{
-					Thunderstore::LoadedSelectedMod = true;
-				}
+			if (Thunderstore::SelectedOrdering == Thunderstore::Ordering::Installed)
+			{
+				Thunderstore::DownloadThunderstoreInfo(Thunderstore::SelectedOrdering, Thunderstore::CurrentlyLoadedPageID, CurrentModsTab->Filter, true);
+				CurrentModsTab->DownloadingPage = true;
+				CurrentModsTab->LoadedModList = true;
+				Thunderstore::IsDownloading = true;
+			}
+			if (CurrentModsTab->IsInModInfo)
+			{
+				Thunderstore::LoadedSelectedMod = true;
+			}
+			return;
+		}
+
+		if (Thunderstore::SelectedMod.Dependencies.empty())
+		{
+			InstallMod();
+			return;
+		}
+
+		auto DependencyNotify = new FullScreenNotify("mod_dependency_notify_title");
+
+		DependencyNotify->ContentBox
+			->AddChild(new UIText(0.3f, 0, Format(GetTranslation("mod_dependency_notify_text"), Thunderstore::SelectedMod.Name.c_str()), UI::Text));
+
+		for (const auto& Dep : Thunderstore::SelectedMod.Dependencies)
+		{
+			DependencyNotify->ContentBox
+				->AddChild(new UIText(0.3f, 0, "- " + Dep, UI::Text));
+		}
+
+		DependencyNotify->AddOptions({
+			FullScreenNotify::NotifyOption("mod_dependency_install_all", "Download", []() {
+				new BackgroundTask([]() {
+					BackgroundTask::SetStatus("dl_" + GetTranslation("mod_dependency_looking_for_deps"));
+					auto Deps = Thunderstore::SelectedMod.GetDependencies();
+
+					for (const auto& Dep : Deps)
+					{
+						Log::Print("Installing dependency for mod '" + Thunderstore::SelectedMod.DependencyString + "': " + Dep.DependencyString);
+						if (!Thunderstore::IsModInstalled(Dep))
+						{
+							BackgroundTask::SetStatus("dl_" + Format(GetTranslation("mod_dependency_installing"), Dep.Name.c_str()));
+							Thunderstore::InstallOrUninstallMod(Dep, false, false);
+						}
+					}
+					BackgroundTask::SetStatus("dl_" + Format(GetTranslation("download_install_mod"), Thunderstore::SelectedMod.Name.c_str()));
+					Thunderstore::InstallOrUninstallMod(Thunderstore::SelectedMod, false, false);
+				},
+				[]() {
+					if (ModsTab::CurrentModsTab->IsInModInfo)
+					{
+						Thunderstore::LoadedSelectedMod = true;
+					}
+				}); 
+				}),
+			FullScreenNotify::NotifyOption("mod_dependency_install_mod", "Download", []() {
+				InstallMod();
+				}),
+			FullScreenNotify::NotifyOption("mod_dependency_install_cancel", "Revert", []() {
+				}),
 			});
 		}))
 		->SetPadding(0.01, 0.07, 0.01, 0.01)
@@ -707,12 +768,8 @@ void ModsTab::Tick()
 		DownloadingPage = true;
 		LoadedModList = true;
 		Thunderstore::IsDownloading = true;
-		PrevAspectRatio = Application::AspectRatio;
 	}
-	else
-	{
-		PrevAspectRatio = Application::AspectRatio;
-	}
+	PrevAspectRatio = Application::AspectRatio;
 }
 
 ModsTab::~ModsTab()

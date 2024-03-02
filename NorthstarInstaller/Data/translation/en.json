@@ -73,6 +73,13 @@
     "mod_release_canidate_message": "This is a Northstar release canidate.\nRelease canidates are versions of Northstar that are almost ready to release. If you notice any issues with it, please report them to github or the Northstar discord server.",
     "mod_vanillaplus_message": "Vanilla+ enables you to use Northstar mods on vanilla servers.\nInstalling this mod will turn this profile into a Vanilla+ profile. This cannot be done on the default R2Northstar profile.",
     "mod_release_canidate_open_discord": "Open discord channel",
+    "mod_dependency_notify_title": "Dependencies",
+    "mod_dependency_notify_text": "The mod \"%s\" depends on these mods:",
+    "mod_dependency_install_all": "Install all",
+    "mod_dependency_install_mod": "Only install mod",
+    "mod_dependency_install_cancel": "Cancel",
+    "mod_dependency_looking_for_deps": "Looking for dependencies...",
+    "mod_dependency_installing": "Installing dependency: %s",
 
     // "Profile" tab strings
     "profile_current": "Current profile:",

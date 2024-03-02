@@ -7,6 +7,8 @@
 #include <KlemmUI/UI/UITextField.h>
 #include <atomic>
 
+#include "../Thunderstore.h"
+
 class ModsTab : public UITab
 {
 	static ModsTab* CurrentModsTab;
@@ -21,6 +23,7 @@ class ModsTab : public UITab
 	std::vector<UIBackground*> ModImages;
 	bool IsInModInfo = false;
 	UIBox* GenerateModInfoText(std::vector<std::string> Text, Vector3f32 Color, std::string Icon, double IconPadding = 0.01);
+	static void InstallMod();
 public:
 	static std::atomic<unsigned int> ModsPerPage;
 	UITextField* SearchBar = nullptr;

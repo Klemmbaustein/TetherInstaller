@@ -212,7 +212,8 @@ bool Thunderstore::IsModInstalled(Package m)
 	// As a failsafe also check for mod files that could've been installed using another method.
 	// This way we hopefully won't install a mod twice. (Oh no)
 	// This won't always work.
-	if (std::filesystem::exists("Data/var/modinfo/" + ProfileTab::CurrentProfile.DisplayName + "/" + m.Namespace + "." + m.Name + ".json")
+	std::string ModInfoFile = "Data/var/modinfo/" + ProfileTab::CurrentProfile.DisplayName + "/" + m.Namespace + "." + m.Name + ".json";
+	if ((std::filesystem::exists(ModInfoFile) && !std::filesystem::is_empty(ModInfoFile))
 		|| std::filesystem::exists(ProfileTab::CurrentProfile.Path + "/mods/" + m.Namespace + "." + m.Name))
 	{
 		return true;
@@ -369,7 +370,6 @@ namespace Thunderstore::TSDownloadThunderstoreInfo
 
 		try
 		{
-			// The thunderstore API sucks.
 			std::ifstream in = std::ifstream("Data/temp/net/tspage.txt");
 			std::stringstream str; str << in.rdbuf();
 			auto response = json::parse(str.str());
@@ -473,6 +473,7 @@ namespace Thunderstore::TSDownloadThunderstoreInfo
 				{
 					continue;
 				}
+				Mod.DependencyString = elem.at("full_name");
 				Mod.UUID = elem.at("uuid4");
 				Mod.Img = elem.at("versions")[0].at("icon");
 				Mod.Namespace = elem.at("owner");
@@ -543,6 +544,49 @@ namespace Thunderstore::TSDownloadThunderstoreInfo
 	}
 }
 
+std::vector<Thunderstore::Package> Thunderstore::Package::GetDependencies()
+{
+	using namespace nlohmann;
+	std::vector<Package> OutPackages;
+
+	Networking::Download("https://thunderstore.io/c/northstar/api/v1/package/", "Data/temp/net/tspage.txt", "");
+	try
+	{
+		std::ifstream in = std::ifstream("Data/temp/net/tspage.txt");
+		std::stringstream str; str << in.rdbuf();
+		auto response = json::parse(str.str());
+		for (const auto& dep : Dependencies)
+		{
+			for (const auto& i : response)
+			{
+				if (i.at("full_name") != dep)
+				{
+					continue;
+				}
+				Package Mod;
+				Mod.Name = i.at("versions")[0].at("name");
+				Mod.Author = i.at("owner");
+				Mod.DependencyString = i.at("full_name");
+				Mod.UUID = i.at("uuid4");
+				Mod.Img = i.at("versions")[0].at("icon");
+				Mod.Namespace = i.at("owner");
+				Mod.Version = i.at("versions")[0].at("version_number");
+				Mod.IsNSFW = i.at("has_nsfw_content");
+				Mod.DownloadUrl = i.at("versions")[0].at("download_url");
+
+				OutPackages.push_back(Mod);
+				break;
+			}
+		}
+		in.close();
+	}
+	catch (std::exception& e)
+	{
+		Log::Print(e.what(), Log::Error);
+	}
+	return OutPackages;
+}
+
 void Thunderstore::DownloadThunderstoreInfo(Ordering ModOrdering, size_t Page, std::string Filter, bool Async)
 {
 	TSDownloadThunderstoreInfo::ModOrdering = ModOrdering;
@@ -573,7 +617,7 @@ namespace Thunderstore::TSGetModInfoFunc
 			return;
 		}
 		BackgroundTask::SetStatus("Loading Thunderstore mod");
-		BackgroundTask::SetStatus("Loading Thunderstore mod");
+
 		Networking::Download("https://thunderstore.io/c/northstar/api/v1/package/" + m.UUID, "Data/temp/net/mod.txt", "");
 		try
 		{
@@ -586,10 +630,26 @@ namespace Thunderstore::TSGetModInfoFunc
 			m.Version = response.at("versions")[0].at("version_number").get<std::string>();
 			m.Rating = response.at("rating_score");
 			m.IsDeprecated = response.at("is_deprecated");
+			m.DependencyString = response.at("full_name");
 
+			bool CheckedDependencies = false;
 			for (auto& i : response.at("versions"))
 			{
 				m.Downloads += i.at("downloads").get<size_t>();
+
+				if (CheckedDependencies)
+				{
+					continue;
+				}
+				CheckedDependencies = true;
+				for (const std::string& dep : i.at("dependencies"))
+				{
+					if (dep.substr(0, dep.find_first_of("-")) == "northstar")
+					{
+						continue;
+					}
+					m.Dependencies.push_back(dep.substr(0, dep.find_last_of("-")));
+				}
 			}
 
 			// I'm using the experimental API anyways because there doesn't seem to be another way to do this.
@@ -649,13 +709,15 @@ void Thunderstore::SaveModInfo(Package m, std::vector<std::string> ModFiles, boo
 	}
 	else
 	{
-		Networking::Download(m.Img, "Data/var/modinfo/"
+		std::string ImagePath = "Data/var/modinfo/"
 			+ ProfileTab::CurrentProfile.DisplayName
 			+ "/"
 			+ m.Namespace
 			+ "."
 			+ m.Name
-			+ ".png", "");
+			+ ".png";
+		Networking::Download(m.Img, ImagePath, "");
+		Image = ImagePath;
 	}
 
 	auto descr(json::object({

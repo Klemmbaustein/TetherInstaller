@@ -8,6 +8,7 @@ namespace Thunderstore
 	// Describes a mod on thunderstore.
 	struct Package
 	{
+		std::string DependencyString;
 		std::string Name;
 		std::string Description;
 		std::string Author;
@@ -25,6 +26,10 @@ namespace Thunderstore
 		bool IsNSFW = false;
 		bool IsTemporary = false;
 		bool IsPackage = true;
+
+		std::vector<std::string> Dependencies;
+
+		std::vector<Package> GetDependencies();
 	};
 
 	bool IsMostRecentFileVersion(std::string VersionString);

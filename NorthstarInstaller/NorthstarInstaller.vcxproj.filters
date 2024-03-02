@@ -50,6 +50,7 @@
     <ClCompile Include="..\tinyfiledialogs\tinyfiledialogs.c" />
     <ClCompile Include="Source\UI\Download.cpp" />
     <ClCompile Include="Source\Translation.cpp" />
+    <ClCompile Include="Source\UI\FullScreenNotify.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -117,6 +118,7 @@
     <ClInclude Include="Source\UI\Icon.h" />
     <ClInclude Include="Source\UI\Download.h" />
     <ClInclude Include="Source\Translation.h" />
+    <ClInclude Include="Source\UI\FullScreenNotify.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />

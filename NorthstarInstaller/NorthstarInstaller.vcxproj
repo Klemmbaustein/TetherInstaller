@@ -131,6 +131,7 @@
     <ClCompile Include="Source\Thunderstore.cpp" />
     <ClCompile Include="Source\Translation.cpp" />
     <ClCompile Include="Source\UI\Download.cpp" />
+    <ClCompile Include="Source\UI\FullScreenNotify.cpp" />
     <ClCompile Include="Source\UI\UIDef.cpp" />
     <ClCompile Include="Source\UI\Icon.cpp" />
     <ClCompile Include="Source\WindowFunctions.cpp" />
@@ -152,6 +153,7 @@
     <ClInclude Include="Source\Tabs\SettingsTab.h" />
     <ClInclude Include="Source\Tabs\UITab.h" />
     <ClInclude Include="Source\Thunderstore.h" />
+    <ClInclude Include="Source\UI\FullScreenNotify.h" />
     <ClInclude Include="Source\UI\UIDef.h" />
     <ClInclude Include="Source\UI\Icon.h" />
     <ClInclude Include="Source\WindowFunctions.h" />
