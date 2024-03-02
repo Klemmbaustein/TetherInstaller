@@ -544,7 +544,7 @@ void ModsTab::CheckForModUpdates()
 			std::ifstream in = std::ifstream("Data/temp/net/mod.json");
 			std::stringstream str; str << in.rdbuf();
 			json response = json::parse(str.str());
-			if (m.Version != response.at("versions")[0].at("version_number") || !Thunderstore::IsMostRecentFileVersion(m.FileVersion))
+			if (m.Version != response.at("versions")[0].at("version_number").get<std::string>() || !Thunderstore::IsMostRecentFileVersion(m.FileVersion))
 			{
 				Log::Print("Mod '" + m.Name + "' is outdated!", Log::Warning);
 				Log::Print(response.at("versions")[0].at("version_number").get<std::string>() + " != " + m.Version, Log::Warning);
