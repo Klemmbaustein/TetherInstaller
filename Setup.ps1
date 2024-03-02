@@ -1,5 +1,5 @@
 
-if (!(Test-Path -Path Dependencies\KlemmUI/SDL/include))
+if (!(Test-Path -Path KlemmUI/Dependencies/SDL/include))
 {
 	echo "SDL directory seems to be empty or missing. Verify you have cloned the repo with submodules or run 'git submodule update --init --recursive'"
 	exit
