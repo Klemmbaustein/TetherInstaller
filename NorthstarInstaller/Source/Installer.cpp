@@ -509,8 +509,14 @@ int main(int argc, char** argv)
 			ProfileName = "None";
 		}
 
+		std::string AppNameString = GetTranslation("app_name");
+
+#if TF_PLUGIN
+		AppNameString.append(" (Northstar Plugin) ");
+#endif
+
 		std::string Title = Format(GetTranslation("title_bar"),
-			GetTranslation("app_name").c_str(),
+			AppNameString.c_str(),
 			GetTranslation("tab_" + Tabs[SelectedTab]->Name).c_str(),
 			ProfileName.c_str());
 
@@ -562,13 +568,14 @@ int main(int argc, char** argv)
 #include <Windows.h>
 #include "TetherPlugin.h"
 
-extern "C" _declspec(dllexport) void LoadInstaller(Log::LogFn fn, bool* ReloadPtr)
+extern "C" _declspec(dllexport) void LoadInstaller(Log::LogFn fn, bool* ReloadPtr, char* ServerConnectPtr)
 {
 	static char path[MAX_PATH];
 	HMODULE hm = NULL;
 
 	Log::OverrideLogFunction(fn);
 	Plugin::SetReloadModsBoolPtr(ReloadPtr);
+	Plugin::SetConnectToServerPtr(ServerConnectPtr);
 
 	if (GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
 		GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
@@ -587,8 +594,6 @@ extern "C" _declspec(dllexport) void LoadInstaller(Log::LogFn fn, bool* ReloadPt
 
 	char** argv = new char* [] { path };
 	new std::thread(main, 1, argv);
-	// cannot really delete, the main function uses these strings.
-	//delete[] argv;
 }
 
 #elif _WIN32

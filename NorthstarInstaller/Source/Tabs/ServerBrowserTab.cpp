@@ -22,6 +22,10 @@
 #include "../Game.h"
 #include "../Translation.h"
 
+#ifdef TF_PLUGIN
+#include "../TetherPlugin.h"
+#endif
+
 using namespace Translation;
 
 
@@ -72,8 +76,10 @@ bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
 		std::filesystem::remove_all(ProfileTab::CurrentProfile.Path + "/mods/autojoin");
 	}
 
-	std::filesystem::copy("Data/autojoin", ProfileTab::CurrentProfile.Path + "/mods/autojoin",
+#ifndef TF_PLUGIN
+	std::filesystem::copy(ProfileTab::CurrentProfile.Path + "Data/autojoin", ProfileTab::CurrentProfile.Path + "/mods/autojoin",
 		std::filesystem::copy_options::recursive);
+#endif
 
 	float Progress = 0;
 
@@ -500,7 +506,11 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 					LOG_PRINTF("Joining server \"{}\" (id: {})",
 						ServerBrowserTab::CurrentServerTab->SelectedServer.Name,
 						ServerBrowserTab::CurrentServerTab->SelectedServer.ServerID);
-					LaunchTab::LaunchNorthstar("+AutoJoinServer " + ServerBrowserTab::CurrentServerTab->SelectedServer.ServerID); 
+#ifdef TF_PLUGIN
+					Plugin::Connect(ServerBrowserTab::CurrentServerTab->SelectedServer.ServerID);
+#else
+					LaunchTab::LaunchNorthstar("+AutoJoinServer " + ServerBrowserTab::CurrentServerTab->SelectedServer.ServerID);
+#endif
 				}
 			});
 			}))
