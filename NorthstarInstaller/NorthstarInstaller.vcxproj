@@ -4,6 +4,10 @@
       <Configuration>Dev</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Plugin|x64">
+      <Configuration>Plugin</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
@@ -25,6 +29,13 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Plugin|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
@@ -38,6 +49,9 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Plugin|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Dev|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
@@ -45,6 +59,11 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(SolutionDir)tinyfiledialogs;$(SolutionDir)json\single_include;$(SolutionDir)KlemmUI\Include;$(SolutionDir)curl\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)curl\Build\lib\Release;$(SolutionDir)KlemmUI\lib\Release;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Plugin|x64'">
+    <IncludePath>$(ProjectDir)..\tinyfiledialogs;$(ProjectDir)..\json\single_include;$(ProjectDir)..\KlemmUI\Include;$(ProjectDir)..\curl\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)..\curl\Build\lib\Release;$(ProjectDir)..\KlemmUI\lib\Release;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)Build\Klemmbaustein-Tether-0.0.1\plugins\bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev|x64'">
     <IncludePath>$(SolutionDir)tinyfiledialogs;$(SolutionDir)json\single_include;$(SolutionDir)KlemmUI\Include;$(SolutionDir)curl\include;$(IncludePath)</IncludePath>
@@ -55,6 +74,10 @@
     <VcpkgEnabled>false</VcpkgEnabled>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <VcpkgUseStatic>false</VcpkgUseStatic>
+    <VcpkgUseMD>false</VcpkgUseMD>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Plugin|x64'" Label="Vcpkg">
     <VcpkgUseStatic>false</VcpkgUseStatic>
     <VcpkgUseMD>false</VcpkgUseMD>
   </PropertyGroup>
@@ -88,6 +111,36 @@
     <PreBuildEvent>
       <Command>cd $(SolutionDir) &amp;&amp; pwsh $(SolutionDir)MakeRelease.ps1</Command>
     </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Plugin|x64'">
+    <ClCompile>
+      <WarningLevel>Level1</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>TF_PLUGIN;CURL_STATICLIB;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(CI_BUILD)'!=''">CI_BUILD=$(CI_BUILD);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <AdditionalOptions>/Zc:char8_t- $(ExternalCompilerOptions) %(AdditionalOptions)</AdditionalOptions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>SDL2.lib;glew.lib;opengl32.lib;KlemmUI.lib;libcurl.lib;Version.lib;%(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>cd $(SolutionDir) &amp;&amp; pwsh .\CreatePackage.ps1</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dev|x64'">
     <ClCompile>
@@ -128,6 +181,7 @@
     <ClCompile Include="Source\Tabs\ServerBrowserTab.cpp" />
     <ClCompile Include="Source\Tabs\SettingsTab.cpp" />
     <ClCompile Include="Source\Tabs\UITab.cpp" />
+    <ClCompile Include="Source\TetherPlugin.cpp" />
     <ClCompile Include="Source\Thunderstore.cpp" />
     <ClCompile Include="Source\Translation.cpp" />
     <ClCompile Include="Source\UI\Download.cpp" />
@@ -137,6 +191,7 @@
     <ClCompile Include="Source\WindowFunctions.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\TetherPlugin.h" />
     <ClInclude Include="Source\Translation.h" />
     <ClInclude Include="Source\UI\Download.h" />
     <ClInclude Include="Source\Linux_PE.h" />

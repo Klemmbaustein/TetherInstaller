@@ -27,7 +27,7 @@
 namespace Installer
 {
 	std::string TitleText = "";
-
+	std::string CurrentPath = "";
 	UIBox* WindowButtonBox = nullptr;
 	size_t SelectedTab = 0;
 	std::vector<UIButton*> TabButtons;
@@ -138,7 +138,7 @@ namespace Installer
 
 	void CheckForInstallerUpdate()
 	{
-#if DEBUG
+#if DEBUG || TF_PLUGIN
 		return;
 #endif
 		Log::Print("Checking for installer updates...");
@@ -350,19 +350,24 @@ int main(int argc, char** argv)
 		}
 	}
 	
-
 	if (!std::filesystem::exists("Data/shaders/postprocess.vert"))
 	{
 		std::string ProgramLocation = argv[0];
-		std::filesystem::current_path(ProgramLocation.substr(0, ProgramLocation.find_last_of("/\\")));
+		CurrentPath = (ProgramLocation.substr(0, ProgramLocation.find_last_of("/\\")));
 	}
+	else
+	{
+		CurrentPath = std::filesystem::current_path().u8string();
+	}
+	Log::Print(CurrentPath);
+	CurrentPath.append("/");
 
 	SetThemeColor(GetThemeColor());
 
 	LoadTranslation(GetLastTranslation());
 
 	Application::SetBorderlessWindowOutlineColor(InstallerThemeColor);
-	Application::SetShaderPath("Data/shaders");
+	Application::SetShaderPath(CurrentPath + "Data/shaders");
 	Application::SetErrorMessageCallback([](std::string Message)
 		{
 			Window::ShowPopupError("-- Internal UI Error --\n\n" + Message);
@@ -378,10 +383,10 @@ int main(int argc, char** argv)
 
 	WindowButtonsIcons =
 	{
-		Texture::LoadTexture("Data/WindowX.png"),
-		Texture::LoadTexture("Data/WindowResize.png"),
-		Texture::LoadTexture("Data/WindowResize2.png"),
-		Texture::LoadTexture("Data/WindowMin.png"),
+		Texture::LoadTexture(Installer::CurrentPath + "Data/WindowX.png"),
+		Texture::LoadTexture(Installer::CurrentPath + "Data/WindowResize.png"),
+		Texture::LoadTexture(Installer::CurrentPath + "Data/WindowResize2.png"),
+		Texture::LoadTexture(Installer::CurrentPath + "Data/WindowMin.png"),
 	};
 
 	Log::Print("Cleaning up temp directory");
@@ -396,22 +401,22 @@ int main(int argc, char** argv)
 
 		for (const auto& i : TargetDirs)
 		{
-			if (std::filesystem::exists(i))
+			if (std::filesystem::exists(Installer::CurrentPath + i))
 			{
-				std::filesystem::remove_all(i);
+				std::filesystem::remove_all(Installer::CurrentPath + i);
 			}
 		}
 	}
 	Vector2f bgCenter = Vector2f(-0.3, 0);
 	InstallerBackground = new UIBackground(true, 0, 1, 0);
 	InstallerBackground->SetSizeMode(UIBox::SizeMode::AspectRelative);
-	if (std::filesystem::exists("Data/var/custom_background.png"))
+	if (std::filesystem::exists(Installer::CurrentPath + "Data/var/custom_background.png"))
 	{
-		SetInstallerBackgroundImage("Data/var/custom_background.png");
+		SetInstallerBackgroundImage(Installer::CurrentPath + "Data/var/custom_background.png");
 	}
 	else
 	{
-		SetInstallerBackgroundImage("Data/Game.png");
+		SetInstallerBackgroundImage(Installer::CurrentPath + "Data/Game.png");
 	}
 
 	WindowButtonBox = (new UIBackground(true, 0, 0.1))
@@ -551,10 +556,42 @@ int main(int argc, char** argv)
 	}
 	Networking::Cleanup();
 	Log::Print("Application closed.");
-	exit(0);
 }
 
-#if _WIN32
+#ifdef TF_PLUGIN
+#include <Windows.h>
+#include "TetherPlugin.h"
+
+extern "C" _declspec(dllexport) void LoadInstaller(Log::LogFn fn, bool* ReloadPtr)
+{
+	static char path[MAX_PATH];
+	HMODULE hm = NULL;
+
+	Log::OverrideLogFunction(fn);
+	Plugin::SetReloadModsBoolPtr(ReloadPtr);
+
+	if (GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
+		GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+		(LPCSTR)&LoadInstaller, &hm) == 0)
+	{
+		int ret = GetLastError();
+		fprintf(stderr, "GetModuleHandle failed, error = %d\n", ret);
+		// Return or however you want to handle an error.
+	}
+	if (GetModuleFileNameA(hm, path, sizeof(path)) == 0)
+	{
+		int ret = GetLastError();
+		fprintf(stderr, "GetModuleFileName failed, error = %d\n", ret);
+		// Return or however you want to handle an error.
+	}
+
+	char** argv = new char* [] { path };
+	new std::thread(main, 1, argv);
+	// cannot really delete, the main function uses these strings.
+	//delete[] argv;
+}
+
+#elif _WIN32
 int WinMain()
 {
 	try

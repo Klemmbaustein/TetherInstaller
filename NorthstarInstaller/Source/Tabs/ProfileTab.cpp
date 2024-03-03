@@ -87,10 +87,10 @@ ProfileTab::ProfileTab()
 
 	DetectProfiles();
 	
-	if (std::filesystem::exists("Data/var/SelectedProfile.txt"))
+	if (std::filesystem::exists(Installer::CurrentPath + "Data/var/SelectedProfile.txt"))
 	{
 		Log::Print("- Using profile from SelectedProfile.txt");
-		std::ifstream InProfile = std::ifstream("Data/var/SelectedProfile.txt");
+		std::ifstream InProfile = std::ifstream(Installer::CurrentPath + "Data/var/SelectedProfile.txt");
 		char LineBuffer[2048];
 		InProfile.getline(LineBuffer, 2048);
 		CurrentProfile.DisplayName = LineBuffer;
@@ -429,7 +429,7 @@ void ProfileTab::CreateNewProfile(std::string Name)
 
 void ProfileTab::SaveSelectedProfile()
 {
-	std::ofstream out = std::ofstream("Data/var/SelectedProfile.txt");
+	std::ofstream out = std::ofstream(Installer::CurrentPath + "Data/var/SelectedProfile.txt");
 	out << CurrentProfile.DisplayName << std::endl << CurrentProfile.Path << std::endl;
 	out.close();
 }

@@ -70,7 +70,7 @@ void ModsTab::InstallMod()
 {
 	new BackgroundTask([]() {
 		BackgroundTask::SetStatus("dl_" + Format(GetTranslation("download_install_mod"), Thunderstore::SelectedMod.Name.c_str()));
-		Thunderstore::InstallOrUninstallMod(Thunderstore::SelectedMod, false, false);
+		Thunderstore::InstallOrUninstallMod(Thunderstore::SelectedMod, false, false, true);
 		},
 		[]() {
 			if (ModsTab::CurrentModsTab->IsInModInfo)
@@ -167,7 +167,7 @@ void ModsTab::GenerateModInfo()
 
 		if (Thunderstore::IsModInstalled(Thunderstore::SelectedMod))
 		{
-			Thunderstore::InstallOrUninstallMod(Thunderstore::SelectedMod, false, false);
+			Thunderstore::InstallOrUninstallMod(Thunderstore::SelectedMod, false, false, true);
 			if (Thunderstore::SelectedOrdering == Thunderstore::Ordering::Installed)
 			{
 				Thunderstore::DownloadThunderstoreInfo(Thunderstore::SelectedOrdering, Thunderstore::CurrentlyLoadedPageID, CurrentModsTab->Filter, true);
@@ -211,11 +211,11 @@ void ModsTab::GenerateModInfo()
 						if (!Thunderstore::IsModInstalled(Dep))
 						{
 							BackgroundTask::SetStatus("dl_" + Format(GetTranslation("mod_dependency_installing"), Dep.Name.c_str()));
-							Thunderstore::InstallOrUninstallMod(Dep, false, false);
+							Thunderstore::InstallOrUninstallMod(Dep, false, false, false);
 						}
 					}
 					BackgroundTask::SetStatus("dl_" + Format(GetTranslation("download_install_mod"), Thunderstore::SelectedMod.Name.c_str()));
-					Thunderstore::InstallOrUninstallMod(Thunderstore::SelectedMod, false, false);
+					Thunderstore::InstallOrUninstallMod(Thunderstore::SelectedMod, false, false, true);
 				},
 				[]() {
 					if (ModsTab::CurrentModsTab->IsInModInfo)
@@ -588,21 +588,21 @@ void ModsTab::CheckForModUpdates()
 	{
 		if (m.UUID.empty())
 		{
-			Thunderstore::InstallOrUninstallMod(m, false, false);
+			Thunderstore::InstallOrUninstallMod(m, false, false, false);
 			continue;
 		}
 		Networking::Download("https://thunderstore.io/c/northstar/api/v1/package/" + m.UUID,
-			"Data/temp/net/mod.json",
+			Installer::CurrentPath + "Data/temp/net/mod.json",
 			"UserAgent: " + Installer::UserAgent);
 		float Progress = 0;
 		try
 		{
 			if (m.IsTemporary)
 			{
-				Thunderstore::InstallOrUninstallMod(m, true, false);
+				Thunderstore::InstallOrUninstallMod(m, true, false, false);
 				continue;
 			}
-			std::ifstream in = std::ifstream("Data/temp/net/mod.json");
+			std::ifstream in = std::ifstream(Installer::CurrentPath + "Data/temp/net/mod.json");
 			std::stringstream str; str << in.rdbuf();
 			json response = json::parse(str.str());
 			if (m.Version != response.at("versions")[0].at("version_number").get<std::string>() || !Thunderstore::IsMostRecentFileVersion(m.FileVersion))
@@ -615,8 +615,8 @@ void ModsTab::CheckForModUpdates()
 				NewMod.DownloadUrl = response.at("versions")[0].at("download_url");
 				NewMod.Version = response.at("versions")[0].at("version_number").get<std::string>();
 				BackgroundTask::SetStatus("dl_Updating " + m.Name);
-				Thunderstore::InstallOrUninstallMod(NewMod, true, false);
-				Thunderstore::InstallOrUninstallMod(NewMod, false, false);
+				Thunderstore::InstallOrUninstallMod(NewMod, true, false, false);
+				Thunderstore::InstallOrUninstallMod(NewMod, false, false, false);
 			}
 			else
 			{
@@ -629,16 +629,16 @@ void ModsTab::CheckForModUpdates()
 			Log::Print(e.what(), Log::Error);
 
 			Log::Print("Writing response to Data/temp/invalidresponse.txt", Log::Error);
-			if (std::filesystem::exists("Data/temp/net/mod.json"))
+			if (std::filesystem::exists(Installer::CurrentPath + "Data/temp/net/mod.json"))
 			{
-				if (std::filesystem::exists("Data/temp/invalidresponse.txt"))
+				if (std::filesystem::exists(Installer::CurrentPath + "Data/temp/invalidresponse.txt"))
 				{
-					std::filesystem::remove("Data/temp/invalidresponse.txt");
+					std::filesystem::remove(Installer::CurrentPath + "Data/temp/invalidresponse.txt");
 				}
-				std::filesystem::copy("Data/temp/net/mod.json", "Data/temp/invalidresponse.txt");
+				std::filesystem::copy(Installer::CurrentPath + "Data/temp/net/mod.json", Installer::CurrentPath + "Data/temp/invalidresponse.txt");
 			}
 		}
-		std::filesystem::remove("Data/temp/net/mod.json");
+		std::filesystem::remove(Installer::CurrentPath + "Data/temp/net/mod.json");
 
 		Progress += (float)it / (float)Mods.size();
 		BackgroundTask::SetProgress(std::min(0.95f, Progress));

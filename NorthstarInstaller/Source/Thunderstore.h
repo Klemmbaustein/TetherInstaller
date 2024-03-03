@@ -89,7 +89,7 @@ namespace Thunderstore
 	// then extracts the content of the extracted zip file's "mods" Folder into the Titanfall 2
 	// mods folder.
 	// TODO: Extract other elements of the mod. (Plugins, ...)
-	void InstallOrUninstallMod(Package m, bool IsTemporary, bool Async);
+	void InstallOrUninstallMod(Package m, bool IsTemporary, bool Async, bool Reload);
 
 
 

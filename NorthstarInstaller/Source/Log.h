@@ -15,6 +15,9 @@ namespace Log
 	bool GetIsVerbose();
 
 	void Print(std::string Message, Severity Type = Info);
+
+	typedef void(*LogFn)(const char* msg, int sev);
+	void OverrideLogFunction(LogFn Function);
 }
 
 #if __cpp_lib_format >= 202207L

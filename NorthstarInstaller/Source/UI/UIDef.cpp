@@ -1,5 +1,6 @@
 #include "UIDef.h"
 #include "../Log.h"
+#include "../Installer.h"
 
 namespace UI
 {
@@ -8,7 +9,7 @@ namespace UI
 	void LoadFonts()
 	{
 		Log::Print("Loading UI fonts...");
-		MonoText = new TextRenderer("Data/Monospace.ttf");
-		Text = new TextRenderer("Data/Font.ttf");
+		MonoText = new TextRenderer(Installer::CurrentPath + "Data/Monospace.ttf");
+		Text = new TextRenderer(Installer::CurrentPath + "Data/Font.ttf");
 	}
 }

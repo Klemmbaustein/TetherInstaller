@@ -8,6 +8,8 @@ class UIButtonStyle;
 
 namespace Installer
 {
+	extern std::string CurrentPath;
+
 	extern size_t SelectedTab;
 	extern std::vector<UITab*> Tabs;
 	extern const std::string InstallerVersion;

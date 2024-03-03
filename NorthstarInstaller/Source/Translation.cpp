@@ -85,7 +85,7 @@ void Translation::LoadTranslation(std::string Name)
 		}
 	}
 
-	std::ofstream out = std::ofstream("Data/var/language.txt");
+	std::ofstream out = std::ofstream(Installer::CurrentPath + "Data/var/language.txt");
 	out << Name;
 	out.close();
 	Log::Print("Changed language to " + Name);
@@ -107,11 +107,11 @@ std::string Translation::Format(std::string Format, ...)
 
 std::string Translation::GetLastTranslation()
 {
-	if (!std::filesystem::exists("Data/var/language.txt"))
+	if (!std::filesystem::exists(Installer::CurrentPath + "Data/var/language.txt"))
 	{
 		return "English";
 	}
-	std::ifstream i = std::ifstream("Data/var/language.txt");
+	std::ifstream i = std::ifstream(Installer::CurrentPath + "Data/var/language.txt");
 	std::stringstream istream;
 	istream << i.rdbuf();
 	return istream.str();
@@ -120,7 +120,7 @@ std::string Translation::GetLastTranslation()
 std::vector<std::string> Translation::GetAvaliableTranslations()
 {
 	std::vector<std::string> Found;
-	for (const auto& i : std::filesystem::directory_iterator("Data/translation"))
+	for (const auto& i : std::filesystem::directory_iterator(Installer::CurrentPath + "Data/translation"))
 	{
 		Found.push_back(ReadLanguageProperty(i.path().u8string()));
 	}
@@ -166,7 +166,7 @@ std::string Translation::ReadLanguageProperty(std::string File)
 std::string Translation::GetTranslationFile(std::string TranslationName)
 {
 	std::vector<std::string> Found;
-	for (const auto& i : std::filesystem::directory_iterator("Data/translation"))
+	for (const auto& i : std::filesystem::directory_iterator(Installer::CurrentPath + "Data/translation"))
 	{
 		std::ifstream in = std::ifstream(i.path());
 		std::stringstream inStrS;

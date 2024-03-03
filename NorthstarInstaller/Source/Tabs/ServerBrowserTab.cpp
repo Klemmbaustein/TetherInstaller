@@ -142,7 +142,7 @@ bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
 		if (ClosestModScore != SIZE_MAX)
 		{
 			BackgroundTask::SetStatus("dl_" + Format(GetTranslation("download_install_mod"), Thunderstore::SelectedMod.Name.c_str()));
-			Thunderstore::InstallOrUninstallMod(m, true, false);
+			Thunderstore::InstallOrUninstallMod(m, true, false, false);
 			HasInstalledMod = true;
 		}
 		if (!HasInstalledMod)

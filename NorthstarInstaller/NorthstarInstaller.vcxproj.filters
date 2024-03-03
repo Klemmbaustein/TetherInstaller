@@ -51,6 +51,7 @@
     <ClCompile Include="Source\UI\Download.cpp" />
     <ClCompile Include="Source\Translation.cpp" />
     <ClCompile Include="Source\UI\FullScreenNotify.cpp" />
+    <ClCompile Include="Source\TetherPlugin.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -119,6 +120,7 @@
     <ClInclude Include="Source\UI\Download.h" />
     <ClInclude Include="Source\Translation.h" />
     <ClInclude Include="Source\UI\FullScreenNotify.h" />
+    <ClInclude Include="Source\TetherPlugin.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />

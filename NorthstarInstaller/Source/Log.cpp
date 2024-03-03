@@ -8,6 +8,8 @@ std::string MessageTypeStrings[3] =
 	"[Error]",
 };
 
+static Log::LogFn LogOverride = nullptr;
+
 #if _WIN32
 #include <Windows.h>
 #include <wincon.h>
@@ -40,11 +42,22 @@ bool Log::GetIsVerbose()
 
 void Log::Print(std::string Message, Severity Type)
 {
+	if (LogOverride)
+	{
+		LogOverride(Message.c_str(), Type);
+		return;
+	}
+
 	SetConsoleTextAttribute(hConsole, MessageTypeMinorColors[Type]);
 	std::cout << MessageTypeStrings[Type];
 	SetConsoleTextAttribute(hConsole, MessageTypeMajorColors[Type]);
 	std::cout << ": " << Message << std::endl;
 	SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+}
+
+void Log::OverrideLogFunction(LogFn Function)
+{
+	LogOverride = Function;
 }
 
 #elif __linux__
