@@ -17,6 +17,11 @@
 #include "../Thunderstore.h"
 #include "../WindowFunctions.h"
 #include "../Translation.h"
+
+#ifdef TF_PLUGIN
+#include "../TetherPlugin.h"
+#endif
+
 using namespace Translation;
 
 ProfileTab::Profile ProfileTab::CurrentProfile;
@@ -429,14 +434,22 @@ void ProfileTab::CreateNewProfile(std::string Name)
 
 void ProfileTab::SaveSelectedProfile()
 {
+#ifndef TF_PLUGIN
 	std::ofstream out = std::ofstream(Installer::CurrentPath + "Data/var/SelectedProfile.txt");
 	out << CurrentProfile.DisplayName << std::endl << CurrentProfile.Path << std::endl;
 	out.close();
+#endif
 }
 
 void ProfileTab::UpdateProfile(Profile Target, bool Silent)
 {
 	Log::Print("Updating profile mods: " + Target.DisplayName);
+
+	if (!std::filesystem::exists(Target.Path + "/mods/"))
+	{
+		return;
+	}
+
 	for (auto& mod : std::filesystem::directory_iterator(Target.Path + "/mods/"))
 	{
 		std::string ModString = mod.path().filename().u8string();

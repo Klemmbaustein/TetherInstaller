@@ -63,10 +63,10 @@ bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
 
 	Networking::Download(
 		"https://thunderstore.io/c/northstar/api/v1/package/",
-		"Data/temp/net/allmods.json",
+		Installer::CurrentPath + "Data/temp/net/allmods.json",
 		"User-Agent: " + Installer::UserAgent);
 
-	json Response = json::parse(GetFile("Data/temp/net/allmods.json"));
+	json Response = json::parse(GetFile(Installer::CurrentPath + "Data/temp/net/allmods.json"));
 
 	std::vector<ServerBrowserTab::ServerEntry::ServerMod> FailedMods;
 
@@ -115,6 +115,10 @@ bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
 		size_t Age = 0;
 		for (auto& item : Response)
 		{
+			if (item.at("name") == "Northstar.Custom")
+			{
+				continue;
+			}
 			if (RemoveSpaces(ToLowerCase(m.Name)).find(RemoveSpaces(ToLowerCase(item.at("name")))) != std::string::npos
 				|| RemoveSpaces(ToLowerCase(item.at("name"))).find(RemoveSpaces(ToLowerCase(m.Name))) != std::string::npos)
 			{
@@ -553,7 +557,7 @@ unsigned int ServerBrowserTab::GetMapTexture(std::string Map)
 	auto tex = MapTextures.find(Map);
 	if (tex == MapTextures.end())
 	{
-		std::string Texture = "Data/maps/" + Map + "_widescreen.png";
+		std::string Texture = Installer::CurrentPath + "Data/maps/" + Map + "_widescreen.png";
 		if (std::filesystem::exists(Texture))
 		{
 			unsigned int LoadedTexture = Texture::LoadTexture(Texture);
@@ -580,8 +584,8 @@ void ServerBrowserTab::LoadServers()
 	}
 
 	BackgroundTask::SetStatus("Loading servers");
-	Networking::Download("https://northstar.tf/client/servers", "Data/temp/net/servers.json", "User-Agent: " + Installer::UserAgent);
-	json ServerResponse = json::parse(GetFile("Data/temp/net/servers.json"));
+	Networking::Download("https://northstar.tf/client/servers", Installer::CurrentPath + "Data/temp/net/servers.json", "User-Agent: " + Installer::UserAgent);
+	json ServerResponse = json::parse(GetFile(Installer::CurrentPath + "Data/temp/net/servers.json"));
 
 	Servers.clear();
 	for (const auto& i : ServerResponse)

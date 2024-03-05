@@ -61,7 +61,7 @@
     <LibraryPath>$(SolutionDir)curl\Build\lib\Release;$(SolutionDir)KlemmUI\lib\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Plugin|x64'">
-    <IncludePath>$(ProjectDir)..\tinyfiledialogs;$(ProjectDir)..\json\single_include;$(ProjectDir)..\KlemmUI\Include;$(ProjectDir)..\curl\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\tinyfiledialogs;$(ProjectDir)..\json\single_include;$(ProjectDir)..\KlemmUI\Dependencies\SDL\include;$(ProjectDir)..\KlemmUI\Include;$(ProjectDir)..\curl\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)..\curl\Build\lib\Release;$(ProjectDir)..\KlemmUI\lib\Release;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)Build\Klemmbaustein-Tether-0.0.1\plugins\bin\</OutDir>
   </PropertyGroup>
@@ -139,7 +139,7 @@
       </Command>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>cd $(SolutionDir) &amp;&amp; pwsh .\CreatePackage.ps1</Command>
+      <Command>cd $(SolutionDir) &amp;&amp; pwsh .\CreatePackage.ps1 $(TitanfallDir) $(ProfileName)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dev|x64'">

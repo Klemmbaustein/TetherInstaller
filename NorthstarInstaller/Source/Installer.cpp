@@ -24,6 +24,10 @@
 #include "UI/Icon.h"
 #include "UI/Download.h"
 
+#ifdef TF_PLUGIN
+#include "TetherPlugin.h"
+#endif
+
 namespace Installer
 {
 	std::string TitleText = "";
@@ -95,6 +99,10 @@ namespace Installer
 
 	void CheckForUpdates()
 	{
+		// Don't update the game while it's running.
+#if TF_PLUGIN
+		return;
+#endif
 		Log::Print("Checking for updates...");
 		BackgroundTask::SetStatus("Checking for updates");
 		BackgroundTask::SetProgress(0.999);
@@ -225,6 +233,10 @@ namespace Installer
 			->AddChild((new UIText(0.3, 0.8, Translation::GetTranslation("tab_" + Tabs[TabIndex]->Name + "_description"), UI::Text))
 				->SetPadding(0, 0.01, 0.01, 0.01));
 	}
+
+#ifdef TF_PLUGIN
+	bool* IsRunningPtr = nullptr;
+#endif
 }
 
 void Installer::UpdateWindowFlags()
@@ -442,13 +454,24 @@ int main(int argc, char** argv)
 
 	Game::GamePath = Game::GetTitanfallLocation();
 
+#ifdef TF_PLUGIN
+	ProfileTab::DetectProfiles();
+
+	ProfileTab::Profile NewProfile;
+	NewProfile.DisplayName = Plugin::GetCurrentProfile();
+	NewProfile.Path = Game::GamePath + "\\" + NewProfile.DisplayName;
+	ProfileTab::CurrentProfile = NewProfile;
+#endif
+
 	Log::Print("--- Loading tabs ---");
 	Installer::Tabs =
 	{
 		new LaunchTab(),
 		new ServerBrowserTab(),
 		new ModsTab(),
+#ifndef TF_PLUGIN // Don't implement anything relating to plugin yet.
 		new ProfileTab(),
+#endif
 		new SettingsTab(),
 	};
 
@@ -465,7 +488,11 @@ int main(int argc, char** argv)
 	Log::Print("Successfully started launcher");
 	float PrevAspect = Application::AspectRatio;
 
+#ifdef TF_PLUGIN
+	while (true)
+#else
 	while (!Application::Quit)
+#endif
 	{
 		for (auto i : Tabs)
 		{
@@ -512,7 +539,7 @@ int main(int argc, char** argv)
 		std::string AppNameString = GetTranslation("app_name");
 
 #if TF_PLUGIN
-		AppNameString.append(" (Northstar Plugin) ");
+		AppNameString.append(" (Northstar Plugin)");
 #endif
 
 		std::string Title = Format(GetTranslation("title_bar"),
@@ -548,10 +575,23 @@ int main(int argc, char** argv)
 
 		Application::UpdateWindow();
 		Application::SetActiveMouseCursor(Application::GetMouseCursorFromHoveredButtons());
+#ifndef TF_PLUGIN
 		if (Application::Quit && BackgroundTask::IsRunningTask)
 		{
 			Application::Quit = false;
 		}
+#else
+		Plugin::Update();
+		if (Application::Quit && !BackgroundTask::IsRunningTask)
+		{
+			Plugin::HideWindow();
+			if (IsRunningPtr)
+			{
+				*IsRunningPtr = false;
+			}
+			Application::Quit = false;
+		}
+#endif
 #if !DEBUG
 		if (RequiresUpdate)
 		{
@@ -561,21 +601,30 @@ int main(int argc, char** argv)
 #endif
 	}
 	Networking::Cleanup();
-	Log::Print("Application closed.");
 }
 
 #ifdef TF_PLUGIN
 #include <Windows.h>
-#include "TetherPlugin.h"
 
-extern "C" _declspec(dllexport) void LoadInstaller(Log::LogFn fn, bool* ReloadPtr, char* ServerConnectPtr)
+std::thread* TetherThread = nullptr;
+
+extern "C" _declspec(dllexport) void LoadInstaller(Log::LogFn fn, bool* ReloadPtr, char* ServerConnectPtr, bool* InIsRunningPtr)
 {
-	static char path[MAX_PATH];
-	HMODULE hm = NULL;
+
+	Installer::IsRunningPtr = InIsRunningPtr;
 
 	Log::OverrideLogFunction(fn);
 	Plugin::SetReloadModsBoolPtr(ReloadPtr);
 	Plugin::SetConnectToServerPtr(ServerConnectPtr);
+
+	if (TetherThread)
+	{
+		Plugin::ShowWindow();
+		return;
+	}
+
+	static char path[MAX_PATH];
+	HMODULE hm = NULL;
 
 	if (GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
 		GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
@@ -593,7 +642,7 @@ extern "C" _declspec(dllexport) void LoadInstaller(Log::LogFn fn, bool* ReloadPt
 	}
 
 	char** argv = new char* [] { path };
-	new std::thread(main, 1, argv);
+	TetherThread = new std::thread(main, 1, argv);
 }
 
 #elif _WIN32

@@ -36,6 +36,7 @@ std::string CommonTitanfallLocations[] =
 #define NOMINMAX
 #include <Windows.h>
 #include "Tabs/SettingsTab.h"
+#include "Installer.h"
 
 
 std::string wstrtostr(const std::wstring& wstr);
@@ -58,6 +59,10 @@ LONG GetStringRegKey(HKEY hKey, const std::wstring& strValueName, std::wstring& 
 
 std::string Game::GetTitanfallLocation()
 {
+#if TF_PLUGIN
+	return std::filesystem::current_path().u8string();
+#endif
+
 	if (std::filesystem::exists(GameDirTxtPath))
 	{
 		std::ifstream in = std::ifstream(GameDirTxtPath);
@@ -116,19 +121,19 @@ void Game::SaveGameDir(std::string FoundGameDir)
 {
 	try
 	{
-		if (!std::filesystem::exists("Data/var"))
+		if (!std::filesystem::exists(Installer::CurrentPath + "Data/var"))
 		{
-			std::filesystem::create_directories("Data/var");
+			std::filesystem::create_directories(Installer::CurrentPath + "Data/var");
 		}
-		Log::Print("Saving path '" + FoundGameDir + "' to '" + GameDirTxtPath + "'");
-		std::ofstream out = std::ofstream(GameDirTxtPath, std::ios::out);
+		Log::Print("Saving path '" + FoundGameDir + "' to '" + Installer::CurrentPath + GameDirTxtPath + "'");
+		std::ofstream out = std::ofstream(Installer::CurrentPath + GameDirTxtPath, std::ios::out);
 		out.exceptions(std::ios::failbit);
 		out << FoundGameDir;
 		out.close();
 	}
 	catch (std::exception& e)
 	{
-		Log::Print("Could not save path '" + FoundGameDir + "' to '" + GameDirTxtPath + "': " + std::string(e.what()),  Log::Error);
+		Log::Print("Could not save path '" + FoundGameDir + "' to '" + Installer::CurrentPath + GameDirTxtPath + "': " + std::string(e.what()),  Log::Error);
 	}
 }
 

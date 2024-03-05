@@ -9,5 +9,12 @@ namespace Plugin
 	// Reloads all northstar mods.
 	void ReloadMods();
 	void Connect(const std::string& ToUid);
+
+	void HideWindow();
+	void ShowWindow();
+	void ShowWindowFromThread();
+	void Update();
+
+	std::string GetCurrentProfile();
 }
 #endif
