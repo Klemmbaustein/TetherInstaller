@@ -11,6 +11,7 @@
 #include "Translation.h"
 #include "WindowFunctions.h"
 #include "Tabs/ProfileTab.h"
+#include "Installer.h"
 using namespace Translation;
 
 std::string Game::GamePath;
@@ -36,7 +37,6 @@ std::string CommonTitanfallLocations[] =
 #define NOMINMAX
 #include <Windows.h>
 #include "Tabs/SettingsTab.h"
-#include "Installer.h"
 
 
 std::string wstrtostr(const std::wstring& wstr);
