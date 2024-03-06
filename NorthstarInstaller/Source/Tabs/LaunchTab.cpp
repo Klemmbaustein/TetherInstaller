@@ -170,7 +170,11 @@ LaunchTab::LaunchTab()
 			->SetPadding(0.03)
 			->SetBorder(UIBox::BorderType::Rounded, 0.5)
 #endif
-			->AddChild(LaunchText));
+			->AddChild(LaunchText))
+#ifndef TF_PLUGIN
+	)
+#endif
+		;
 #ifdef TF_PLUGIN
 	LaunchText->SetColor(1);
 	LaunchText->SetTextSize(0.5f);
