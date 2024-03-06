@@ -104,7 +104,7 @@
     "settings_category_general": "Allgemein",
     "settings_category_logs": "Logs",
     "settings_category_danger": "Gefahrenzone",
-    "settings_category_about": "Über TetherInstaller",
+    "settings_category_about": "Über Tether",
     "settings_locate_game": "Titanfall 2 finden",
     "settings_game_path": "Pfad: %s",
     "settings_game_no_path": "Kein Pfad ausgewählt!",
@@ -136,6 +136,9 @@
     "download_no_downloads": "Keine Downloads",
     "download_window_title": "Downloads",
 
+    "plugin_status_format": "Spiele auf Map: '%s'. Modus: '%s'. Server '%s'",
+    "plugin_no_server": "Kein Server",
+    "plugin_mod_not_avaliable": "Diese Mod kann nicht installiert werden, während Tether als plugin läuft.",
 
     "mod_categories": {
       "latest": "Am neusten",
@@ -147,6 +150,7 @@
 
     // Gamemode strings displayed in the "Server" tab
     "game_modes": {
+      "none": "Kein Spielmodus",
       "private_match": "Private Match",
       "aitdm": "Attrition",
       "at": "Bounty Hunt",
@@ -194,6 +198,7 @@
     },
     // Map name strings displayed in the "Server" tab
     "map_names": {
+      "menu": "Hauptmenü",
       "mp_angel_city": "Angel City",
       "mp_black_water_canal": "Black Water Canal",
       "mp_box": "Box",

@@ -88,6 +88,7 @@ void Translation::LoadTranslation(std::string Name)
 	std::ofstream out = std::ofstream(Installer::CurrentPath + "Data/var/language.txt");
 	out << Name;
 	out.close();
+	Log::Print(Name + " -> " + Installer::CurrentPath + "Data/var/language.txt");
 	Log::Print("Changed language to " + Name);
 }
 
@@ -107,11 +108,11 @@ std::string Translation::Format(std::string Format, ...)
 
 std::string Translation::GetLastTranslation()
 {
-	if (!std::filesystem::exists(Installer::CurrentPath + "Data/var/language.txt"))
+	if (!std::filesystem::exists(Installer::CurrentPath + "/Data/var/language.txt"))
 	{
 		return "English";
 	}
-	std::ifstream i = std::ifstream(Installer::CurrentPath + "Data/var/language.txt");
+	std::ifstream i = std::ifstream(Installer::CurrentPath + "/Data/var/language.txt");
 	std::stringstream istream;
 	istream << i.rdbuf();
 	return istream.str();

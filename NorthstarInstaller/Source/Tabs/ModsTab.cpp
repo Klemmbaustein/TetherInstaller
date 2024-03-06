@@ -80,6 +80,16 @@ void ModsTab::InstallMod()
 		});
 }
 
+void ModsTab::GenerateAvaliabilityMessage()
+{
+	GenerateModInfoText(
+		{
+			NewLineStringToStringArray(GetTranslation("plugin_mod_not_avaliable"))
+
+		}, Vector3f32(0.6f, 0.15f, 0), "Settings/About", 0.1);
+
+}
+
 void ModsTab::GenerateModInfo()
 {
 	IsInModInfo = true;
@@ -303,26 +313,41 @@ void ModsTab::GenerateModInfo()
 
 	if (Thunderstore::SelectedMod.Name == "NorthstarReleaseCandidate")
 	{
-		GenerateModInfoText(
-			{
-				NewLineStringToStringArray(GetTranslation("mod_release_canidate_message"))
-			}, Vector3f32(0.1f, 0.2f, 0.6f), "Settings/About", 0.15)
-			->AddChild((new UIButton(true, 0, 1, []() {system("start https://discord.com/channels/920776187884732556/951461326478262292"); }))
-				->SetBorder(UIBox::BorderType::Rounded, 0.25)
-				->AddChild((new UIBackground(true, 0, 0, 0.04))
-					->SetUseTexture(true, Icon("Open").TextureID)
-					->SetPadding(0.01, 0.01, 0.01, 0)
-					->SetSizeMode(UIBox::SizeMode::AspectRelative))
-				->AddChild(new UIText(0.3, 0, GetTranslation("mod_release_canidate_open_discord"), UI::Text)));
+#ifndef TF_PLUGIN
+		if (true)
+#else
+		if (IsInstalled)
+#endif
+		{
+			GenerateModInfoText(
+				{
+					NewLineStringToStringArray(GetTranslation("mod_release_canidate_message"))
+				}, Vector3f32(0.1f, 0.2f, 0.6f), "Settings/About", 0.15)
+				->AddChild((new UIButton(true, 0, 1, []() {system("start https://discord.com/channels/920776187884732556/951461326478262292"); }))
+					->SetBorder(UIBox::BorderType::Rounded, 0.25)
+					->AddChild((new UIBackground(true, 0, 0, 0.04))
+						->SetUseTexture(true, Icon("Open").TextureID)
+						->SetPadding(0.01, 0.01, 0.01, 0)
+						->SetSizeMode(UIBox::SizeMode::AspectRelative))
+					->AddChild(new UIText(0.3, 0, GetTranslation("mod_release_canidate_open_discord"), UI::Text)));
+		}
+		else
+		{
+			GenerateAvaliabilityMessage();
+		}
 	}
 
 	if (Thunderstore::SelectedMod.Name == "VanillaPlus")
 	{
+#ifndef TF_PLUGIN
 		GenerateModInfoText(
 			{
 				NewLineStringToStringArray(GetTranslation("mod_vanillaplus_message"))
 
 			}, Vector3f32(0.1f, 0.2f, 0.6f), "Settings/About", 0.1);
+#else
+		GenerateAvaliabilityMessage();
+#endif
 	}
 
 	ModsScrollBox->AddChild((new UIBackground(true, 0, 1, Vector2f(1.15, 0.005)))

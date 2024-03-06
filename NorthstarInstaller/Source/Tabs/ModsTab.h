@@ -11,7 +11,6 @@
 
 class ModsTab : public UITab
 {
-	static ModsTab* CurrentModsTab;
 	static std::vector<UIButton*> ModButtons;
 	static std::vector<UIButton*> PageButtons;
 	static std::vector<UIButton*> CategoryButtons;
@@ -25,6 +24,8 @@ class ModsTab : public UITab
 	UIBox* GenerateModInfoText(std::vector<std::string> Text, Vector3f32 Color, std::string Icon, double IconPadding = 0.01);
 	static void InstallMod();
 public:
+	void GenerateAvaliabilityMessage();
+	static ModsTab* CurrentModsTab;
 	static std::atomic<unsigned int> ModsPerPage;
 	UITextField* SearchBar = nullptr;
 	std::string Filter = "";

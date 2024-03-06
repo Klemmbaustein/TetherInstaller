@@ -20,6 +20,10 @@
 #include <Windows.h>
 #endif
 
+#ifdef TF_PLUGIN
+#include "../TetherPlugin.h"
+#endif
+
 #include "ModsTab.h"
 
 static bool CheckedForVanillaPlus = false;
@@ -27,6 +31,7 @@ static std::string NorthstarLaunchArgs;
 bool LaunchTab::IsGameRunning = false;
 static void NorthstarLaunchTask()
 {
+#ifndef TF_PLUGIN
 	BackgroundTask::SetStatus("Northstar is running");
 	Log::Print("Game has started");
 
@@ -90,6 +95,7 @@ static void NorthstarLaunchTask()
 #endif
 	Log::Print("Game has finished running");
 	ModsTab::CheckForModUpdates();
+#endif
 }
 
 std::map<void (*)(), std::string> LaunchStoppingTasks =
@@ -148,24 +154,34 @@ LaunchTab::LaunchTab()
 	Name = "play";
 	Log::Print("Loading launch tab...");
 	Background->SetVerticalAlign(UIBox::Align::Default);
-	auto TextBox = (new UIBackground(true, 0, 0, 0))->SetOpacity(0.65);
+	auto TextBox = (new UIBackground(true, 0, 0, 0))->SetOpacity(0.7);
 	TextBox->SetHorizontalAlign(UIBox::Align::Centered);
 
 	LaunchButton = new UIButton(true, 0, Installer::GetThemeColor(), LaunchNorthstar);
-	LaunchText = new UIText(0.7, 0, "", UI::Text);
+	LaunchText = new UIText(0.7f, 0, "", UI::Text);
 
 	Background->AddChild(TextBox
 		->SetMinSize(Vector2f(2, 0.2))
 		->SetPadding(0)
+		->SetVerticalAlign(UIBox::Align::Centered)
+		->SetHorizontalAlign(UIBox::Align::Centered)
+#ifndef TF_PLUGIN
 		->AddChild(LaunchButton
 			->SetPadding(0.03)
 			->SetBorder(UIBox::BorderType::Rounded, 0.5)
-			->AddChild(LaunchText)));
+#endif
+			->AddChild(LaunchText));
+#ifdef TF_PLUGIN
+	LaunchText->SetColor(1);
+	LaunchText->SetTextSize(0.5f);
+#endif
 }
 
 void LaunchTab::Tick()
 {
 	using namespace Translation;
+
+#ifndef TF_PLUGIN
 
 	if (!CheckedForVanillaPlus)
 	{
@@ -207,6 +223,12 @@ void LaunchTab::Tick()
 	{
 		LaunchText->SetText(Format(GetTranslation("play_launch"), "Northstar"));
 	}
+#else
+	LaunchText->SetText(Format(GetTranslation("plugin_status_format"),
+		GetMapName(Plugin::GetCurrentMap()).c_str(),
+		GetGameModeName(Plugin::GetCurrentMode()).c_str(),
+		Plugin::GetCurrentServer().c_str()));
+#endif
 }
 
 LaunchTab::~LaunchTab()

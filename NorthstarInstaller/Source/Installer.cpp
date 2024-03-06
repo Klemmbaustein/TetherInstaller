@@ -371,7 +371,6 @@ int main(int argc, char** argv)
 	{
 		CurrentPath = std::filesystem::current_path().u8string();
 	}
-	Log::Print(CurrentPath);
 	CurrentPath.append("/");
 
 	SetThemeColor(GetThemeColor());
@@ -461,6 +460,8 @@ int main(int argc, char** argv)
 	NewProfile.DisplayName = Plugin::GetCurrentProfile();
 	NewProfile.Path = Game::GamePath + "\\" + NewProfile.DisplayName;
 	ProfileTab::CurrentProfile = NewProfile;
+
+	std::filesystem::create_directories(Installer::CurrentPath + "Data/var");
 #endif
 
 	Log::Print("--- Loading tabs ---");

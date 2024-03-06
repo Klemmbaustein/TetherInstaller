@@ -2,7 +2,7 @@
   "name": "English",
   "translations": {
     // General translations
-    "app_name": "TetherInstaller",
+    "app_name": "Tether",
     // [Name] - [Tab] - Profile: [Profile name]
     "title_bar": "%s - %s - Profile: %s",
     // Search prompt displayed in the search bars in the mod and server browser.
@@ -135,6 +135,9 @@
     "download_no_downloads": "No downloads",
     "download_window_title": "Downloads",
 
+    "plugin_status_format": "Playing on the map: '%s'. Mode: '%s'. Server '%s'",
+    "plugin_no_server": "No server",
+    "plugin_mod_not_avaliable": "Cannot install this mod when using Tether as a plugin.",
 
     "mod_categories": {
       "latest": "Latest",
@@ -146,6 +149,7 @@
 
     // Gamemode strings displayed in the "Server" tab
     "game_modes": {
+      "none": "No game mode",
       "private_match": "Private Match",
       "aitdm": "Attrition",
       "at": "Bounty Hunt",
@@ -193,6 +197,7 @@
     },
     // Map name strings displayed in the "Server" tab
     "map_names": {
+      "menu": "Main menu",
       "mp_angel_city": "Angel City",
       "mp_black_water_canal": "Black Water Canal",
       "mp_box": "Box",

@@ -3,6 +3,9 @@
 #include "Log.h"
 #include <SDL.h>
 #include <KlemmUI/Application.h>
+#include <Windows.h>
+#include <Shlwapi.h>
+#include "Translation.h"
 
 #pragma comment(lib, "Shlwapi.lib")
 
@@ -56,8 +59,6 @@ void Plugin::Update()
 		ShowWindow();
 	}
 }
-#include <Windows.h>
-#include <Shlwapi.h>
 
 std::string Plugin::GetCurrentProfile()
 {
@@ -85,10 +86,51 @@ std::string Plugin::GetCurrentProfile()
 
 	char* Buffer = new char[strProfile.size() + 1]();
 
-	WideCharToMultiByte(CP_UTF8, 0, strProfile.c_str(), strProfile.size(), Buffer, sizeof(Buffer), NULL, NULL);
-	Log::Print(Buffer);
+	WideCharToMultiByte(CP_UTF8, 0, strProfile.c_str(), strProfile.size(), Buffer, strProfile.size(), NULL, NULL);
 	std::string ProfleString = Buffer;
 	delete[] Buffer;
 	return ProfleString;
 }
+
+static std::string GameMapName;
+static std::string GameServer;
+static std::string GameModeName;
+
+std::string Plugin::GetCurrentMap()
+{
+	if (GameMapName.empty())
+	{
+		return "menu";
+	}
+	return GameMapName;
+}
+
+std::string Plugin::GetCurrentServer()
+{
+	using namespace Translation;
+	
+	if (GameServer.empty())
+	{
+		return GetTranslation("plugin_no_server");
+	}
+	return GameServer;
+}
+
+std::string Plugin::GetCurrentMode()
+{
+	if (GameModeName.empty())
+	{
+		return "none";
+	}
+
+	return GameModeName;
+}
+
+extern "C" __declspec(dllexport) void SetGameInfo(const char* MapName, const char* Server, const char* Mode)
+{
+	GameMapName = MapName;
+	GameServer = Server;
+	GameModeName = Mode;
+}
+
 #endif

@@ -16,5 +16,8 @@ namespace Plugin
 	void Update();
 
 	std::string GetCurrentProfile();
+	std::string GetCurrentMap();
+	std::string GetCurrentServer();
+	std::string GetCurrentMode();
 }
 #endif
