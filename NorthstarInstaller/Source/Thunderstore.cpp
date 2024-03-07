@@ -506,11 +506,6 @@ namespace Thunderstore::TSDownloadThunderstoreInfo
 			size_t FirstSize = FoundMods.size();
 			for (auto& Elem : FoundMods)
 			{
-				if (FoundMods.size() != FirstSize)
-				{
-					break;
-				}
-
 				BackgroundTask::SetProgress(0.3f + ((float)i++ / (float)FoundMods.size()) * 0.5f);
 
 				std::string TargetName = Installer::CurrentPath + "Data/temp/net/ts/" + Elem.Name + ".png";
@@ -518,6 +513,10 @@ namespace Thunderstore::TSDownloadThunderstoreInfo
 				if (!std::filesystem::exists(TargetName) || std::filesystem::file_size(TargetName) < 1000)
 				{
 					Networking::Download(Elem.Img, TargetName, "X-CSRFToken: ");
+					if (FoundMods.size() != FirstSize)
+					{
+						break;
+					}
 					Elem.Img = TargetName;
 					LoadedImages = true;
 				}

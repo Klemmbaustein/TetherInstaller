@@ -49,7 +49,7 @@ void DownloadWindow::Generate()
 		{
 			DownloadInfo NewDownload;
 			NewDownload.Task = i;
-			NewDownload.NameText = new UIText(0.3, 0, i->Status, UI::Text);
+			NewDownload.NameText = new UIText(0.3, 0, "", UI::Text);
 			NewDownload.ProgressBar = new UIBackground(true, 0, Vector3f32(0.3, 0.5, 1), Vector2f(i->CurrentTaskProgress / 2.5, 0.05));
 			DownloadsBox->AddChild((new UIBackground(true, 0, 1, Vector2f(1.0 / 2.5, 0)))
 				->AddChild(NewDownload.ProgressBar
@@ -113,7 +113,14 @@ void DownloadWindow::Update(float WindowBarSize)
 		i.ProgressBar->SetMaxSize(Size);
 		if (i.Task->Status.size() > 3)
 		{
-			i.NameText->SetText(i.Task->Status.substr(3));
+			std::string DisplayedName = i.Task->Status.substr(3);
+
+			if (DisplayedName.size() > 40)
+			{
+				DisplayedName = DisplayedName.substr(0, 37).append("...");
+			}
+
+			i.NameText->SetText(DisplayedName);
 		}
 		DissapearTimer = 0;
 	}
