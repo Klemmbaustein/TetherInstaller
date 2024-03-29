@@ -47,7 +47,7 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         path: ${{ github.workspace }}/Release
-        name: Tether-Windows-Build-${{ github.run_number }}.zip
+        name: Tether-Windows-Build-${{ github.run_number }}
   Build-Linux:
     runs-on: ubuntu-latest
 
@@ -60,9 +60,6 @@ jobs:
     - name: install dependencies
       run: |
           sudo apt-get update
-          sudo apt-get install libsdl2-2.0-0
-          sudo apt-get install libsdl2-dev
-          sudo apt-get install libglew-dev
           sudo apt-get install libcurl4-openssl-dev
     - name: build
       run: |

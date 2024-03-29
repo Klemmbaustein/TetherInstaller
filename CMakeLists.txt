@@ -33,7 +33,10 @@ add_executable(
    ${SRCS}
 )
 
-add_compile_definitions(CI_BUILD=${TETHER_CI})
+if (DEFINED TETHER_CI)
+    add_compile_definitions(CI_BUILD=${TETHER_CI})
+endif()
+
 target_include_directories(TetherInstaller PRIVATE "tinyfiledialogs/")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-char8_t" )
