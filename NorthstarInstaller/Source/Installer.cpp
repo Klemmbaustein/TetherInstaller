@@ -49,7 +49,7 @@ namespace Installer
 
 	std::vector<unsigned int> WindowButtonsIcons;
 
-#ifndef CI_BUILD
+#ifdef CI_BUILD
 #define _STR(x) _XSTR(x)
 #define _XSTR(x) std::string(#x)
 #if CI_BUILD == -1
