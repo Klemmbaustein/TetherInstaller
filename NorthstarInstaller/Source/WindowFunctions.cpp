@@ -18,7 +18,7 @@ std::string wstrtostr(const std::wstring& wstr)
 	delete[] szTo;
 	return strTo;
 }
-std::string Window::ShowSelectFileDialog(bool PickFolders)
+std::string WindowFunc::ShowSelectFileDialog(bool PickFolders)
 {
 	std::string FilePath = "";
 	HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED |
@@ -66,7 +66,7 @@ std::string Window::ShowSelectFileDialog(bool PickFolders)
 
 #else
 // tinyfd does *not* use the regular open file dialog on windows.
-std::string Window::ShowSelectFileDialog(bool PickFolders)
+std::string WindowFunc::ShowSelectFileDialog(bool PickFolders)
 {
 	if (PickFolders)
 	{
@@ -92,7 +92,7 @@ std::string Window::ShowSelectFileDialog(bool PickFolders)
 }
 #endif
 
-Window::PopupReply Window::ShowPopupQuestion(std::string Title, std::string Message)
+WindowFunc::PopupReply WindowFunc::ShowPopupQuestion(std::string Title, std::string Message)
 {
 	char chars[] = "'\"";
 	for (unsigned int i = 0; i < strlen(chars); ++i)
@@ -103,11 +103,11 @@ Window::PopupReply Window::ShowPopupQuestion(std::string Title, std::string Mess
 	int a = tinyfd_messageBox(Title.c_str(), Message.c_str(), "yesno", "question", 1);
 	if (a == 1)
 	{
-		return Window::PopupReply::Yes;
+		return WindowFunc::PopupReply::Yes;
 	}
-	return Window::PopupReply::No;
+	return WindowFunc::PopupReply::No;
 }
-void Window::ShowPopup(std::string Title, std::string Message)
+void WindowFunc::ShowPopup(std::string Title, std::string Message)
 {
 	char chars[] = "'\"";
 	for (unsigned int i = 0; i < strlen(chars); ++i)
@@ -117,7 +117,7 @@ void Window::ShowPopup(std::string Title, std::string Message)
 	}
 	tinyfd_messageBox(Title.c_str(), Message.c_str(), "ok", "info", 1);
 }
-void Window::ShowPopupError(std::string Message)
+void WindowFunc::ShowPopupError(std::string Message)
 {
 	char chars[] = "'\"";
 	for (unsigned int i = 0; i < strlen(chars); ++i)

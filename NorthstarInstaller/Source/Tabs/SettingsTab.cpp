@@ -21,6 +21,7 @@
 #include "../Translation.h"
 
 using namespace Translation;
+using namespace KlemmUI;
 
 static char HexChar(uint8_t val)
 {
@@ -58,13 +59,13 @@ static std::string UintToHex(uint8_t Uint)
 	return std::string({ HexChar(Uint / 16), HexChar(Uint % 16)});
 }
 
-static std::string ColorToRgb(Vector3f32 Color)
+static std::string ColorToRgb(Vector3f Color)
 {
 	Vector3<uint8_t> RgbColor = Color * 255;
 	return "#" + UintToHex(RgbColor.X) + UintToHex(RgbColor.Y) + UintToHex(RgbColor.Z);
 }
 
-static Vector3f32 RgbToColor(std::string Rgb)
+static Vector3f RgbToColor(std::string Rgb)
 {
 	if (Rgb.empty() || Rgb[0] != '#')
 	{
@@ -76,7 +77,7 @@ static Vector3f32 RgbToColor(std::string Rgb)
 	uint8_t y = CharHex(Rgb.substr(3, 2));
 	uint8_t z = CharHex(Rgb.substr(5, 2));
 
-	return Vector3f32(x / 255.0f, y / 255.0f, z / 255.0f);
+	return Vector3f(x / 255.0f, y / 255.0f, z / 255.0f);
 }
 
 
@@ -98,7 +99,7 @@ static void LoadSettings()
 	std::ifstream in = std::ifstream("Data/var/appearance.txt");
 	char Buffer[2048];
 	in.getline(Buffer, 2048);
-	Installer::SetThemeColor(Vector3f32::FromString(std::string(Buffer)));
+	Installer::SetThemeColor(Vector3f::FromString(std::string(Buffer)));
 	in.getline(Buffer, 2048);
 	Installer::UseSystemTitleBar = std::string("system") == Buffer;
 	Installer::UpdateWindowFlags();
@@ -121,7 +122,7 @@ SettingsTab::SettingsTab()
 		->AddChild((new UIBackground(true, 0, 1, Vector2f(1, 0.005)))
 			->SetPadding(0))
 		->SetPadding(0));
-	TabTitle = new UIText(0.8, 1, GetTranslation("tab_settings"), UI::Text);
+	TabTitle = new UIText(1.4f, 1, GetTranslation("tab_settings"), UI::Text);
 	SettingsBackground->AddChild(TabTitle);
 	SettingsBox = new UIScrollBox(false, 0, true);
 	SettingsBox->SetMinSize(Vector2f(0, 1.78));
@@ -152,7 +153,7 @@ static void DeleteAllMods()
 
 void LocateTitanfall()
 {
-	std::string NewPath = Window::ShowSelectFileDialog(true);
+	std::string NewPath = WindowFunc::ShowSelectFileDialog(true);
 	if (Game::IsValidTitanfallLocation(NewPath))
 	{
 		Game::SaveGameDir(NewPath);
@@ -166,7 +167,7 @@ void LocateTitanfall()
 	}
 	else if (!NewPath.empty())
 	{
-		Window::ShowPopupError(NewPath + " is not a valid Titanfall 2 path.");
+		WindowFunc::ShowPopupError(NewPath + " is not a valid Titanfall 2 path.");
 	}
 	SettingsTab::CurrentSettingsTab->GenerateSettings();
 }
@@ -181,7 +182,7 @@ void AddCategoryHeader(std::string Text, std::string IconName, UIBox* Parent)
 			->SetUseTexture(true, Icon(IconName).TextureID)
 			->SetPadding(0.01, 0.005, 0, 0)
 			->SetSizeMode(UIBox::SizeMode::AspectRelative))
-		->AddChild((new UIText(0.5, 1, GetTranslation(Text), UI::Text))
+		->AddChild((new UIText(1.0f, 1, GetTranslation(Text), UI::Text))
 		->SetPadding(0.05, 0.005, 0.01, 0.01)));
 	Parent->AddChild((new UIBackground(true, 0, 1, Vector2f(0.98, 0.005)))
 		->SetPadding(0.0, 0.02, 0, 0));
@@ -198,10 +199,31 @@ void AddSettingsButton(std::string Text, std::string IconName, void(*OnClicked)(
 			->SetUseTexture(true, Icon(IconName).TextureID)
 			->SetPadding(0.01, 0.01, 0.01, 0)
 			->SetSizeMode(UIBox::SizeMode::AspectRelative))
-		->AddChild((new UIText(0.35, 0, GetTranslation(Text), UI::Text))
+		->AddChild((new UIText(0.7f, 0, GetTranslation(Text), UI::Text))
 			->SetPadding(0.01, 0.01, 0.01, 0.01)));
 }
 
+void AddSettingsText(std::string Text, std::string IconName, UIBox* Parent)
+{
+
+	Parent->AddChild((new UIBox(true, 0))
+		->SetPadding(0.05, 0.01, 0.06, 0.01)
+		->AddChild((new UIBackground(true, 0, 1, 0.05))
+			->SetUseTexture(true, Icon(IconName).TextureID)
+			->SetPadding(0.01, 0.01, 0, 0)
+			->SetSizeMode(UIBox::SizeMode::AspectRelative))
+		->AddChild((new UIText(0.8f, 1, GetTranslation(Text), UI::Text))
+			->SetPadding(0.01)));
+}
+
+void AddSettingsDropdown(std::vector<UIDropdown::Option> Options, void(*OnClicked)(int SelectedIndex), size_t DefaultOption, UIBox* Parent)
+{
+	auto TitleBarDropdown = new UIDropdown(0, 0.6, 1, 0, Options, OnClicked, UI::Text);
+	Parent->AddChild(TitleBarDropdown
+		->SetTextSize(0.6f, 0.005)
+		->SetPadding(0.01, 0.01, 0.06, 0.01));
+	TitleBarDropdown->SelectOption(DefaultOption, false);
+}
 
 void SettingsTab::GenerateSettings()
 {
@@ -226,11 +248,11 @@ void SettingsTab::GenerateSettings()
 
 	SettingsBox->AddChild((new UIBox(true, 0))
 		->SetPadding(0.01, 0.05, 0.09, 0)
-		->AddChild((new UIBackground(true, 0, PathValid ? Vector3f32(0, 1, 0.5) : Vector3f32(1, 0.5, 0), 0.05))
+		->AddChild((new UIBackground(true, 0, PathValid ? Vector3f(0, 1, 0.5) : Vector3f(1, 0.5, 0), 0.05))
 			->SetUseTexture(true, PathValid ? Icon("Enabled").TextureID : Icon("Settings/Warning").TextureID)
 			->SetSizeMode(UIBox::SizeMode::AspectRelative)
 			->SetPadding(0.01, 0.01, 0, 0))
-		->AddChild((new UIText(0.35, 0.9, PathString, UI::Text))));
+		->AddChild((new UIText(0.7f, 0.9, PathString, UI::Text))));
 
 	if (Game::IsValidTitanfallLocation(Game::GamePath))
 	{
@@ -240,11 +262,11 @@ void SettingsTab::GenerateSettings()
 					Installer::CheckForUpdates();
 					if (Game::RequiresUpdate)
 					{
-						Window::ShowPopup(GetTranslation("app_name"), GetTranslation("settings_update_required"));
+						WindowFunc::ShowPopup(GetTranslation("app_name"), GetTranslation("settings_update_required"));
 					}
 					else
 					{
-						Window::ShowPopup(GetTranslation("app_name"), GetTranslation("settings_update_not_required"));
+						WindowFunc::ShowPopup(GetTranslation("app_name"), GetTranslation("settings_update_not_required"));
 					}
 				});
 				}, SettingsBox);
@@ -252,65 +274,48 @@ void SettingsTab::GenerateSettings()
 
 		AddSettingsButton("settings_reinstall_northstar", "Download", Game::UpdateGameAsync, SettingsBox);
 
-		LaunchArgsText = new UITextField(true, 0, 1, UI::MonoText, []() {Game::SetLaunchArgs(CurrentSettingsTab->LaunchArgsText->GetText()); });
+		AddSettingsText("settings_launch_arg", "Settings/Arguments", SettingsBox);
 
-		SettingsBox->AddChild((new UIBox(true, 0))
-			->SetPadding(0.05, 0.01, 0.06, 0.01)
-			->AddChild((new UIBackground(true, 0, 1, 0.05))
-				->SetUseTexture(true, Icon("Settings/Arguments").TextureID)
-				->SetPadding(0.01, 0.01, 0, 0)
-				->SetSizeMode(UIBox::SizeMode::AspectRelative))
-			->AddChild((new UIText(0.4, 1, GetTranslation("settings_launch_arg"), UI::Text))
-				->SetPadding(0.01)));
+		LaunchArgsText = new UITextField(0, 1, UI::MonoText, []() {Game::SetLaunchArgs(CurrentSettingsTab->LaunchArgsText->GetText()); });
 		SettingsBox->AddChild(LaunchArgsText
 			->SetTextColor(0)
-			->SetTextSize(0.3)
+			->SetTextSize(0.6f)
 			->SetText(Game::GetLaunchArgs())
 			->SetPadding(0.01, 0.01, 0.06, 0.01)
 			->SetMinSize(Vector2f(0.6, 0.05)));
 	}
 
 
-	SettingsBox->AddChild((new UIBox(true, 0))
-		->SetPadding(0.05, 0.01, 0.06, 0.01)
-		->AddChild((new UIBackground(true, 0, 1, 0.05))
-			->SetUseTexture(true, Icon("Settings/Language").TextureID)
-			->SetPadding(0.01, 0.01, 0, 0)
-			->SetSizeMode(UIBox::SizeMode::AspectRelative))
-		->AddChild((new UIText(0.4, 1, GetTranslation("settings_language"), UI::Text))
-			->SetPadding(0.01)));
+	AddSettingsText("settings_language", "Settings/Language", SettingsBox);
 
 	std::string SelectedLangauge = LoadedTranslation;
 
 	auto PossibleLangauges = GetAvaliableTranslations();
 
-	std::vector<UIDropdown::Option> LanguageOption;
 	size_t Selected = 0;
 
+	LanguageOptions.clear();
 	for (size_t i = 0; i < PossibleLangauges.size(); i++)
 	{
-		LanguageOption.push_back(UIDropdown::Option(PossibleLangauges[i]));
+		LanguageOptions.push_back(UIDropdown::Option(PossibleLangauges[i]));
 		if (PossibleLangauges[i] == SelectedLangauge)
 		{
 			Selected = i;
 		}
 	}
 
-	LanguageDropdown = new UIDropdown(0, 0.6, 1, 0, LanguageOption, []() 
+	AddSettingsDropdown(LanguageOptions,
+		[](int Index)
 		{
-			Translation::LoadTranslation(CurrentSettingsTab->LanguageDropdown->SelectedOption.Name);
+			Translation::LoadTranslation(CurrentSettingsTab->LanguageOptions[Index].Name);
 			CurrentSettingsTab->GenerateSettings();
-		}, UI::Text);
-
-	SettingsBox->AddChild(LanguageDropdown
-		->SetTextSize(0.3, 0.005)
-		->SetPadding(0.01, 0.01, 0.06, 0.01));
-	LanguageDropdown->SelectOption(Selected, false);
+		},
+		Selected, SettingsBox);
 
 	AddCategoryHeader("settings_category_appearance", "Settings/App", SettingsBox);
 
 	AddSettingsButton("settings_appearance_background", "Settings/Image", []() {
-		std::string NewPicture = Window::ShowSelectFileDialog(false);
+		std::string NewPicture = WindowFunc::ShowSelectFileDialog(false);
 		if (!std::filesystem::exists(NewPicture))
 		{
 			return;
@@ -344,48 +349,30 @@ void SettingsTab::GenerateSettings()
 				->SetUseTexture(true, Icon("Revert").TextureID)
 				->SetSizeMode(UIBox::SizeMode::AspectRelative)
 				->SetPadding(0.01, 0.01, 0.01, 0.01))
-			->AddChild((new UIText(0.3, 0, GetTranslation("settings_appearance_background_revert"), UI::Text))));
+			->AddChild((new UIText(0.6f, 0, GetTranslation("settings_appearance_background_revert"), UI::Text))));
 	}
 
-	std::vector<UIDropdown::Option> TitleBarOptions = 
-	{
+
+	AddSettingsText("settings_title_bar", "Settings/App", SettingsBox);
+
+	AddSettingsDropdown(
+		{
 		UIDropdown::Option(GetTranslation("settings_title_bar_custom")),
 		UIDropdown::Option(GetTranslation("settings_title_bar_system"))
-	};
-
-	SettingsBox->AddChild((new UIBox(true, 0))
-		->SetPadding(0.05, 0.01, 0.06, 0.01)
-		->AddChild((new UIBackground(true, 0, 1, 0.05))
-			->SetUseTexture(true, Icon("Settings/App").TextureID)
-			->SetPadding(0.01, 0.01, 0, 0)
-			->SetSizeMode(UIBox::SizeMode::AspectRelative))
-		->AddChild((new UIText(0.4, 1, GetTranslation("settings_title_bar"), UI::Text))
-			->SetPadding(0.01)));
-
-	TitleBarDropdown = new UIDropdown(0, 0.6, 1, 0, TitleBarOptions, []()
+		},
+		[](int Index)
 		{
-			Installer::UseSystemTitleBar = CurrentSettingsTab->TitleBarDropdown->SelectedIndex == 1;
+			Installer::UseSystemTitleBar = Index == 1;
 			Installer::UpdateWindowFlags();
 			SaveSettings();
-		}, UI::Text);
-	SettingsBox->AddChild(TitleBarDropdown
-		->SetTextSize(0.3, 0.005)
-		->SetPadding(0.01, 0.01, 0.06, 0.01));
-	TitleBarDropdown->SelectOption(Installer::UseSystemTitleBar, false);
+		}, Installer::UseSystemTitleBar, SettingsBox);
 
-	SettingsBox->AddChild((new UIBox(true, 0))
-		->SetPadding(0.05, 0.01, 0.06, 0.01)
-		->AddChild((new UIBackground(true, 0, 1, 0.05))
-			->SetUseTexture(true, Icon("Settings/Color").TextureID)
-			->SetPadding(0.01, 0.01, 0, 0)
-			->SetSizeMode(UIBox::SizeMode::AspectRelative))
-		->AddChild((new UIText(0.4, 1, GetTranslation("settings_appearance_color"), UI::Text))
-			->SetPadding(0.01)));
+	AddSettingsText("settings_appearance_color", "Settings/Color", SettingsBox);
 
-	ColorText = new UITextField(true, 0, 1, UI::MonoText, []() 
+	ColorText = new UITextField(0, 1, UI::MonoText, []() 
 		{ 
 			auto Color = RgbToColor(CurrentSettingsTab->ColorText->GetText());
-			if (Color == Vector3f32(-1))
+			if (Color == Vector3f(-1))
 			{
 				CurrentSettingsTab->ColorText->SetText(ColorToRgb(Installer::GetThemeColor()));
 				return;
@@ -397,7 +384,7 @@ void SettingsTab::GenerateSettings()
 
 	SettingsBox->AddChild(ColorText
 		->SetTextColor(0)
-		->SetTextSize(0.3)
+		->SetTextSize(0.6f)
 		->SetText(ColorToRgb(Installer::GetThemeColor()))
 		->SetPadding(0.01, 0.01, 0.06, 0.01)
 		->SetMinSize(Vector2f(0.6, 0.05)));
@@ -411,7 +398,7 @@ void SettingsTab::GenerateSettings()
 			{
 				if (!std::filesystem::exists(ProfileTab::CurrentProfile.Path + "/logs"))
 				{
-					Window::ShowPopupError("Log folder does not exist.");
+					WindowFunc::ShowPopupError("Log folder does not exist.");
 					return;
 				}
 #if _WIN32
@@ -425,7 +412,7 @@ void SettingsTab::GenerateSettings()
 			{
 				if (!std::filesystem::exists(ProfileTab::CurrentProfile.Path + "/logs"))
 				{
-					Window::ShowPopupError("Log folder does not exist.");
+					WindowFunc::ShowPopupError("Log folder does not exist.");
 					return;
 				}
 				std::filesystem::directory_entry LatestLog;
@@ -440,7 +427,7 @@ void SettingsTab::GenerateSettings()
 				}
 				if (!std::filesystem::exists(LatestLog))
 				{
-					Window::ShowPopupError("Could not find a log file.");
+					WindowFunc::ShowPopupError("Could not find a log file.");
 					return;
 				}
 #if _WIN32
@@ -480,10 +467,10 @@ void SettingsTab::GenerateSettings()
 #endif
 
 	AddCategoryHeader("settings_category_about", "Settings/About", SettingsBox);
-	SettingsBox->AddChild((new UIText(0.35, 1, GetTranslation("settings_about_ns_version") + ": " + Game::GetCurrentVersion(), UI::Text))
+	SettingsBox->AddChild((new UIText(0.7f, 1, GetTranslation("settings_about_ns_version") + ": " + Game::GetCurrentVersion(), UI::Text))
 		->SetPadding(0.01, 0.01, 0.06, 0.01));
-	SettingsBox->AddChild((new UIText(0.35, 1, GetTranslation("settings_about_version")
-		+ ": "
+	SettingsBox->AddChild((new UIText(0.7f, 1, GetTranslation("settings_about_version")
+		+ ": Tether "
 		+ Installer::InstallerVersion 
 		+ " ("
 		+ std::string(OS) 

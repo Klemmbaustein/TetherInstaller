@@ -21,6 +21,7 @@
 #include "../BackgroundTask.h"
 #include "../Translation.h"
 using namespace Translation;
+using namespace KlemmUI;
 
 std::vector<UIButton*> ModsTab::ModButtons;
 std::vector<UIButton*> ModsTab::PageButtons;
@@ -43,7 +44,7 @@ namespace Thunderstore
 	size_t CurrentlyLoadedMod = 0;
 }
 
-UIBox* ModsTab::GenerateModInfoText(std::vector<std::string> Text, Vector3f32 Color, std::string IconName, double IconPadding)
+UIBox* ModsTab::GenerateModInfoText(std::vector<std::string> Text, Vector3f Color, std::string IconName, double IconPadding)
 {
 	UIBox* TextBox = new UIBox(false, 0);
 
@@ -59,7 +60,7 @@ UIBox* ModsTab::GenerateModInfoText(std::vector<std::string> Text, Vector3f32 Co
 
 	for (const auto& i : Text)
 	{
-		TextBox->AddChild((new UIText(0.35, 1, i, UI::Text))
+		TextBox->AddChild((new UIText(0.7f, 1, i, UI::Text))
 			->SetWrapEnabled(true, 0.5, UIBox::SizeMode::ScreenRelative)
 			->SetPadding(0.0025, 0.0025, 0.01, 0.01));
 	}
@@ -86,7 +87,7 @@ void ModsTab::GenerateAvaliabilityMessage()
 		{
 			NewLineStringToStringArray(GetTranslation("plugin_mod_not_avaliable"))
 
-		}, Vector3f32(0.6f, 0.15f, 0), "Settings/About", 0.1);
+		}, Vector3f(0.6f, 0.15f, 0), "Settings/About", 0.1);
 
 }
 
@@ -123,7 +124,7 @@ void ModsTab::GenerateModInfo()
 			->SetUseTexture(true, Icon("Back").TextureID)
 			->SetPadding(0.01, 0.01, 0.01, 0)
 			->SetSizeMode(UIBox::SizeMode::AspectRelative))
-		->AddChild(new UIText(0.4, 0, GetTranslation("mod_back"), UI::Text)));
+		->AddChild(new UIText(0.8f, 0, GetTranslation("mod_back"), UI::Text)));
 
 	ModsScrollBox->AddChild((new UIBackground(true, 0, 1, Vector2f(1.15, 0.005)))
 			->SetPadding(0));
@@ -153,10 +154,10 @@ void ModsTab::GenerateModInfo()
 		->AddChild((new UIBox(false, 0))
 			->SetPadding(0)
 
-			->AddChild((new UIText(0.7, 1, Thunderstore::SelectedMod.Name + (IsInstalled ? " (Installed)" : ""), UI::Text))
+			->AddChild((new UIText(1.4f, 1, Thunderstore::SelectedMod.Name + (IsInstalled ? " (Installed)" : ""), UI::Text))
 				->SetWrapEnabled(true, 0.2, UIBox::SizeMode::ScreenRelative))
 
-			->AddChild((new UIText(0.4, 1, DescriptionText, UI::Text))
+			->AddChild((new UIText(0.8f, 1, DescriptionText, UI::Text))
 				->SetWrapEnabled(true, 0.35f, UIBox::SizeMode::ScreenRelative))
 
 			->AddChild(ModActionsBox))
@@ -201,12 +202,12 @@ void ModsTab::GenerateModInfo()
 		auto DependencyNotify = new FullScreenNotify("mod_dependency_notify_title");
 
 		DependencyNotify->ContentBox
-			->AddChild(new UIText(0.3f, 0, Format(GetTranslation("mod_dependency_notify_text"), Thunderstore::SelectedMod.Name.c_str()), UI::Text));
+			->AddChild(new UIText(0.6f, 0, Format(GetTranslation("mod_dependency_notify_text"), Thunderstore::SelectedMod.Name.c_str()), UI::Text));
 
 		for (const auto& Dep : Thunderstore::SelectedMod.Dependencies)
 		{
 			DependencyNotify->ContentBox
-				->AddChild(new UIText(0.3f, 0, "- " + Dep, UI::Text));
+				->AddChild(new UIText(0.6f, 0, "- " + Dep, UI::Text));
 		}
 
 		DependencyNotify->AddOptions({
@@ -247,7 +248,7 @@ void ModsTab::GenerateModInfo()
 			->SetUseTexture(true, IsInstalled ? Icon("Delete").TextureID : Icon("Download").TextureID)
 			->SetPadding(0.01, 0.01, 0.01, 0)
 			->SetSizeMode(UIBox::SizeMode::AspectRelative))
-		->AddChild(new UIText(0.4, 0,
+		->AddChild(new UIText(0.8f, 0,
 			(Thunderstore::IsInstallingMod) ?
 			GetTranslation("mod_installing")
 			: (IsInstalled ? GetTranslation("mod_uninstall") : (Game::GamePath.empty() ? GetTranslation("mod_install_no_path") : GetTranslation("mod_install"))),
@@ -269,7 +270,7 @@ void ModsTab::GenerateModInfo()
 				->SetUseTexture(true, IsEnabled ? Icon("Disabled").TextureID : Icon("Enabled").TextureID)
 				->SetPadding(0.01, 0.01, 0.01, 0)
 				->SetSizeMode(UIBox::SizeMode::AspectRelative))
-			->AddChild(new UIText(0.4, 0, IsEnabled ? GetTranslation("mod_disable") : GetTranslation("mod_enable"), UI::Text)));
+			->AddChild(new UIText(0.8f, 0, IsEnabled ? GetTranslation("mod_disable") : GetTranslation("mod_enable"), UI::Text)));
 	}
 	else
 	{
@@ -287,27 +288,27 @@ void ModsTab::GenerateModInfo()
 			->SetBorder(UIBox::BorderType::Rounded, 0.25)
 			->AddChild((new UIBackground(true, 0, 0, 0.055))
 				->SetUseTexture(true, Icon("Open").TextureID)
-				->SetPadding(0.01, 0.01, 0.01, 0)
+				->SetPadding(0.01f, 0.01f, 0.01f, 0)
 				->SetSizeMode(UIBox::SizeMode::AspectRelative))
-			->AddChild(new UIText(0.4, 0, GetTranslation("mod_open_browser"), UI::Text)));
+			->AddChild(new UIText(0.8f, 0, GetTranslation("mod_open_browser"), UI::Text)));
 	}
 	if (Thunderstore::SelectedMod.IsDeprecated)
 	{
 		GenerateModInfoText(
 			{
 			NewLineStringToStringArray(GetTranslation("mod_deprecation_warning"))
-			}, Vector3f32(0.6f, 0.15f, 0), "Settings/Warning");
+			}, Vector3f(0.6f, 0.15f, 0), "Settings/Warning");
 	}
 
 	if (IsInstalled)
 	{
 		if (IsEnabled)
 		{
-			GenerateModInfoText({ GetTranslation("mod_is_enabled") }, Vector3f32(0, 0.5f, 0.25f), "Enabled");
+			GenerateModInfoText({ GetTranslation("mod_is_enabled") }, Vector3f(0, 0.5f, 0.25f), "Enabled");
 		}
 		else
 		{
-			GenerateModInfoText({ GetTranslation("mod_is_disabled") }, Vector3f32(0.6f, 0.15f, 0), "Disabled");
+			GenerateModInfoText({ GetTranslation("mod_is_disabled") }, Vector3f(0.6f, 0.15f, 0), "Disabled");
 		}
 	}
 
@@ -322,7 +323,7 @@ void ModsTab::GenerateModInfo()
 			GenerateModInfoText(
 				{
 					NewLineStringToStringArray(GetTranslation("mod_release_canidate_message"))
-				}, Vector3f32(0.1f, 0.2f, 0.6f), "Settings/About", 0.15)
+				}, Vector3f(0.1f, 0.2f, 0.6f), "Settings/About", 0.15)
 				->AddChild((new UIButton(true, 0, 1, []() {system("start https://discord.com/channels/920776187884732556/951461326478262292"); }))
 					->SetBorder(UIBox::BorderType::Rounded, 0.25)
 					->AddChild((new UIBackground(true, 0, 0, 0.04))
@@ -344,7 +345,7 @@ void ModsTab::GenerateModInfo()
 			{
 				NewLineStringToStringArray(GetTranslation("mod_vanillaplus_message"))
 
-			}, Vector3f32(0.1f, 0.2f, 0.6f), "Settings/About", 0.1);
+			}, Vector3f(0.1f, 0.2f, 0.6f), "Settings/About", 0.1);
 #else
 		GenerateAvaliabilityMessage();
 #endif
@@ -360,6 +361,7 @@ void ModsTab::GenerateModInfo()
 	Markdown::MarkdownStyling Style;
 	Style.Text = UI::Text;
 	Style.Width = 1.1;
+	Style.TextSize = 0.6f;
 	Markdown::MarkdownStyling::CodeStyling CodeStyle;
 	CodeStyle.BackgroundColor = 0;
 	CodeStyle.Color = 1;
@@ -384,7 +386,7 @@ void ModsTab::GenerateModPage()
 
 	if (Thunderstore::SelectedOrdering != Thunderstore::Ordering::Installed)
 	{
-		SearchBar = new UITextField(true, 0, 0, UI::Text, []()
+		SearchBar = new UITextField(0, 0, UI::Text, []()
 			{
 				if (CurrentModsTab->Filter != CurrentModsTab->SearchBar->GetText() && !Thunderstore::IsDownloading)
 				{
@@ -395,7 +397,7 @@ void ModsTab::GenerateModPage()
 				}
 			});
 
-		SearchBar->SetTextSize(0.3);
+		SearchBar->SetTextSize(0.6);
 		SearchBar->SetMinSize(Vector2f(0.6, 0.02));
 		SearchBar->SetHintText(GetTranslation("search"));
 		SearchBar->SetText(Filter);
@@ -410,7 +412,7 @@ void ModsTab::GenerateModPage()
 		ModsScrollBox->AddChild(NewRow);
 	}
 
-	size_t SlotsPerRow = std::round((Application::AspectRatio / (16.0f / 9.0f)) * 6.9f);
+	size_t SlotsPerRow = std::round((Installer::MainWindow->GetAspectRatio() / (16.0f / 9.0f)) * 6.9f);
 
 	size_t it = 0;
 	ModButtons.clear();
@@ -441,14 +443,15 @@ void ModsTab::GenerateModPage()
 
 		if (Thunderstore::SelectedOrdering == Thunderstore::Ordering::Installed && !Thunderstore::GetModEnabled(i))
 		{
-			b->SetColor(Vector3f32(1, 0.75, 0));
-			b->SetHoveredColor(Vector3f32(1, 0.75, 0) * 0.75f);
-			b->SetPressedColor(Vector3f32(1, 0.75, 0) * 0.5f);
+			b->SetColor(Vector3f(1, 0.75, 0));
+			b->SetHoveredColor(Vector3f(1, 0.75, 0) * 0.75f);
+			b->SetPressedColor(Vector3f(1, 0.75, 0) * 0.5f);
 		}
 
 		b->SetMinSize(Vector2f(0, 0.34));
 		b->SetMaxSize(Vector2f(1, 0.34));
-		b->SetPadding(0.005 * Application::AspectRatio, 0.005 * Application::AspectRatio, 0.005, 0.005);
+		b->SetPadding(0.005, 0.005, 0.005, 0.005);
+		b->SetPaddingSizeMode(UIBox::SizeMode::AspectRelative);
 		unsigned int tex = 0;
 		if (UseTexture)
 		{
@@ -456,7 +459,7 @@ void ModsTab::GenerateModPage()
 			ModTextures.push_back(tex);
 		}
 
-		auto NameText = new UIText(0.225, 0, i.Name, UI::Text);
+		auto NameText = new UIText(0.475f, 0, i.Name, UI::Text);
 		Rows[it++ / SlotsPerRow]->AddChild(b
 			->SetBorder(UIBox::BorderType::Rounded, 0.5)
 			->AddChild((new UIBackground(false, 0, 0.1))
@@ -470,7 +473,7 @@ void ModsTab::GenerateModPage()
 				->SetPadding(0.005)));
 
 		NameText->Wrap = true;
-		NameText->WrapDistance = 0.19f / Application::AspectRatio;
+		NameText->WrapDistance = 0.19f / Installer::MainWindow->GetAspectRatio();
 
 		if (!UseTexture)
 		{
@@ -489,7 +492,7 @@ void ModsTab::GenerateModPage()
 	{
 		return;
 	}
-	Rows[19]->AddChild(new UIText(0.4, 1, GetTranslation("mod_pages"), UI::Text));
+	Rows[19]->AddChild(new UIText(0.8f, 1, GetTranslation("mod_pages"), UI::Text));
 	for (int i = 0; i < 6; i++)
 	{
 		auto b = new UIButton(true, 0, SelectedPage == (i) ? 0.5 : 1, []() {
@@ -511,15 +514,15 @@ void ModsTab::GenerateModPage()
 		}
 		else
 		{
-			b->SetColor(Vector3f32(1.0f, 1.0f, 1.0f));
-			b->SetHoveredColor(Vector3f32::Lerp(1.0f, Installer::GetThemeColor(), 0.5f));
+			b->SetColor(Vector3f(1.0f, 1.0f, 1.0f));
+			b->SetHoveredColor(Vector3f::Lerp(1.0f, Installer::GetThemeColor(), 0.5f));
 			b->SetPressedColor(Installer::GetThemeColor());
 		}
 
 		Rows[19]->AddChild(b
 			->SetPadding(0.005)
 			->SetBorder(UIBox::BorderType::Rounded, 0.25)
-			->AddChild(new UIText(0.4, 0, std::to_string(i + 1), UI::MonoText)));
+			->AddChild(new UIText(0.8f, 0, std::to_string(i + 1), UI::MonoText)));
 		PageButtons.push_back(b);
 	}
 }
@@ -530,7 +533,7 @@ void ModsTab::ShowLoadingText()
 	ModImages.clear();
 
 	ModsScrollBox->DeleteChildren();
-	ModsScrollBox->AddChild((new UIText(0.5, 1, GetTranslation("loading"), UI::Text))->SetPadding(0.5));
+	ModsScrollBox->AddChild((new UIText(1.0f, 1, GetTranslation("loading"), UI::Text))->SetPadding(0.5));
 	UpdateClickedCategoryButton();
 }
 
@@ -546,7 +549,7 @@ void ModsTab::OnTranslationChanged()
 	for (auto& cat : Thunderstore::TSCategoryNames)
 	{
 		CategoryButtons[i]->DeleteChildren();
-		CategoryButtons[i]->AddChild(new UIText(0.3, 0, GetTSOrderingName(cat.Name), UI::Text));
+		CategoryButtons[i]->AddChild(new UIText(0.6f, 0, GetTSOrderingName(cat.Name), UI::Text));
 		i++;
 	}
 
@@ -572,8 +575,8 @@ void ModsTab::UpdateClickedCategoryButton()
 		}
 		else
 		{
-			CategoryButtons[i]->SetColor(Vector3f32(1.0f, 1.0f, 1.0f));
-			CategoryButtons[i]->SetHoveredColor(Vector3f32::Lerp(1.0f, Installer::GetThemeColor(), 0.5f));
+			CategoryButtons[i]->SetColor(Vector3f(1.0f, 1.0f, 1.0f));
+			CategoryButtons[i]->SetHoveredColor(Vector3f::Lerp(1.0f, Installer::GetThemeColor(), 0.5f));
 			CategoryButtons[i]->SetPressedColor(Installer::GetThemeColor());
 		}
 	}
@@ -673,7 +676,7 @@ void ModsTab::CheckForModUpdates()
 
 ModsTab::ModsTab()
 {
-	PrevAspectRatio = Application::AspectRatio;
+	PrevAspectRatio = Installer::MainWindow->GetAspectRatio();
 	CurrentModsTab = this;
 	Name = "mods";
 	Log::Print("Loading mods tab...");
@@ -689,7 +692,7 @@ ModsTab::ModsTab()
 		->SetPadding(0));
 	ModsBackground->SetVerticalAlign(UIBox::Align::Reverse);
 
-	TabTitle = new UIText(0.8, 1, GetTranslation("tab_mods"), UI::Text);
+	TabTitle = new UIText(1.4f, 1, GetTranslation("tab_mods"), UI::Text);
 	auto TitleBox = new UIBox(true, 0);
 	ModsBackground->AddChild(TitleBox);
 	TitleBox->SetPadding(0);
@@ -721,7 +724,7 @@ ModsTab::ModsTab()
 		TitleBox->AddChild(b
 			->SetBorder(UIBox::BorderType::Rounded, 0.25)
 			->SetPadding(0, 0.025, 0.001, 0.001)
-			->AddChild(new UIText(0.3, 0, GetTSOrderingName(i.Name), UI::Text)));
+			->AddChild(new UIText(0.6f, 0, GetTSOrderingName(i.Name), UI::Text)));
 
 		CategoryButtons.push_back(b);
 	}
@@ -749,7 +752,7 @@ void ModsTab::Tick()
 		return;
 	}
 	ModsBackground->SetMinSize(Vector2f(1.2, Background->GetUsedSize().Y));
-	ModsPerPage = GetModsPerPage(Application::AspectRatio);
+	ModsPerPage = GetModsPerPage(Installer::MainWindow->GetAspectRatio());
 	if (!LoadedModList && Background->IsVisible && !Thunderstore::IsDownloading)
 	{
 		Thunderstore::DownloadThunderstoreInfo(Thunderstore::SelectedOrdering, SelectedPage, Filter, true);
@@ -786,7 +789,7 @@ void ModsTab::Tick()
 		InstallingMod = false;
 	}
 
-	if (PrevAspectRatio != Application::AspectRatio && ModButtons.size() && GetModsPerPage(Application::AspectRatio) != GetModsPerPage(PrevAspectRatio))
+	if (PrevAspectRatio != Installer::MainWindow->GetAspectRatio() && ModButtons.size() && GetModsPerPage(Installer::MainWindow->GetAspectRatio()) != GetModsPerPage(PrevAspectRatio))
 	{
 		ShowLoadingText();
 		Thunderstore::DownloadThunderstoreInfo(Thunderstore::SelectedOrdering, SelectedPage, Filter, true);
@@ -794,7 +797,7 @@ void ModsTab::Tick()
 		LoadedModList = true;
 		Thunderstore::IsDownloading = true;
 	}
-	PrevAspectRatio = Application::AspectRatio;
+	PrevAspectRatio = Installer::MainWindow->GetAspectRatio();
 }
 
 ModsTab::~ModsTab()

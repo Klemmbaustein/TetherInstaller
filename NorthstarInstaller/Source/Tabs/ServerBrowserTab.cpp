@@ -27,7 +27,7 @@
 #endif
 
 using namespace Translation;
-
+using namespace KlemmUI;
 
 bool ServerBrowserTab::ShouldLaunchGame;
 ServerBrowserTab* ServerBrowserTab::CurrentServerTab = nullptr;
@@ -71,13 +71,13 @@ bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
 	std::vector<ServerBrowserTab::ServerEntry::ServerMod> FailedMods;
 
 
-	if (std::filesystem::exists(ProfileTab::CurrentProfile.Path + "/mods/autojoin"))
+	if (std::filesystem::exists(Installer::CurrentPath + "/mods/autojoin"))
 	{
-		std::filesystem::remove_all(ProfileTab::CurrentProfile.Path + "/mods/autojoin");
+		std::filesystem::remove_all(Installer::CurrentPath + "/mods/autojoin");
 	}
 
 #ifndef TF_PLUGIN
-	std::filesystem::copy(ProfileTab::CurrentProfile.Path + "Data/autojoin", ProfileTab::CurrentProfile.Path + "/mods/autojoin",
+	std::filesystem::copy(Installer::CurrentPath + "Data/autojoin", ProfileTab::CurrentProfile.Path + "/mods/autojoin",
 		std::filesystem::copy_options::recursive);
 #endif
 
@@ -178,8 +178,8 @@ bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
 		FailedModsString.append("\n");
 	}
 
-	return Window::ShowPopupQuestion(GetTranslation("servers_joining"),
-		Format(GetTranslation("servers_mod_join_failed"), FailedModsString.c_str())) == Window::PopupReply::Yes;
+	return WindowFunc::ShowPopupQuestion(GetTranslation("servers_joining"),
+		Format(GetTranslation("servers_mod_join_failed"), FailedModsString.c_str())) == WindowFunc::PopupReply::Yes;
 }
 
 
@@ -209,10 +209,10 @@ ServerBrowserTab::ServerBrowserTab()
 			->SetPadding(0))
 		->SetPadding(0));
 	ServerBackground->SetVerticalAlign(UIBox::Align::Reverse);
-	TabTitle = new UIText(0.8, 1, GetTranslation("tab_servers"), UI::Text);
+	TabTitle = new UIText(1.2f, 1, GetTranslation("tab_servers"), UI::Text);
 	ServerBackground->AddChild(TabTitle);
 	
-	ReloadText = new UIText(0.3, 0, GetTranslation("servers_refresh"), UI::Text);
+	ReloadText = new UIText(0.6f, 0, GetTranslation("servers_refresh"), UI::Text);
 
 	ServerBackground->AddChild((new UIBox(true, 0))
 		->AddChild(PlayerCountText->SetPadding(0.02, 0.02, 0.01, 0.02))
@@ -224,13 +224,13 @@ ServerBrowserTab::ServerBrowserTab()
 				->SetSizeMode(UIBox::SizeMode::AspectRelative))
 			->AddChild(ReloadText)));
 
-	ServerSearchBox = new UITextField(true, 0, 0, UI::Text, []() {
+	ServerSearchBox = new UITextField(0, 0, UI::Text, []() {
 		if (CurrentServerTab->SearchText != CurrentServerTab->ServerSearchBox->GetText())
 		{
 			CurrentServerTab->SearchText = CurrentServerTab->ServerSearchBox->GetText();
 			RefreshServerBrowser();
 		}});
-	ServerSearchBox->SetTextSize(0.3);
+	ServerSearchBox->SetTextSize(0.6);
 	ServerSearchBox->SetMinSize(Vector2f(0.8, 0.02));
 	ServerSearchBox->SetHintText(GetTranslation("search"));
 	ServerBackground->AddChild(ServerSearchBox);
@@ -241,7 +241,7 @@ ServerBrowserTab::ServerBrowserTab()
 	ServerHeaderText.resize(53, ' ');
 	ServerHeaderText += GetTranslation("servers_players");
 
-	ServerHeader = new UIText(0.25,
+	ServerHeader = new UIText(0.5f,
 		1,
 		ServerHeaderText,
 		UI::MonoText);
@@ -361,30 +361,32 @@ void ServerBrowserTab::DisplayServers()
 		std::string PlayerCount = std::to_string(i.PlayerCount) + "/" + std::to_string(i.MaxPlayerCount);
 		PlayerCount.resize(7, ' ');
 
-		UIButton* b = new UIButton(true, 0, Installer::TabStyles[0], []() {
+		UIButton* b = new UIButton(true, 0, Installer::GetThemeColor(), []() {
 			for (size_t i = 0; i < CurrentServerTab->ServerBrowserButtons.size(); i++)
 			{
 				if (CurrentServerTab->ServerBrowserButtons[i]->IsBeingHovered())
 				{
-					Installer::TabStyles[1]->ApplyTo(CurrentServerTab->ServerBrowserButtons[i]);
 					CurrentServerTab->ServerBrowserButtons[i]->SetMinSize(Vector2f(0.8, 0));
 					CurrentServerTab->DisplayServerDescription(CurrentServerTab->DisplayedServerEntries[i]);
+					Installer::SetButtonColorIfSelected(CurrentServerTab->ServerBrowserButtons[i], true);
 				}
 				else
 				{
-					Installer::TabStyles[0]->ApplyTo(CurrentServerTab->ServerBrowserButtons[i]);
+					Installer::SetButtonColorIfSelected(CurrentServerTab->ServerBrowserButtons[i], false);
 					CurrentServerTab->ServerBrowserButtons[i]->SetMinSize(Vector2f(0.8, 0));
 				}
 			}
 			});
 
+		Installer::SetButtonColorIfSelected(b, false);
 		ServerListBox->AddChild(b
-			->SetMinSize(Vector2f(0.8, 0))
-			->SetPadding(0.005)
-			->AddChild((new UIText(0.25, { 
-				TextSegment(Region, 0.25),
+			->SetBorder(UIBox::BorderType::Rounded, 0.4f)
+			->SetMinSize(Vector2f(0.8f, 0))
+			->SetPadding(0.005f)
+			->AddChild((new UIText(0.5f, { 
+				TextSegment(Region, 0.25f),
 				TextSegment(" " + Name + "  ", 0),
-				TextSegment(PlayerCount, 0.25),
+				TextSegment(PlayerCount, 0.25f),
 				}, UI::MonoText))
 				->SetPadding(0.005)));
 		DisplayedServerEntries.push_back(i);
@@ -393,7 +395,7 @@ void ServerBrowserTab::DisplayServers()
 
 	if (ServerBrowserButtons.empty())
 	{
-		ServerListBox->AddChild(new UIText(0.3, 1, GetTranslation("servers_no_servers_found"), UI::Text));
+		ServerListBox->AddChild(new UIText(0.6f, 1, GetTranslation("servers_no_servers_found"), UI::Text));
 	}
 
 	PlayerCountText->SetText(Format(GetTranslation("servers_total_playercount"), (int)TotalPlayers));
@@ -403,7 +405,7 @@ void JoinCurrentServer()
 {
 	if (Thunderstore::VanillaPlusInstalled())
 	{
-		Window::ShowPopupError("Cannot join Northstar servers with Vanilla+");
+		WindowFunc::ShowPopupError("Cannot join Northstar servers with Vanilla+");
 		ServerBrowserTab::ShouldLaunchGame = false;
 		return;
 	}
@@ -452,7 +454,7 @@ void ServerBrowserTab::DisplayLoadingText()
 {
 	ServerListBox = nullptr;
 	ServerBox->DeleteChildren();
-	ServerBox->AddChild((new UIText(0.4, 1, GetTranslation("loading"), UI::Text))->SetPadding(0.5));
+	ServerBox->AddChild((new UIText(0.8f, 1, GetTranslation("loading"), UI::Text))->SetPadding(0.5));
 }
 
 void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
@@ -465,12 +467,12 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 		return;
 	}
 
-	UIText* Descr = new UIText(0.3, 1, e.Description, UI::Text);
+	UIText* Descr = new UIText(0.6f, 1, e.Description, UI::Text);
 	Descr->Wrap = true;
 	Descr->WrapDistance = 0.4;
 	std::string PlayerCount = Format(GetTranslation("servers_match_playercount"), e.PlayerCount, e.MaxPlayerCount);
 
-	UIText* Title = new UIText(0.5, 1, e.Name, UI::Text);
+	UIText* Title = new UIText(1.0f, 1, e.Name, UI::Text);
 	Title->Wrap = true;
 	Title->WrapDistance = 0.25;
 
@@ -486,21 +488,21 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 	MapDescr->SetPadding(0);
 	MapDescr->SetMinSize(9 * 0.025);
 
-	ServerDescriptionBox->AddChild((new UIText(0.5, 1, GetTranslation("servers_playing_on"), UI::Text)));
+	ServerDescriptionBox->AddChild((new UIText(1.0f, 1, GetTranslation("servers_playing_on"), UI::Text)));
 	ServerDescriptionBox->AddChild((new UIBox(true, 0))
 		->AddChild((new UIBackground(true, 0, 1, Vector2f(16, 9) * 0.025))
 			->SetUseTexture(true, GetMapTexture(e.Map))
 			->SetSizeMode(UIBox::SizeMode::AspectRelative))
 		->AddChild(MapDescr
-			->AddChild((new UIText(0.5, 1, e.MapName, UI::Text))
+			->AddChild((new UIText(1.0f, 1, e.MapName, UI::Text))
 				->SetPadding(0, 0, 0.01, 0.01))
-			->AddChild((new UIText(0.3, 1, e.GameModeName, UI::Text))
+			->AddChild((new UIText(0.6f, 1, e.GameModeName, UI::Text))
 				->SetPadding(0, 0, 0.01, 0.01))
-			->AddChild((new UIText(0.3, 1, PlayerCount, UI::Text))
+			->AddChild((new UIText(0.6f, 1, PlayerCount, UI::Text))
 				->SetPadding(0, 0, 0.01, 0.01))));
 
 	ServerDescriptionBox->AddChild(new UIBackground(true, 0, 1, Vector2f(0.6, 0.005)));
-	ServerDescriptionText = new UIText(0.4, 0, GetTranslation("servers_join"), UI::Text);
+	ServerDescriptionText = new UIText(0.8f, 0, GetTranslation("servers_join"), UI::Text);
 	ServerDescriptionBox->AddChild((new UIBox(true, 0))
 		->AddChild((new UIButton(true, 0, Installer::GetThemeColor(), []() { new BackgroundTask(JoinCurrentServer,
 			[]() {
@@ -525,7 +527,7 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 				->SetSizeMode(UIBox::SizeMode::AspectRelative))
 			->AddChild(ServerDescriptionText)));
 
-	ServerDescriptionBox->AddChild(new UIText(0.5, 1, GetTranslation("servers_mods"), UI::Text));
+	ServerDescriptionBox->AddChild(new UIText(1.0f, 1, GetTranslation("servers_mods"), UI::Text));
 	for (const auto& i : e.RequiredMods)
 	{
 		Thunderstore::Package m;
@@ -547,7 +549,7 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 		{
 			ModName.append(" " + GetTranslation("mod_installed"));
 		}
-		ServerDescriptionBox->AddChild((new UIText(0.3, 1, ModName, UI::Text))
+		ServerDescriptionBox->AddChild((new UIText(0.6f, 1, ModName, UI::Text))
 			->SetPadding(0.0, 0.005, 0.01, 0.01));
 	}
 }

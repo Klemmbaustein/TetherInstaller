@@ -64,7 +64,7 @@ Thunderstore::InstalledModsResult Thunderstore::GetInstalledMods()
 					}
 					catch (std::exception& e)
 					{
-						Window::ShowPopupError(e.what());
+						WindowFunc::ShowPopupError(e.what());
 					}
 				}
 				continue;
@@ -1166,7 +1166,7 @@ void Thunderstore::InstallVanillaPlus(std::string From, Package m)
 	using namespace nlohmann;
 	if (ProfileTab::CurrentProfile.DisplayName == "R2Northstar")
 	{
-		Window::ShowPopupError("Cannot install Vanilla+ on the default R2Northstar profile.\nPlease create and select a new profile in the profile menu.");
+		WindowFunc::ShowPopupError("Cannot install Vanilla+ on the default R2Northstar profile.\nPlease create and select a new profile in the profile menu.");
 		return;
 	}
 

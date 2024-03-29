@@ -7,10 +7,10 @@
 
 class ProfileTab : public UITab
 {
-	UIBackground* ProfileBackground;
-	UIScrollBox* ProfileList;
-	UIBox* ProfileInfoBox;
-	UITextField* NewProfileTextField;
+	KlemmUI::UIBackground* ProfileBackground;
+	KlemmUI::UIScrollBox* ProfileList;
+	KlemmUI::UIBox* ProfileInfoBox;
+	KlemmUI::UITextField* NewProfileTextField;
 public:
 	static const std::set<std::string> CoreModNames;
 
@@ -37,7 +37,7 @@ public:
 	void DisplayProfileInfo();
 	void UpdateProfilesList();
 	void OnClicked() override;
-	UIBackground* ProfileCreationBox = nullptr;
+	KlemmUI::UIBackground* ProfileCreationBox = nullptr;
 	void GenerateProfileCreationBox();
 
 	void CreateNewProfile(std::string Name);

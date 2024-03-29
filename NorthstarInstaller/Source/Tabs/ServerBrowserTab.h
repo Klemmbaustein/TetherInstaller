@@ -3,6 +3,7 @@
 #include <KlemmUI/UI/UIBackground.h>
 #include <KlemmUI/UI/UITextField.h>
 #include <KlemmUI/UI/UIText.h>
+#include <KlemmUI/UI/UIButton.h>
 
 #include <map>
 
@@ -10,15 +11,15 @@
 
 class ServerBrowserTab : public UITab
 {
-	UIBackground* ServerBackground = nullptr;
-	UIScrollBox* ServerBox = nullptr;
-	UIBox* ServerListBox = nullptr;
-	UIBox* ServerDescriptionBox = new UIBox(false, 0);
-	UITextField* ServerSearchBox = nullptr;
+	KlemmUI::UIBackground* ServerBackground = nullptr;
+	KlemmUI::UIScrollBox* ServerBox = nullptr;
+	KlemmUI::UIBox* ServerListBox = nullptr;
+	KlemmUI::UIBox* ServerDescriptionBox = new KlemmUI::UIBox(false, 0);
+	KlemmUI::UITextField* ServerSearchBox = nullptr;
 public:
-	UIText* ServerDescriptionText = nullptr;
-	UIText* ReloadText = nullptr;
-	UIText* ServerHeader = nullptr;
+	KlemmUI::UIText* ServerDescriptionText = nullptr;
+	KlemmUI::UIText* ReloadText = nullptr;
+	KlemmUI::UIText* ServerHeader = nullptr;
 	static bool ShouldLaunchGame;
 	struct ServerEntry
 	{
@@ -43,12 +44,12 @@ public:
 	ServerEntry SelectedServer;
 
 	std::vector<ServerEntry> DisplayedServerEntries;
-	std::vector<UIButton*> ServerBrowserButtons;
+	std::vector<KlemmUI::UIButton*> ServerBrowserButtons;
 	std::string SearchText = "";
 
 	void DisplayServerDescription(ServerEntry e);
 
-	UIText* PlayerCountText = new UIText(0.3, 1, "Players in game: ??", UI::Text);
+	KlemmUI::UIText* PlayerCountText = new KlemmUI::UIText(0.6, 1, "Players in game: ??", UI::Text);
 	static std::vector<ServerEntry> Servers;
 	static ServerBrowserTab* CurrentServerTab;
 	ServerBrowserTab();

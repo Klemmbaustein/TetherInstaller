@@ -1,6 +1,8 @@
 #include "UITab.h"
 #include <KlemmUI/UI/UIBackground.h>
 
+using namespace KlemmUI;
+
 void UITab::OnClicked()
 {
 }

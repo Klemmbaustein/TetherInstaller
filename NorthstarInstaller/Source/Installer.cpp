@@ -28,8 +28,11 @@
 #include "TetherPlugin.h"
 #endif
 
+using namespace KlemmUI;
+
 namespace Installer
 {
+	Window* MainWindow = nullptr;
 	std::string TitleText = "";
 	std::string CurrentPath = "";
 	UIBox* WindowButtonBox = nullptr;
@@ -40,9 +43,7 @@ namespace Installer
 	size_t HoveredTab = 0;
 	bool UseSystemTitleBar = false;
 
-	Vector3f32 InstallerThemeColor = Vector3f32(0.3f, 0.5f, 1);
-
-	UIButtonStyle* TabStyles[2] = { new UIButtonStyle("Tab default style"), new UIButtonStyle("Tab selected style")};
+	Vector3f InstallerThemeColor = Vector3f(0.3f, 0.5f, 1);
 
 	UIText* AppTitle;
 
@@ -68,7 +69,6 @@ namespace Installer
 			return;
 		}
 
-		Log::Print("Generating tab bar layout");
 		TabButtons.clear();
 
 		SidebarBackground->DeleteChildren();
@@ -76,7 +76,7 @@ namespace Installer
 		{
 			Tabs[i]->Background->IsVisible = SelectedTab == i;
 
-			auto Button = new UIButton(true, 0, TabStyles[(int)(SelectedTab == i)], [](int Index)
+			auto Button = new UIButton(true, 0, Installer::GetThemeColor(), [](int Index)
 				{
 					Tabs.at(Index)->OnClicked();
 					SelectedTab = Index;
@@ -84,15 +84,16 @@ namespace Installer
 				}, (int)i);
 			Button->SetHorizontalAlign(UIBox::Align::Centered);
 			SidebarBackground->AddChild(Button
-				->SetSizeMode(UIBox::SizeMode::AspectRelative)
-				->SetPaddingSizeMode(UIBox::SizeMode::AspectRelative)
+				->SetSizeMode(UIBox::SizeMode::PixelRelative)
+				->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)
 				->SetBorder(UIBox::BorderType::Rounded, 0.3)
-				->SetPadding(0.01, 0.01, 0.01, 0.01)
-				->AddChild((new UIBackground(true, 0, 0, 0.1))
+				->SetPadding(6, 0, 6, 6)
+				->AddChild((new UIBackground(true, 0, 0, 54))
 					->SetUseTexture(true, Icon("itab_" + Tabs[i]->Name).TextureID)
-					->SetPaddingSizeMode(UIBox::SizeMode::AspectRelative)
-					->SetSizeMode(UIBox::SizeMode::AspectRelative)));
-			TabButtons.push_back(Button);
+					->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)
+					->SetPadding(2)
+					->SetSizeMode(UIBox::SizeMode::PixelRelative)));
+			TabButtons.push_back(SetButtonColorIfSelected(Button, i == SelectedTab));
 		}
 		SidebarBackground->UpdateElement();
 	}
@@ -174,14 +175,14 @@ namespace Installer
 	void UpdateInstaller()
 	{
 #if __linux__
-		Window::ShowPopupError(Translation::GetTranslation("popup_linux_update"));
+		WindowFunc::ShowPopupError(Translation::GetTranslation("popup_linux_update"));
 		return;
 #endif
 		BackgroundTask::SetStatus("dl_" + Translation::GetTranslation("download_update_installer"));
-		if (Window::ShowPopupQuestion(
+		if (WindowFunc::ShowPopupQuestion(
 			Translation::GetTranslation("popup_windows_update_title"),
 			Translation::GetTranslation("popup_windows_update"))
-			!= Window::PopupReply::Yes)
+			!= WindowFunc::PopupReply::Yes)
 		{
 			return;
 		}
@@ -228,10 +229,14 @@ namespace Installer
 		HoveredTabName
 			->SetOpacity(0.75)
 			->SetBorder(UIBox::BorderType::Rounded, 0.25)
-			->AddChild((new UIText(0.4, 1, Translation::GetTranslation("tab_" + Tabs[TabIndex]->Name), UI::Text))
-				->SetPadding(0.01, 0.0, 0.01, 0.01))
-			->AddChild((new UIText(0.3, 0.8, Translation::GetTranslation("tab_" + Tabs[TabIndex]->Name + "_description"), UI::Text))
-				->SetPadding(0, 0.01, 0.01, 0.01));
+			->AddChild((new UIText(16, 1, Translation::GetTranslation("tab_" + Tabs[TabIndex]->Name), UI::Text))
+				->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
+				->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)
+				->SetPadding(5, 0, 5, 15))
+			->AddChild((new UIText(12, 0.8, Translation::GetTranslation("tab_" + Tabs[TabIndex]->Name + "_description"), UI::Text))
+				->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
+				->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)
+				->SetPadding(0, 5, 5, 15));
 	}
 
 #ifdef TF_PLUGIN
@@ -241,34 +246,38 @@ namespace Installer
 
 void Installer::UpdateWindowFlags()
 {
-	Application::SetWindowFlags(UseSystemTitleBar ? 0 : Application::BORDERLESS_BIT);
+	MainWindow->SetWindowFlags(UseSystemTitleBar ? Window::WindowFlag::Resizable : (Window::WindowFlag::Borderless | Window::WindowFlag::Resizable));
 	GenerateWindowButtons();
 }
 
-void Installer::SetThemeColor(Vector3f32 NewColor)
+void Installer::SetThemeColor(Vector3f NewColor)
 {
 	InstallerThemeColor = NewColor;
-	TabStyles[0]->Color = Vector3f32(1.0f, 1.0f, 1.0f);
-	TabStyles[0]->HoveredColor = Vector3f32::Lerp(1.0f, InstallerThemeColor, 0.5f);
-	TabStyles[0]->PressedColor = InstallerThemeColor;
-	TabStyles[0]->SetPadding(0.005);
-	TabStyles[0]->Border = UIBox::BorderType::Rounded;
-	TabStyles[0]->BorderSize = 0.4;
-
-	TabStyles[1]->Color = InstallerThemeColor;
-	TabStyles[1]->HoveredColor = InstallerThemeColor;
-	TabStyles[1]->PressedColor = InstallerThemeColor;
-	TabStyles[1]->SetPadding(0.005);
-	TabStyles[1]->Border = UIBox::BorderType::Rounded;
-	TabStyles[1]->BorderSize = 0.4;
 
 	GenerateTabs();
-	Application::SetBorderlessWindowOutlineColor(NewColor);
+	MainWindow->BorderColor = NewColor;
 }
 
-Vector3f32 Installer::GetThemeColor()
+Vector3f Installer::GetThemeColor()
 {
 	return InstallerThemeColor;
+}
+
+KlemmUI::UIButton* Installer::SetButtonColorIfSelected(KlemmUI::UIButton* Button, bool IsSelected)
+{
+	if (IsSelected)
+	{
+		Button->SetColor(InstallerThemeColor);
+		Button->SetHoveredColor(InstallerThemeColor);
+		Button->SetPressedColor(InstallerThemeColor);
+	}
+	else
+	{
+		Button->SetColor(1);
+		Button->SetHoveredColor(Vector3f::Lerp(1, InstallerThemeColor, 0.5f));
+		Button->SetPressedColor(InstallerThemeColor);
+	}
+	return Button;
 }
 
 void Installer::GenerateWindowButtons()
@@ -279,9 +288,8 @@ void Installer::GenerateWindowButtons()
 		return;
 	}
 
-
 	std::vector<int> Buttons;
-	if (Application::GetFullScreen())
+	if (MainWindow->GetWindowFullScreen())
 	{
 		Buttons = { 0, 2, 3 };
 	}
@@ -291,24 +299,24 @@ void Installer::GenerateWindowButtons()
 	}
 	for (int i : Buttons)
 	{
-		Vector3f32 HoveredColor = 0.3f;
+		Vector3f HoveredColor = 0.3f;
 		if (i == 0)
 		{
-			HoveredColor = Vector3f32(0.5, 0, 0);
+			HoveredColor = Vector3f(0.5, 0, 0);
 		}
-		WindowButtonBox->AddChild((new UIButton(true, 0, 0.1, [](int Index) {
+		WindowButtonBox->AddChild((new UIButton(true, 0, 0.1f, [](int Index) {
 			switch (Index)
 			{
 			case 0:
-				Application::Quit = true;
+				MainWindow->Close();
 				break;
 			case 1:
 			case 2:
-				Application::SetFullScreen(!Application::GetFullScreen());
+				MainWindow->SetWindowFullScreen(!MainWindow->GetWindowFullScreen());
 				GenerateWindowButtons();
 				break;
 			case 3:
-				Application::Minimize();
+				//Application::Minimize();
 				break;
 			default:
 				break;
@@ -319,13 +327,14 @@ void Installer::GenerateWindowButtons()
 			->SetMinSize(0)
 			->SetPadding(0)
 			->SetSizeMode(UIBox::SizeMode::PixelRelative)
-			->AddChild((new UIBackground(true, 0, 1, Vector2(0.03)))
+			->AddChild((new UIBackground(true, 0, 1, 16))
 				->SetUseTexture(true, WindowButtonsIcons[i])
 				->SetSizeMode(UIBox::SizeMode::PixelRelative)
-				->SetPadding(Application::GetFullScreen() ? 0.0275 : 0.015,
-					0.015,
-					0.015,
-					(Application::GetFullScreen() && i == 0) ? 0.02 : 0.015)));
+				->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)
+				->SetPadding(MainWindow->GetWindowFullScreen() ? 18 : 10,
+					10,
+					16,
+					(MainWindow->GetWindowFullScreen() && i == 0) ? 24 : 16)));
 	}
 
 	if (!DownloadWindow::IsDownloading)
@@ -333,7 +342,7 @@ void Installer::GenerateWindowButtons()
 		return;
 	}
 
-	WindowButtonBox->AddChild((new UIButton(true, 0, Vector3f32(0.1), []() {
+	WindowButtonBox->AddChild((new UIButton(true, 0, Vector3f(0.1), []() {
 		DownloadWindow::SetWindowVisible(true);
 		}))
 		->SetHoveredColor(0.3f)
@@ -342,7 +351,7 @@ void Installer::GenerateWindowButtons()
 		->AddChild((new UIBackground(true, 0, 1, Vector2(0.045)))
 			->SetUseTexture(true, Icon("Download").TextureID)
 			->SetSizeMode(UIBox::SizeMode::PixelRelative)
-			->SetPadding(Application::GetFullScreen() ? 0.0175 : 0.005,
+			->SetPadding(true ? 0.0175 : 0.005,
 				0.005,
 				0.015,
 				0.015)));
@@ -373,18 +382,23 @@ int main(int argc, char** argv)
 	}
 	CurrentPath.append("/");
 
-	SetThemeColor(GetThemeColor());
-
+	Application::Initialize(CurrentPath + "Data/shaders");
+	
 	LoadTranslation(GetLastTranslation());
 
-	Application::SetBorderlessWindowOutlineColor(InstallerThemeColor);
-	Application::SetShaderPath(CurrentPath + "Data/shaders");
-	Application::SetErrorMessageCallback([](std::string Message)
+	Window AppWindow = Window("TetherInstaller", Window::WindowFlag::Resizable | Window::WindowFlag::Borderless);
+	AppWindow.SetMinSize(Vector2ui(640, 480));
+
+	MainWindow = &AppWindow;
+
+	SetThemeColor(GetThemeColor());
+
+	Application::Error::SetErrorCallback([](std::string Message)
 		{
-			Window::ShowPopupError("-- Internal UI Error --\n\n" + Message);
+			WindowFunc::ShowPopupError("-- Internal UI Error --\n\n" + Message);
 		});
-	Application::Initialize("TetherInstaller " + Installer::InstallerVersion, UseSystemTitleBar ? 0 : Application::BORDERLESS_BIT);
-	Application::SetWindowMovableCallback([]() 
+
+	MainWindow->IsAreaGrabbableCallback = ([](Window*)
 		{ 
 			return WindowButtonBox->IsBeingHovered();
 		});
@@ -394,10 +408,10 @@ int main(int argc, char** argv)
 
 	WindowButtonsIcons =
 	{
-		Texture::LoadTexture(Installer::CurrentPath + "Data/WindowX.png"),
-		Texture::LoadTexture(Installer::CurrentPath + "Data/WindowResize.png"),
-		Texture::LoadTexture(Installer::CurrentPath + "Data/WindowResize2.png"),
-		Texture::LoadTexture(Installer::CurrentPath + "Data/WindowMin.png"),
+		Texture::LoadTexture(Installer::CurrentPath + "/Data/WindowX.png"),
+		Texture::LoadTexture(Installer::CurrentPath + "/Data/WindowResize.png"),
+		Texture::LoadTexture(Installer::CurrentPath + "/Data/WindowResize2.png"),
+		Texture::LoadTexture(Installer::CurrentPath + "/Data/WindowMin.png"),
 	};
 
 	Log::Print("Cleaning up temp directory");
@@ -439,15 +453,12 @@ int main(int argc, char** argv)
 		->AddChild(WindowButtonBox);
 	GenerateWindowButtons();
 	
-	AppTitle = new UIText(0.3, 1, "TetherInstaller - Loading...", UI::Text);
-	AppTitle->SetPosition(Vector2f(-1, 0.9));
+	AppTitle = new UIText(14, 1, "TetherInstaller - Loading...", UI::Text);
 	AppTitle->SetTextSizeMode(UIBox::SizeMode::PixelRelative);
+;
 
-	Application::UpdateWindow();
 	InstallerBackground->SetPosition(Vector2f(0.0) - InstallerBackground->GetUsedSize() / 2);
 	AppTitle->SetPosition(Vector2f(-1, WindowButtonBox->GetPosition().Y));
-
-	Application::UpdateWindow();
 
 	Networking::Init();
 
@@ -470,7 +481,7 @@ int main(int argc, char** argv)
 		new LaunchTab(),
 		new ServerBrowserTab(),
 		new ModsTab(),
-#ifndef TF_PLUGIN // Don't implement anything relating to plugin yet.
+#ifndef TF_PLUGIN // Haven't implemented anything relating to profiles with plugins yet.
 		new ProfileTab(),
 #endif
 		new SettingsTab(),
@@ -487,12 +498,12 @@ int main(int argc, char** argv)
 	}
 
 	Log::Print("Successfully started launcher");
-	float PrevAspect = Application::AspectRatio;
+	float PrevAspect = MainWindow->GetAspectRatio();
 
 #ifdef TF_PLUGIN
 	while (true)
 #else
-	while (!Application::Quit)
+	while (MainWindow->UpdateWindow())
 #endif
 	{
 		for (auto i : Tabs)
@@ -500,12 +511,13 @@ int main(int argc, char** argv)
 			i->Background->SetPosition(Vector2f(
 				SidebarBackground->GetPosition().X + SidebarBackground->GetUsedSize().X,
 				-1));
-			i->Background->SetMinSize(Vector2f(
-				2 - SidebarBackground->GetUsedSize().X,
-				2 - WindowButtonBox->GetUsedSize().Y));
-			i->Background->SetMaxSize(Vector2f(
-				2 - SidebarBackground->GetUsedSize().X,
-				2 - WindowButtonBox->GetUsedSize().Y));
+
+			Vector2f BackgroundSize = Vector2f(2) - Vector2f(
+				SidebarBackground->GetUsedSize().X,
+				WindowButtonBox->GetUsedSize().Y);
+
+			i->Background->SetMinSize(BackgroundSize);
+			i->Background->SetMaxSize(BackgroundSize);
 			i->Tick();
 		}
 
@@ -551,19 +563,18 @@ int main(int argc, char** argv)
 		if (UseSystemTitleBar && TitleText != Title)
 		{
 			TitleText = Title;
-			Application::SetApplicationTitle(Title);
+			MainWindow->SetTitle(Title);
 		}
 		else if (!UseSystemTitleBar)
 		{
 			AppTitle->SetText(Title);
 		}
-		AppTitle->SetPosition(Vector2f(SidebarBackground->GetUsedSize().X - 0.99, WindowButtonBox->GetPosition().Y + 0.001));
+		AppTitle->SetPosition(Vector2f(SidebarBackground->GetUsedSize().X - 0.99, WindowButtonBox->GetPosition().Y + 0.005));
 		DownloadWindow::Update(WindowButtonBox->GetUsedSize().Y);
 
-		if (Application::AspectRatio != PrevAspect)
+		if (MainWindow->GetAspectRatio() != PrevAspect)
 		{
-			PrevAspect = Application::AspectRatio;
-			AppTitle->SetTextSize(Application::GetFullScreen() ? 0.4 : 0.3);
+			PrevAspect = MainWindow->GetAspectRatio();
 			GenerateWindowButtons();
 		}
 
@@ -574,13 +585,8 @@ int main(int argc, char** argv)
 			LaunchTasks.pop();
 		}
 
-		Application::UpdateWindow();
-		Application::SetActiveMouseCursor(Application::GetMouseCursorFromHoveredButtons());
+		//Application::SetActiveMouseCursor(Application::GetMouseCursorFromHoveredButtons());
 #ifndef TF_PLUGIN
-		if (Application::Quit && BackgroundTask::IsRunningTask)
-		{
-			Application::Quit = false;
-		}
 #else
 		Plugin::Update();
 		if (Application::Quit && !BackgroundTask::IsRunningTask)
@@ -655,7 +661,7 @@ int WinMain()
 	}
 	catch (std::exception& e)
 	{
-		Window::ShowPopupError(e.what());
+		WindowFunc::ShowPopupError(e.what());
 	}
 }
 #endif

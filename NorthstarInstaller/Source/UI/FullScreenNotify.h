@@ -4,12 +4,12 @@
 
 class FullScreenNotify
 {
-	UIBackground* BlockingBackground = nullptr;
+	KlemmUI::UIBackground* BlockingBackground = nullptr;
 public:
 	FullScreenNotify(std::string Title);
 	~FullScreenNotify();
 
-	UIBox* ContentBox = nullptr;
+	KlemmUI::UIBox* ContentBox = nullptr;
 
 	struct NotifyOption
 	{

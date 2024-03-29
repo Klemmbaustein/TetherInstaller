@@ -9,8 +9,8 @@ class LaunchTab : public UITab
 public:
 
 	void OnClicked() override;
-	UIButton* LaunchButton = nullptr;
-	UIText* LaunchText = nullptr;
+	KlemmUI::UIButton* LaunchButton = nullptr;
+	KlemmUI::UIText* LaunchText = nullptr;
 	LaunchTab();
 	void Tick() override;
 	virtual ~LaunchTab();

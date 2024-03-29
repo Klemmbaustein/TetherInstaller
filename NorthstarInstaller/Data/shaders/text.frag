@@ -7,7 +7,7 @@ uniform vec3 u_offset; //X = Y offset; Y = MaxDistance; Z MinDistance
 uniform sampler2D u_texture;
 uniform vec3 textColor;
 uniform float u_opacity = 1.0f;
-uniform vec2 u_screenRes = vec2(1600, 900);
+uniform vec2 u_screenRes = vec2(1500, 1500);
 uniform vec3 transform;
 #define NUM_SAMPLES 3
 

@@ -7,13 +7,12 @@
 
 class SettingsTab : public UITab
 {
-	UIBackground* SettingsBackground = nullptr;
-	UIScrollBox* SettingsBox = nullptr;
+	KlemmUI::UIBackground* SettingsBackground = nullptr;
+	KlemmUI::UIScrollBox* SettingsBox = nullptr;
 public:
-	UITextField* LaunchArgsText = nullptr;
-	UITextField* ColorText = nullptr;
-	UIDropdown* LanguageDropdown = nullptr;
-	UIDropdown* TitleBarDropdown = nullptr;
+	KlemmUI::UITextField* LaunchArgsText = nullptr;
+	KlemmUI::UITextField* ColorText = nullptr;
+	std::vector<KlemmUI::UIDropdown::Option> LanguageOptions;
 	SettingsTab();
 	void Tick() override;
 	void GenerateSettings();

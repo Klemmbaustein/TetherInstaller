@@ -218,13 +218,13 @@
     <None Include="..\README.md" />
     <None Include="Data\autojoin\mod.json" />
     <None Include="Data\autojoin\mod\scripts\vscripts\autoJoinServer.gnut" />
-    <None Include="makefile" />
     <None Include="update.bat" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="installer.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="..\CMakeLists.txt" />
     <Text Include="..\LICENSE.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

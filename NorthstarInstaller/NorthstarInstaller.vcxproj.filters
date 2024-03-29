@@ -132,12 +132,12 @@
       <Filter>autoJoinServer</Filter>
     </None>
     <None Include="update.bat" />
-    <None Include="makefile" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="installer.rc" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\LICENSE.txt" />
+    <Text Include="..\CMakeLists.txt" />
   </ItemGroup>
 </Project>

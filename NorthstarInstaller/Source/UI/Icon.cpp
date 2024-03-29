@@ -9,7 +9,7 @@ Icon::Icon(std::string Name)
 	auto ico = LoadedIcons.find(Name);
 	if (ico == LoadedIcons.end())
 	{
-		TextureID = Texture::LoadTexture(Installer::CurrentPath + "Data/icons/" + Name + ".png");
+		TextureID = KlemmUI::Texture::LoadTexture(Installer::CurrentPath + "Data/icons/" + Name + ".png");
 		LoadedIcons.insert(std::pair(Name, TextureID));
 	}
 	else

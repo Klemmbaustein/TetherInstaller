@@ -63,22 +63,18 @@ jobs:
           sudo apt-get install libsdl2-dev
           sudo apt-get install libglew-dev
           sudo apt-get install libcurl4-openssl-dev
-          cd KlemmUI
-          cmake -S . -B Build/
-          cd Build/
-          make && sudo make install
-          cd ../..
     - name: build
       run: |
-          cd NorthstarInstaller
-          make BUILD_ID=${{ github.run_number }}
+          cmake -S . -B Build/
+          cd Build/
+          cmake --build .
     - name: make-release
       run: |
           ls -R
           mkdir Release
           cp -rf NorthstarInstaller/Data Release/Data
           cp LICENSE.txt Release/License.txt
-          cp -rf NorthstarInstaller/TetherInstaller Release/TetherInstaller
+          cp Build/TetherInstaller Release/TetherInstaller
     - name: upload artifact
       uses: actions/upload-artifact@v3
       env:
@@ -86,7 +82,7 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         path: Release
-        name: Tether-Linux-Build-${{ github.run_number }}.zip
+        name: Tether-Linux-Build-${{ github.run_number }}
 
   Release:
     runs-on: ubuntu-latest
@@ -99,11 +95,10 @@ jobs:
 
     - name: "zip artifacts"
       run: |
-        cd ${{ github.workspace }}/Release/Tether-Windows-Build-${{ github.run_number }}.zip
+        cd ${{ github.workspace }}/Release/Tether-Windows-Build-${{ github.run_number }}
         zip -r ${{ github.workspace }}/tether-win.zip ./*
-        cd ${{ github.workspace }}/Release/Tether-Linux-Build-${{ github.run_number }}.zip
-        zip -r ${{ github.workspace }}/tether-linux.zip ./
-
+        cd ${{ github.workspace }}/Release/
+        tar -czf ${{ github.workspace }}/tether_linux.tar.gz Tether-Linux-Build-${{ github.run_number }}
     - name: list-directory
       run: "ls -R"
 
@@ -123,8 +118,8 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: tether-linux.zip
-        asset_name: Tether-Linux-Build-${{ github.run_number }}.zip
+        asset_path: tether_linux.tar.gz
+        asset_name: Tether-Linux-Build-${{ github.run_number }}.tar.gz
         asset_content_type: application/zip
 
     - name: upload windows artifact

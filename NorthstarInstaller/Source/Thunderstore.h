@@ -58,7 +58,6 @@ namespace Thunderstore
 			return comb;
 		}
 	};
-
 	struct Category
 	{
 		std::string Name;

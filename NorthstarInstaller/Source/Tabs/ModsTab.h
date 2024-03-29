@@ -11,23 +11,23 @@
 
 class ModsTab : public UITab
 {
-	static std::vector<UIButton*> ModButtons;
-	static std::vector<UIButton*> PageButtons;
-	static std::vector<UIButton*> CategoryButtons;
-	UIBackground* ModsBackground = nullptr;
-	UIScrollBox* ModsScrollBox = nullptr;
+	static std::vector<KlemmUI::UIButton*> ModButtons;
+	static std::vector<KlemmUI::UIButton*> PageButtons;
+	static std::vector<KlemmUI::UIButton*> CategoryButtons;
+	KlemmUI::UIBackground* ModsBackground = nullptr;
+	KlemmUI::UIScrollBox* ModsScrollBox = nullptr;
 	std::vector<unsigned int> ModTextures;
 	unsigned int ModPreviewTexture = 0;
 	float PrevAspectRatio = 0;
-	std::vector<UIBackground*> ModImages;
+	std::vector<KlemmUI::UIBackground*> ModImages;
 	bool IsInModInfo = false;
-	UIBox* GenerateModInfoText(std::vector<std::string> Text, Vector3f32 Color, std::string Icon, double IconPadding = 0.01);
+	KlemmUI::UIBox* GenerateModInfoText(std::vector<std::string> Text, Vector3f Color, std::string Icon, double IconPadding = 0.01);
 	static void InstallMod();
 public:
 	void GenerateAvaliabilityMessage();
 	static ModsTab* CurrentModsTab;
 	static std::atomic<unsigned int> ModsPerPage;
-	UITextField* SearchBar = nullptr;
+	KlemmUI::UITextField* SearchBar = nullptr;
 	std::string Filter = "";
 	bool DownloadingPage = false;
 	bool LoadedModList = false;

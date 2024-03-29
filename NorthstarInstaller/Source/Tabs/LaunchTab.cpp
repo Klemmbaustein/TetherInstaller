@@ -29,6 +29,9 @@
 static bool CheckedForVanillaPlus = false;
 static std::string NorthstarLaunchArgs;
 bool LaunchTab::IsGameRunning = false;
+
+using namespace KlemmUI;
+
 static void NorthstarLaunchTask()
 {
 #ifndef TF_PLUGIN
@@ -98,15 +101,17 @@ static void NorthstarLaunchTask()
 #endif
 }
 
-std::map<void (*)(), std::string> LaunchStoppingTasks =
+typedef void (*StoppingFunctionPtr)();
+
+std::map<StoppingFunctionPtr, std::string> LaunchStoppingTasks =
 {
-	std::pair(Game::UpdateGame, "play_updating_game"),
-	std::pair(NorthstarLaunchTask, "play_game_running"),
-	std::pair(Installer::CheckForUpdates, "play_update_check"),
-	std::pair(Installer::CheckForInstallerUpdate, "play_update_check"),
-	std::pair(ModsTab::CheckForModUpdates, "play_update_check"),
-	std::pair(Installer::UpdateInstaller, "play_updating_installer"),
-	std::pair(Thunderstore::TSModFunc::InstallOrUninstallMod, "play_downloading_mod")
+	std::pair(&Game::UpdateGame, "play_updating_game"),
+	std::pair(&NorthstarLaunchTask, "play_game_running"),
+	std::pair(&Installer::CheckForUpdates, "play_update_check"),
+	std::pair(&Installer::CheckForInstallerUpdate, "play_update_check"),
+	std::pair(&ModsTab::CheckForModUpdates, "play_update_check"),
+	std::pair(&Installer::UpdateInstaller, "play_updating_installer"),
+	std::pair(&Thunderstore::TSModFunc::InstallOrUninstallMod, "play_downloading_mod")
 };
 
 void LaunchTab::LaunchNorthstar()
@@ -158,7 +163,7 @@ LaunchTab::LaunchTab()
 	TextBox->SetHorizontalAlign(UIBox::Align::Centered);
 
 	LaunchButton = new UIButton(true, 0, Installer::GetThemeColor(), LaunchNorthstar);
-	LaunchText = new UIText(0.7f, 0, "", UI::Text);
+	LaunchText = new UIText(1.4f, 0, "", UI::Text);
 
 	Background->AddChild(TextBox
 		->SetMinSize(Vector2f(2, 0.2))
@@ -194,7 +199,7 @@ void LaunchTab::Tick()
 	}
 
 	LaunchButton->SetColor(1.0f);
-	LaunchButton->SetHoveredColor(Vector3f32::Lerp(1.0f, Installer::GetThemeColor(), 0.5f));
+	LaunchButton->SetHoveredColor(Vector3f::Lerp(1.0f, Installer::GetThemeColor(), 0.5f));
 	LaunchButton->SetPressedColor(Installer::GetThemeColor());
 
 	IsGameRunning = BackgroundTask::IsFunctionRunningAsTask(NorthstarLaunchTask);

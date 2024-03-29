@@ -220,7 +220,7 @@ void Game::UpdateGame()
 	}
 	catch (std::exception& e)
 	{
-		Window::ShowPopupError(Format("Error updating game: %s", e.what()));
+		WindowFunc::ShowPopupError(Format("Error updating game: %s", e.what()));
 	}
 }
 

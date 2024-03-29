@@ -3,8 +3,8 @@
 
 namespace UI
 {
-	extern TextRenderer* Text;
-	extern TextRenderer* MonoText;
+	extern KlemmUI::Font* Text;
+	extern KlemmUI::Font* MonoText;
 
 	void LoadFonts();
 }

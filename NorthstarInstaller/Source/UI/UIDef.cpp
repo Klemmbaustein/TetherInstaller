@@ -4,12 +4,14 @@
 
 namespace UI
 {
-	TextRenderer* Text;
-	TextRenderer* MonoText;
+	using namespace KlemmUI;
+
+	Font* Text;
+	Font* MonoText;
 	void LoadFonts()
 	{
 		Log::Print("Loading UI fonts...");
-		MonoText = new TextRenderer(Installer::CurrentPath + "Data/Monospace.ttf");
-		Text = new TextRenderer(Installer::CurrentPath + "Data/Font.ttf");
+		MonoText = new Font(Installer::CurrentPath + "Data/Monospace.ttf");
+		Text = new Font(Installer::CurrentPath + "Data/Font.ttf");
 	}
 }

@@ -23,6 +23,7 @@
 #endif
 
 using namespace Translation;
+using namespace KlemmUI;
 
 ProfileTab::Profile ProfileTab::CurrentProfile;
 std::vector<ProfileTab::Profile> ProfileTab::AllProfiles;
@@ -70,7 +71,7 @@ ProfileTab::ProfileTab()
 			->SetPadding(0))
 		->SetPadding(0));
 
-	TabTitle = new UIText(0.8, 1, "Profiles", UI::Text);
+	TabTitle = new UIText(1.4f, 1, "Profiles", UI::Text);
 
 	ProfileBackground->AddChild(TabTitle);
 
@@ -185,42 +186,42 @@ void ProfileTab::DisplayProfileInfo()
 {
 	ProfileInfoBox->DeleteChildren();
 
-	ProfileInfoBox->AddChild((new UIText(0.35, 1, GetTranslation("profile_current"), UI::Text))
+	ProfileInfoBox->AddChild((new UIText(0.7f, 1, GetTranslation("profile_current"), UI::Text))
 		->SetPadding(0, 0.01, 0.01, 0));
 
 	ProfileInfoBox->AddChild((new UIBackground(true, 0, 1, Vector2f(0.575, 0.005)))
 		->SetPadding(0.0, 0, 0, 0));
-	ProfileInfoBox->AddChild(new UIText(0.75, 1, CurrentProfile.DisplayName, UI::Text));
+	ProfileInfoBox->AddChild(new UIText(1.5f, 1, CurrentProfile.DisplayName, UI::Text));
 	ProfileInfoBox->AddChild((new UIBackground(true, 0, 1, Vector2f(0.575, 0.005)))
 		->SetPadding(0.0, 0.05, 0, 0));
 
 	auto Mods = Thunderstore::GetInstalledMods().Combined();
 
-	ProfileInfoBox->AddChild(new UIText(0.5, 1, GetTranslation("profile_mods"), UI::Text));
+	ProfileInfoBox->AddChild(new UIText(1.0f, 1, GetTranslation("profile_mods"), UI::Text));
 
 	for (auto& i : Mods)
 	{
-		ColoredText ModString = { TextSegment("- " + i.Namespace + "." + i.Name, 1) };
+		std::vector<TextSegment> ModString = { TextSegment("- " + i.Namespace + "." + i.Name, 1) };
 		if (!Thunderstore::GetModEnabled(i))
 		{
-			ModString.push_back(TextSegment("  " + GetTranslation("profile_disabled"), Vector3f32(1, 0.5f, 0)));
+			ModString.push_back(TextSegment("  " + GetTranslation("profile_disabled"), Vector3f(1, 0.5f, 0)));
 		}
 
-		ProfileInfoBox->AddChild((new UIText(0.3, ModString, UI::Text))
-			->SetPadding(0, 0.005, 0.02, 0.01));
+		ProfileInfoBox->AddChild((new UIText(0.6f, ModString, UI::Text))
+			->SetPadding(0.0f, 0.005f, 0.02f, 0.01f));
 	}
 
 	if (Mods.empty())
 	{
-		ProfileInfoBox->AddChild((new UIText(0.3, 1, GetTranslation("profile_no_mods"), UI::Text))
-			->SetPadding(0, 0.005, 0.02, 0.01));
+		ProfileInfoBox->AddChild((new UIText(0.6f, 1, GetTranslation("profile_no_mods"), UI::Text))
+			->SetPadding(0, 0.005f, 0.02f, 0.01f));
 	}
 
-	ProfileInfoBox->AddChild(new UIText(0.5, 1, GetTranslation("profile_about"), UI::Text));
+	ProfileInfoBox->AddChild(new UIText(1.0f, 1, GetTranslation("profile_about"), UI::Text));
 
 	if (!std::filesystem::exists(Game::GamePath + "/Northstar.dll"))
 	{
-		ProfileInfoBox->AddChild((new UIText(0.3, 1, "Northstar is not installed", UI::Text))
+		ProfileInfoBox->AddChild((new UIText(0.6f, 1, "Northstar is not installed", UI::Text))
 			->SetPadding(0, 0.005, 0.02, 0.01));
 	}
 	else
@@ -252,7 +253,7 @@ void ProfileTab::DisplayProfileInfo()
 
 		for (auto& i : AboutStrings)
 		{
-			ProfileInfoBox->AddChild((new UIText(0.3, 1, i, UI::Text))
+			ProfileInfoBox->AddChild((new UIText(0.6f, 1, i, UI::Text))
 				->SetPadding(0, 0.005, 0.02, 0.01));
 		}
 	}
@@ -287,14 +288,14 @@ void ProfileTab::DisplayProfileInfo()
 					->SetPadding(0.01, 0.01, 0.01, 0)
 					->SetSizeMode(UIBox::SizeMode::AspectRelative))
 				->SetBorder(UIBox::BorderType::Rounded, 0.5)
-				->AddChild((new UIText(0.25, 0, "Update profile", UI::Text))
+				->AddChild((new UIText(0.5f, 0, "Update profile", UI::Text))
 					->SetPadding(0.015)));
 		}
-		OptionsBox->AddChild((new UIButton(true, 0, Vector3f32(1, 0.5, 0), []()
+		OptionsBox->AddChild((new UIButton(true, 0, Vector3f(1, 0.5, 0), []()
 			{
-				if (Window::ShowPopupQuestion(GetTranslation("profile_delete"),
+				if (WindowFunc::ShowPopupQuestion(GetTranslation("profile_delete"),
 					Format(GetTranslation("profile_delete_message"), CurrentProfile.DisplayName.c_str()))
-					 != Window::PopupReply::Yes)
+					 != WindowFunc::PopupReply::Yes)
 				{ 
 					return;
 				}
@@ -307,16 +308,16 @@ void ProfileTab::DisplayProfileInfo()
 				}
 				catch (std::exception& e)
 				{
-					Window::ShowPopupError(e.what());
+					WindowFunc::ShowPopupError(e.what());
 				}
 			}))
-			->SetPadding(0.1, 0, 0.01, 0.01)
-			->SetBorder(UIBox::BorderType::Rounded, 0.5)
-			->AddChild((new UIBackground(true, 0, 0, 0.045))
+			->SetPadding(0.1f, 0, 0.01f, 0.01f)
+			->SetBorder(UIBox::BorderType::Rounded, 0.5f)
+			->AddChild((new UIBackground(true, 0, 0, 0.045f))
 				->SetUseTexture(true, Icon("Delete").TextureID)
-				->SetPadding(0.01, 0.01, 0.01, 0)
+				->SetPadding(0.01f, 0.01f, 0.01f, 0)
 				->SetSizeMode(UIBox::SizeMode::AspectRelative))
-			->AddChild((new UIText(0.25, 0, GetTranslation("profile_delete"), UI::Text))
+			->AddChild((new UIText(0.5f, 0, GetTranslation("profile_delete"), UI::Text))
 				->SetPadding(0.015)));
 	}
 }
@@ -325,18 +326,21 @@ void ProfileTab::UpdateProfilesList()
 {
 	ProfileList->DeleteChildren();
 	for (size_t i = 0; i < AllProfiles.size(); i++)
-	{ 
+	{
 
-		ProfileList->AddChild((new UIButton(true, 0, Installer::TabStyles[(int)(AllProfiles[i] == CurrentProfile)],
-			[](int Index) 
-			{
-				CurrentProfile = AllProfiles[Index];
-				OnProfileSwitched();
-			},
-			i))
-			->SetMinSize(Vector2f(0.8, 0))
-			->SetPadding(0.005)
-			->AddChild(new UIText(0.3, 0, AllProfiles[i].DisplayName, UI::MonoText)));
+		ProfileList->AddChild(Installer::SetButtonColorIfSelected((UIButton*)
+			((new UIButton(true, 0, Installer::GetThemeColor(),
+				[](int Index)
+				{
+					CurrentProfile = AllProfiles[Index];
+					OnProfileSwitched();
+				},
+				i))
+				->SetMinSize(Vector2f(0.8, 0))
+				->SetPadding(0.005)
+				->SetBorder(UIBox::BorderType::Rounded, 0.3f)
+				->AddChild(new UIText(0.6f, 0, AllProfiles[i].DisplayName, UI::MonoText))),
+			CurrentProfile.Path == AllProfiles[i].Path));
 	}
 }
 
@@ -349,29 +353,29 @@ void ProfileTab::OnClicked()
 
 void ProfileTab::GenerateProfileCreationBox()
 {
-	NewProfileTextField = new UITextField(true, 0, 0, UI::Text, nullptr);
+	NewProfileTextField = new UITextField(0, 0, UI::Text, nullptr);
 
 	ProfileCreationBox->DeleteChildren();
 	ProfileCreationBox->SetOpacity(0.5)
-		->AddChild(new UIText(0.4, 1, GetTranslation("profile_create_new"), UI::Text))
+		->AddChild(new UIText(0.8f, 1.0f, GetTranslation("profile_create_new"), UI::Text))
 		->AddChild((new UIBox(true, 0))
 			->SetVerticalAlign(UIBox::Align::Centered)
 			->AddChild(NewProfileTextField
-				->SetTextSize(0.3)
+				->SetTextSize(0.6f)
 				->SetHintText(GetTranslation("profile_create_name"))
-				->SetPadding(0.01, 0.01, 0.01, 0.01)
-				->SetMinSize(Vector2f(0.5, 0.055)))
+				->SetPadding(0.01f, 0.01f, 0.01f, 0.01f)
+				->SetMinSize(Vector2f(0.5f, 0.055f)))
 			->AddChild((new UIButton(true, 0, Installer::GetThemeColor(), []()
 				{
 					CurrentProfileTab->CreateNewProfile(CurrentProfileTab->NewProfileTextField->GetText());
 				}))
 				->AddChild((new UIBackground(true, 0, 0, 0.06))
 					->SetUseTexture(true, Icon("Add").TextureID)
-					->SetPadding(0.01, 0.01, 0.01, 0)
+					->SetPadding(0.01f, 0.01f, 0.01f, 0)
 					->SetSizeMode(UIBox::SizeMode::AspectRelative))
-				->SetMinSize(Vector2f(0, 0.055))
-				->SetBorder(UIBox::BorderType::Rounded, 0.5)
-				->AddChild((new UIText(0.3, 0, GetTranslation("profile_create"), UI::Text))
+				->SetMinSize(Vector2f(0, 0.055f))
+				->SetBorder(UIBox::BorderType::Rounded, 0.5f)
+				->AddChild((new UIText(0.6f, 0, GetTranslation("profile_create"), UI::Text))
 					->SetPadding(0.02))));
 }
 
@@ -379,7 +383,7 @@ void ProfileTab::CreateNewProfile(std::string Name)
 {
 	if (Name.empty())
 	{
-		Window::ShowPopupError(GetTranslation("profile_create_no_name_entered"));
+		WindowFunc::ShowPopupError(GetTranslation("profile_create_no_name_entered"));
 		return;
 	}
 
@@ -389,7 +393,7 @@ void ProfileTab::CreateNewProfile(std::string Name)
 	}
 	if (std::filesystem::exists(Game::GamePath + "/" + Name))
 	{
-		Window::ShowPopupError(Format(GetTranslation("profile_create_already_exists"), Name.c_str()));
+		WindowFunc::ShowPopupError(Format(GetTranslation("profile_create_already_exists"), Name.c_str()));
 		return;
 	}
 
@@ -478,7 +482,7 @@ void ProfileTab::UpdateProfile(Profile Target, bool Silent)
 	}
 	if (!Silent)
 	{
-		Window::ShowPopup(GetTranslation("app_name"),
+		WindowFunc::ShowPopup(GetTranslation("app_name"),
 			Format(GetTranslation("profile_update_complete"), CurrentProfile.DisplayName.c_str()));
 	}
 }

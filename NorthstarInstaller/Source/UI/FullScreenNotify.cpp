@@ -7,6 +7,7 @@
 
 #include "../Translation.h"
 
+using namespace KlemmUI;
 using namespace Translation;
 
 FullScreenNotify::FullScreenNotify(std::string Title)
@@ -29,8 +30,8 @@ FullScreenNotify::FullScreenNotify(std::string Title)
 				->SetUseTexture(true, Icon("Settings/About").TextureID)
 				->SetPadding(0.01, 0.01, 0.01, 0)
 				->SetSizeMode(UIBox::SizeMode::AspectRelative))
-			->AddChild(new UIText(0.4f, 0, GetTranslation(Title), UI::Text)))
-		->AddChild((new UIBackground(true, 0, 0, Vector2f32(0.6f, 0.005f)))
+			->AddChild(new UIText(0.8f, 0, GetTranslation(Title), UI::Text)))
+		->AddChild((new UIBackground(true, 0, 0, Vector2f(0.6f, 0.005f)))
 			->SetPadding(0, 0, 0.01, 0.01))
 		->AddChild(ContentBox
 			->SetPadding(0)));
@@ -66,7 +67,7 @@ void FullScreenNotify::AddOptions(std::vector<NotifyOption> Options)
 				->SetUseTexture(true, Icon(i.Icon).TextureID)
 				->SetSizeMode(UIBox::SizeMode::AspectRelative)
 				->SetPaddingSizeMode(UIBox::SizeMode::AspectRelative))
-			->AddChild((new UIText(0.3f, 1, GetTranslation(i.Name), UI::Text))
+			->AddChild((new UIText(0.6f, 1, GetTranslation(i.Name), UI::Text))
 				->SetPaddingSizeMode(UIBox::SizeMode::AspectRelative)
 				->SetPadding(0.01, 0.01, 0, 0.02)));
 	}

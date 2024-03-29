@@ -1,13 +1,13 @@
 #include "Networking.h"
 
+#include "Log.h"
+#include "Installer.h"
+#include "WindowFunctions.h"
+
 #define CURL_STATICLIB 1
 #include <curl/curl.h>
 #include "nlohmann/json.hpp"
 #include "miniz/miniz.h"
-
-#include "Log.h"
-#include "Installer.h"
-#include "WindowFunctions.h"
 
 #include <fstream>
 #include <filesystem>
@@ -52,13 +52,13 @@ namespace Networking
 		return written;
 	}
 
-	int progress_func(void* ptr, double TotalToDownload, double NowDownloaded, double TotalToUpload, double NowUploaded)
+	int progress_func(void* ptr, curl_off_t TotalToDownload, curl_off_t NowDownloaded, curl_off_t TotalToUpload, curl_off_t NowUploaded)
 	{
 		if (TotalToDownload == 0)
 		{ 
 			return 0;
 		}
-		BackgroundTask::SetProgress(NowDownloaded / TotalToDownload * 0.9f);
+		BackgroundTask::SetProgress((float)NowDownloaded / (float)TotalToDownload * 0.9f);
 		return 0;
 	}
 
@@ -117,7 +117,7 @@ namespace Networking
 			// Internal CURL progressmeter must be disabled if we provide our own callback
 			curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 0L);
 			// Install the callback function
-			curl_easy_setopt(curl_handle, CURLOPT_PROGRESSFUNCTION, progress_func);
+			curl_easy_setopt(curl_handle, CURLOPT_XFERINFOFUNCTION, progress_func);
 		}
 
 		/* open the file */
@@ -130,7 +130,7 @@ namespace Networking
 			}
 			catch (std::exception& e)
 			{
-				Window::ShowPopupError(e.what());
+				WindowFunc::ShowPopupError(e.what());
 				return;
 			}
 		}
@@ -275,7 +275,11 @@ namespace Networking
 			LONG KeyResult = GetStringRegKey(RegKey, L"InstallLocation", GameDir, GameDirDefault);
 			if (KeyResult == ERROR_SUCCESS)
 			{
-				std::string UTF8GameDir = std::string(GameDir.begin(), GameDir.end());
+				char* MultiByte = new char[GameDir.size()];
+				WideCharToMultiByte(CP_UTF8, 0, GameDir.c_str(), -1, MultiByte, GameDir.size(), NULL, NULL);
+				std::string UTF8GameDir = MultiByte;
+				delete[] MultiByte;
+
 				Log::Print("Found EA app through Windows registry: " + UTF8GameDir);
 
 				STARTUPINFOA Startup;
