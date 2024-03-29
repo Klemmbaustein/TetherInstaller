@@ -49,10 +49,9 @@ namespace Installer
 
 	std::vector<unsigned int> WindowButtonsIcons;
 
-#ifdef CI_BUILD
+#ifndef CI_BUILD
 #define _STR(x) _XSTR(x)
 #define _XSTR(x) std::string(#x)
-	const std::string InstallerVersion = "Build #" + _STR(CI_BUILD);
 #if CI_BUILD == -1
 	const std::string InstallerVersion = "Build " + std::string(__DATE__) + ", " + std::string(__TIME__);
 #else
