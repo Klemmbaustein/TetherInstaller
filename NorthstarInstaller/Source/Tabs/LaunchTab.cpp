@@ -182,7 +182,7 @@ LaunchTab::LaunchTab()
 		;
 #ifdef TF_PLUGIN
 	LaunchText->SetColor(1);
-	LaunchText->SetTextSize(0.5f);
+	LaunchText->SetTextSize(1.0f);
 #endif
 }
 

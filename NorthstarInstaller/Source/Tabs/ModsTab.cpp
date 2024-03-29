@@ -480,7 +480,7 @@ void ModsTab::GenerateModPage()
 			Image->SetVerticalAlign(UIBox::Align::Centered);
 			Image->SetHorizontalAlign(UIBox::Align::Centered);
 			Image->SetColor(0.1);
-			Image->AddChild(new UIText(0.4, 1, i.IsUnknownLocalMod ? GetTranslation("mod_unknown") 
+			Image->AddChild(new UIText(0.8f, 1, i.IsUnknownLocalMod ? GetTranslation("mod_unknown") 
 				: (i.IsNSFW ? GetTranslation("mod_nsfw") : (i.IsTemporary ? GetTranslation("mod_temporary") : GetTranslation("loading"))), UI::Text));
 		}
 		ModImages.push_back(Image);

@@ -1,11 +1,12 @@
 #ifdef TF_PLUGIN
 #include "TetherPlugin.h"
+#include "Translation.h"
+#include "Installer.h"
+#include <KlemmUI/Application.h>
 #include "Log.h"
 #include <SDL.h>
-#include <KlemmUI/Application.h>
 #include <Windows.h>
 #include <Shlwapi.h>
-#include "Translation.h"
 
 #pragma comment(lib, "Shlwapi.lib")
 
@@ -40,12 +41,12 @@ void Plugin::Connect(const std::string& ToUid)
 }
 void Plugin::HideWindow()
 {
-	SDL_Window* Window = static_cast<SDL_Window*>(Application::GetSDLWindowPtr());
+	SDL_Window* Window = static_cast<SDL_Window*>(Installer::MainWindow->GetSDLWindowPtr());
 	SDL_HideWindow(Window);
 }
 void Plugin::ShowWindow()
 {
-	SDL_Window* Window = static_cast<SDL_Window*>(Application::GetSDLWindowPtr());
+	SDL_Window* Window = static_cast<SDL_Window*>(Installer::MainWindow->GetSDLWindowPtr());
 	SDL_ShowWindow(Window);
 }
 void Plugin::ShowWindowFromThread()

@@ -50,9 +50,12 @@ namespace Installer
 	std::vector<unsigned int> WindowButtonsIcons;
 
 #ifdef CI_BUILD
-#define _STR(x) _XSTR(x)
 #define _XSTR(x) std::string(#x)
+#if CI_BUILD == -1
+	const std::string InstallerVersion = "Build " + std::string(__DATE__) + ", " + std::string(__TIME__);
+#else
 	const std::string InstallerVersion = "Build #" + _STR(CI_BUILD);
+#endif
 #else
 	const std::string InstallerVersion = "DevBuild";
 #endif
@@ -453,12 +456,11 @@ int main(int argc, char** argv)
 		->AddChild(WindowButtonBox);
 	GenerateWindowButtons();
 	
-	AppTitle = new UIText(14, 1, "TetherInstaller - Loading...", UI::Text);
+	AppTitle = new UIText(14, 1, "", UI::Text);
 	AppTitle->SetTextSizeMode(UIBox::SizeMode::PixelRelative);
 ;
 
 	InstallerBackground->SetPosition(Vector2f(0.0) - InstallerBackground->GetUsedSize() / 2);
-	AppTitle->SetPosition(Vector2f(-1, WindowButtonBox->GetPosition().Y));
 
 	Networking::Init();
 
@@ -500,12 +502,10 @@ int main(int argc, char** argv)
 	Log::Print("Successfully started launcher");
 	float PrevAspect = MainWindow->GetAspectRatio();
 
-#ifdef TF_PLUGIN
+	bool ShouldQuit = false;
 	while (true)
-#else
-	while (MainWindow->UpdateWindow())
-#endif
 	{
+		ShouldQuit = !MainWindow->UpdateWindow();
 		for (auto i : Tabs)
 		{
 			i->Background->SetPosition(Vector2f(
@@ -587,16 +587,20 @@ int main(int argc, char** argv)
 
 		//Application::SetActiveMouseCursor(Application::GetMouseCursorFromHoveredButtons());
 #ifndef TF_PLUGIN
+		if (ShouldQuit && !DownloadWindow::IsDownloading)
+		{
+			break;
+		}
 #else
 		Plugin::Update();
-		if (Application::Quit && !BackgroundTask::IsRunningTask)
+		if (ShouldQuit && !DownloadWindow::IsDownloading)
 		{
 			Plugin::HideWindow();
 			if (IsRunningPtr)
 			{
 				*IsRunningPtr = false;
 			}
-			Application::Quit = false;
+			ShouldQuit = false;
 		}
 #endif
 #if !DEBUG
