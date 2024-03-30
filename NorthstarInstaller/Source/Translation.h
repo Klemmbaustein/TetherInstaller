@@ -16,7 +16,7 @@ namespace Translation
 
 	std::string GetLastTranslation();
 
-	std::vector<std::string> GetAvaliableTranslations();
+	std::vector<std::string> GetAvailableTranslations();
 	
 	std::vector<std::string> NewLineStringToStringArray(std::string str);
 

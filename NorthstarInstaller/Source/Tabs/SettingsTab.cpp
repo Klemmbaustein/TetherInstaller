@@ -290,7 +290,7 @@ void SettingsTab::GenerateSettings()
 
 	std::string SelectedLangauge = LoadedTranslation;
 
-	auto PossibleLangauges = GetAvaliableTranslations();
+	auto PossibleLangauges = GetAvailableTranslations();
 
 	size_t Selected = 0;
 

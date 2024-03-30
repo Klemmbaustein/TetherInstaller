@@ -103,7 +103,10 @@ std::string Translation::Format(std::string Format, ...)
 	vsprintf(buf, Format.c_str(), va);
 #endif
 	va_end(va);
-	return buf;
+
+	std::string StrBuffer = buf;
+	delete[] buf;
+	return StrBuffer;
 }
 
 std::string Translation::GetLastTranslation()
@@ -118,7 +121,7 @@ std::string Translation::GetLastTranslation()
 	return istream.str();
 }
 
-std::vector<std::string> Translation::GetAvaliableTranslations()
+std::vector<std::string> Translation::GetAvailableTranslations()
 {
 	std::vector<std::string> Found;
 	for (const auto& i : std::filesystem::directory_iterator(Installer::CurrentPath + "Data/translation"))
