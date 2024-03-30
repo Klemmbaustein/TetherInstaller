@@ -21,8 +21,6 @@ struct BackgroundTask
 	static void SetProgress(float Progress);
 	static void SetStatus(std::string NewStatus);
 
-	static std::string CurrentTaskStatus;
-	static float CurrentTaskProgress;
 	static bool IsRunningTask;
 
 	static bool IsBackgroundTask();

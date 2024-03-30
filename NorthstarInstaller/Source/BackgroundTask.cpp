@@ -2,10 +2,9 @@
 #include <cassert>
 #include "Log.h"
 #include <iostream>
+#include "WindowFunctions.h"
 
 thread_local BackgroundTask* BackgroundTask::ThisThreadPtr = nullptr;
-std::string BackgroundTask::CurrentTaskStatus;
-float BackgroundTask::CurrentTaskProgress;
 bool BackgroundTask::IsRunningTask;
 std::vector<BackgroundTask*> BackgroundTask::AllTasks;
 
@@ -40,7 +39,15 @@ void BackgroundTask::SetStatus(std::string NewStatus)
 void BackgroundTask::TaskRun(void (*Function)(), BackgroundTask* ThisTask)
 {
 	ThisThreadPtr = ThisTask;
-	Function();
+	try
+	{
+		Function();
+	}
+	// Don't crash the entire installer when something goes wrong.
+	catch (std::exception& e)
+	{
+		WindowFunc::ShowPopupError(ThisTask->Status + ": " + e.what());
+	}
 	ThisTask->Progress = 1;
 }
 
@@ -79,8 +86,6 @@ void BackgroundTask::UpdateTaskStatus()
 		}
 		else if (!IsRunningTask)
 		{
-			CurrentTaskProgress = AllTasks[i]->Progress;
-			CurrentTaskStatus = AllTasks[i]->Status;
 			IsRunningTask = true;
 		}
 	}
