@@ -320,7 +320,7 @@ void Installer::GenerateWindowButtons()
 				GenerateWindowButtons();
 				break;
 			case 3:
-				//Application::Minimize();
+				MainWindow->SetMinimized(true);
 				break;
 			default:
 				break;
