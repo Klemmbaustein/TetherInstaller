@@ -469,11 +469,9 @@ void ModsTab::GenerateModPage()
 					->SetPadding(0)
 					->SetSizeMode(UIBox::SizeMode::AspectRelative)))
 			->AddChild(NameText
+				->SetWrapEnabled(true, 0.18f, UIBox::SizeMode::AspectRelative)
 				->SetPaddingSizeMode(UIBox::SizeMode::AspectRelative)
 				->SetPadding(0.005)));
-
-		NameText->Wrap = true;
-		NameText->WrapDistance = 0.19f / Installer::MainWindow->GetAspectRatio();
 
 		if (!UseTexture)
 		{

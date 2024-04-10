@@ -6,13 +6,9 @@ uniform sampler2D u_ui;
 uniform bool u_hasWindowBorder = false;
 uniform vec3 u_borderColor = vec3(1);
 
-vec3 sampleUI()
-{
-	return texture(u_ui, v_texcoords).xyz;
-}
 void main()
 {
-	f_color.xyz = sampleUI();
+	f_color.xyz = texture(u_ui, v_texcoords).xyz;
 	f_color.w = 1;
 
 	if (u_hasWindowBorder)
