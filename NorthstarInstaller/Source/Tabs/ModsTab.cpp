@@ -469,7 +469,7 @@ void ModsTab::GenerateModPage()
 					->SetPadding(0)
 					->SetSizeMode(UIBox::SizeMode::AspectRelative)))
 			->AddChild(NameText
-				->SetWrapEnabled(true, 0.18f, UIBox::SizeMode::AspectRelative)
+				->SetWrapEnabled(true, 0.19f, UIBox::SizeMode::AspectRelative)
 				->SetPaddingSizeMode(UIBox::SizeMode::AspectRelative)
 				->SetPadding(0.005)));
 
