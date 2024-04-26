@@ -70,17 +70,6 @@ bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
 
 	std::vector<ServerBrowserTab::ServerEntry::ServerMod> FailedMods;
 
-
-	if (std::filesystem::exists(Installer::CurrentPath + "/mods/autojoin"))
-	{
-		std::filesystem::remove_all(Installer::CurrentPath + "/mods/autojoin");
-	}
-
-#ifndef TF_PLUGIN
-	std::filesystem::copy(Installer::CurrentPath + "Data/autojoin", ProfileTab::CurrentProfile.Path + "/mods/autojoin",
-		std::filesystem::copy_options::recursive | std::filesystem::copy_options::overwrite_existing);
-#endif
-
 	float Progress = 0;
 
 	for (auto& RequiredMod : e.RequiredMods)
@@ -506,6 +495,10 @@ void ServerBrowserTab::DisplayLoadingText()
 
 void ServerBrowserTab::JoinServerDirect()
 {
+#ifndef TF_PLUGIN
+	std::filesystem::copy(Installer::CurrentPath + "Data/autojoin", ProfileTab::CurrentProfile.Path + "/mods/autojoin",
+		std::filesystem::copy_options::recursive | std::filesystem::copy_options::overwrite_existing);
+#endif
 	LOG_PRINTF("Joining server \"{}\" (id: {})",
 		ServerBrowserTab::CurrentServerTab->SelectedServer.Name,
 		ServerBrowserTab::CurrentServerTab->SelectedServer.ServerID);

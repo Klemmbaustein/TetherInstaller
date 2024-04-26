@@ -85,6 +85,7 @@ void Sidebar::GenerateTabs()
 		TabButtons.push_back(Installer::SetButtonColorIfSelected(Button, i == SelectedTab));
 	}
 	SidebarBackground->UpdateElement();
+	SidebarBackground->RedrawElement();
 }
 
 void Sidebar::Load()
