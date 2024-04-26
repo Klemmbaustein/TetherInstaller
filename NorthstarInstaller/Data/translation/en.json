@@ -52,6 +52,10 @@
     "servers_region": "Region",
     "servers_name": "Name",
     "servers_players": "Players",
+    "servers_dependencies_title": "Server requires mods",
+    "servers_dependencies_text": "Found these mods as dependencies for this server:",
+    "servers_dependencies_install": "Install",
+    "servers_dependencies_cancel":  "Cancel",
 
     // "Mods" tab strings
     "mod_pages": "Pages: ",

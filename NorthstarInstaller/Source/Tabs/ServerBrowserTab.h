@@ -8,6 +8,7 @@
 #include <map>
 
 #include "../UI/UIDef.h"
+#include "../Thunderstore.h"
 
 class ServerBrowserTab : public UITab
 {
@@ -17,6 +18,7 @@ class ServerBrowserTab : public UITab
 	KlemmUI::UIBox* ServerDescriptionBox = new KlemmUI::UIBox(false, 0);
 	KlemmUI::UITextField* ServerSearchBox = nullptr;
 public:
+	void JoinServerDirect();
 	KlemmUI::UIText* ServerDescriptionText = nullptr;
 	KlemmUI::UIText* ReloadText = nullptr;
 	KlemmUI::UIText* ServerHeader = nullptr;
@@ -35,6 +37,8 @@ public:
 		{
 			bool IsRequired = false;
 			std::string ModName;
+
+			Thunderstore::Package GetTsPackage() const;
 		};
 
 		std::vector<ServerMod> RequiredMods;
@@ -48,6 +52,8 @@ public:
 	std::string SearchText = "";
 
 	void DisplayServerDescription(ServerEntry e);
+
+	static void AddSeperator(KlemmUI::UIBox* Parent);
 
 	KlemmUI::UIText* PlayerCountText = new KlemmUI::UIText(0.6, 1, "Players in game: ??", UI::Text);
 	static std::vector<ServerEntry> Servers;

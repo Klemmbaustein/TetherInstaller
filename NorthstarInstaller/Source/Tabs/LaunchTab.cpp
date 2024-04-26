@@ -25,6 +25,7 @@
 #endif
 
 #include "ModsTab.h"
+#include "../AppUpdate.h"
 
 static bool CheckedForVanillaPlus = false;
 static std::string NorthstarLaunchArgs;
@@ -107,10 +108,10 @@ std::map<StoppingFunctionPtr, std::string> LaunchStoppingTasks =
 {
 	std::pair(&Game::UpdateGame, "play_updating_game"),
 	std::pair(&NorthstarLaunchTask, "play_game_running"),
-	std::pair(&Installer::CheckForUpdates, "play_update_check"),
-	std::pair(&Installer::CheckForInstallerUpdate, "play_update_check"),
+	std::pair(&AppUpdate::CheckForUpdates, "play_update_check"),
+	std::pair(&AppUpdate::CheckForInstallerUpdate, "play_update_check"),
 	std::pair(&ModsTab::CheckForModUpdates, "play_update_check"),
-	std::pair(&Installer::UpdateInstaller, "play_updating_installer"),
+	std::pair(&AppUpdate::UpdateInstaller, "play_updating_installer"),
 	std::pair(&Thunderstore::TSModFunc::InstallOrUninstallMod, "play_downloading_mod")
 };
 
@@ -162,7 +163,7 @@ LaunchTab::LaunchTab()
 	auto TextBox = (new UIBackground(true, 0, 0, 0))->SetOpacity(0.7);
 	TextBox->SetHorizontalAlign(UIBox::Align::Centered);
 
-	LaunchButton = new UIButton(true, 0, Installer::GetThemeColor(), LaunchNorthstar);
+	LaunchButton = new UIButton(true, 0, 1, LaunchNorthstar);
 	LaunchText = new UIText(1.4f, 0, "", UI::Text);
 
 	Background->AddChild(TextBox

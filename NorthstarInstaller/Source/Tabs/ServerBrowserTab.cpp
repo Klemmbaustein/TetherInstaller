@@ -17,10 +17,10 @@
 #include "../Installer.h"
 #include "../Log.h"
 #include "../BackgroundTask.h"
-#include "../Thunderstore.h"
 #include "../WindowFunctions.h"
 #include "../Game.h"
 #include "../Translation.h"
+#include "../UI/FullScreenNotify.h"
 
 #ifdef TF_PLUGIN
 #include "../TetherPlugin.h"
@@ -78,7 +78,7 @@ bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
 
 #ifndef TF_PLUGIN
 	std::filesystem::copy(Installer::CurrentPath + "Data/autojoin", ProfileTab::CurrentProfile.Path + "/mods/autojoin",
-		std::filesystem::copy_options::recursive);
+		std::filesystem::copy_options::recursive | std::filesystem::copy_options::overwrite_existing);
 #endif
 
 	float Progress = 0;
@@ -86,18 +86,7 @@ bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
 	for (auto& RequiredMod : e.RequiredMods)
 	{
 		bool HasInstalledMod = false;
-		Thunderstore::Package m;
-
-		if (RequiredMod.ModName.find(".") != std::string::npos)
-		{
-			m.Name = RequiredMod.ModName.substr(RequiredMod.ModName.find_first_of(".") + 1);
-			m.Namespace = RequiredMod.ModName.substr(0, RequiredMod.ModName.find_first_of("."));
-			m.Author = m.Namespace;
-		}
-		else
-		{
-			m.Name = RequiredMod.ModName;
-		}
+		Thunderstore::Package m = RequiredMod.GetTsPackage();
 
 		Progress += 1.0f / e.RequiredMods.size();
 		BackgroundTask::SetProgress(Progress - 0.001);
@@ -141,7 +130,7 @@ bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
 				m.Version = item.at("versions")[0].at("version_number");
 				m.DownloadUrl = item.at("versions")[0].at("download_url");
 
-				LOG_PRINTF("Found possible canidate: {}.{} with UUID of {}. Score: {}.",
+				LOG_PRINTF("Found possible candidate: {}.{} with UUID of {}. Score: {}.",
 					item.at("owner").get<std::string>(), 
 					item.at("name").get<std::string>(), 
 					item.at("uuid4").get<std::string>(),
@@ -151,7 +140,7 @@ bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
 		}
 		if (ClosestModScore != SIZE_MAX)
 		{
-			BackgroundTask::SetStatus("dl_" + Format(GetTranslation("download_install_mod"), Thunderstore::SelectedMod.Name.c_str()));
+			BackgroundTask::SetStatus("dl_" + Format(GetTranslation("download_install_mod"), m.Name.c_str()));
 			Thunderstore::InstallOrUninstallMod(m, true, false, false);
 			HasInstalledMod = true;
 		}
@@ -248,7 +237,9 @@ ServerBrowserTab::ServerBrowserTab()
 
 	ServerBox = new UIScrollBox(false, 0, true);
 	ServerBox->SetVerticalAlign(UIBox::Align::Reverse);
-	ServerBackground->AddChild(new UIBackground(true, 0, 1, Vector2f(1.46, 0.005)));
+
+	AddSeperator(ServerBackground);
+
 	ServerBackground->AddChild(ServerHeader
 		->SetPadding(0.05, 0, 0.02, 0.02));
 
@@ -258,7 +249,8 @@ ServerBrowserTab::ServerBrowserTab()
 			->SetMaxSize(Vector2f(0.825, 1.5))
 			->SetMinSize(Vector2f(0.825, 1.5)))
 		->AddChild(ServerDescriptionBox
-			->SetMinSize(Vector2f(0.3, 1.4))));
+			->SetMinSize(Vector2f(0.6, 1.4))));
+
 	new BackgroundTask(LoadServers, []() {CurrentServerTab->DisplayServers(); });
 }
 
@@ -409,7 +401,62 @@ void JoinCurrentServer()
 		ServerBrowserTab::ShouldLaunchGame = false;
 		return;
 	}
-	ServerBrowserTab::ShouldLaunchGame = InstallRequiredModsForServer(ServerBrowserTab::CurrentServerTab->SelectedServer);
+
+	const auto& RequiredMods = ServerBrowserTab::CurrentServerTab->SelectedServer.RequiredMods;
+	if (RequiredMods.size() == 1 && RequiredMods[0].ModName == "Northstar.Custom")
+	{
+		ServerBrowserTab::CurrentServerTab->JoinServerDirect();
+		return;
+	}
+
+	auto JoinServerNotify = new FullScreenNotify(GetTranslation("Joining server"));
+
+	JoinServerNotify->ContentBox
+		->AddChild(new UIText(0.6f, 0, GetTranslation("servers_dependencies_text"), UI::Text));
+
+	for (const auto& Dep : RequiredMods)
+	{
+		if (Dep.ModName == "Northstar.Custom")
+		{
+			continue;
+		}
+
+		std::string str = "- " + Dep.ModName;
+
+		auto TsPackage = Dep.GetTsPackage();
+
+		if (ServerBrowserTab::CurrentServerTab->IsInstalledAsServerMod(TsPackage.Name) || Thunderstore::IsModInstalled(TsPackage))
+		{
+			str.append(" " + GetTranslation("mod_installed"));
+		}
+
+		JoinServerNotify->ContentBox
+			->AddChild(new UIText(0.6f, 0, str, UI::Text));
+	}
+
+	JoinServerNotify->AddOptions({
+		FullScreenNotify::NotifyOption{
+			.Name = "servers_dependencies_install",
+			.Icon = "Download",
+			.OnClicked = []()
+		{
+			new BackgroundTask([]() {
+					ServerBrowserTab::ShouldLaunchGame = InstallRequiredModsForServer(ServerBrowserTab::CurrentServerTab->SelectedServer);
+				},
+			[]() {
+				ServerBrowserTab::CurrentServerTab->DisplayServerDescription(ServerBrowserTab::CurrentServerTab->SelectedServer);
+				if (ServerBrowserTab::ShouldLaunchGame)
+				{
+					ServerBrowserTab::CurrentServerTab->JoinServerDirect();
+				}
+			});		
+		}
+		},
+		FullScreenNotify::NotifyOption{
+			.Name = "servers_dependencies_cancel",
+			.Icon = "Revert",
+		}
+		});
 }
 
 void ServerBrowserTab::Tick()
@@ -457,6 +504,18 @@ void ServerBrowserTab::DisplayLoadingText()
 	ServerBox->AddChild((new UIText(0.8f, 1, GetTranslation("loading"), UI::Text))->SetPadding(0.5));
 }
 
+void ServerBrowserTab::JoinServerDirect()
+{
+	LOG_PRINTF("Joining server \"{}\" (id: {})",
+		ServerBrowserTab::CurrentServerTab->SelectedServer.Name,
+		ServerBrowserTab::CurrentServerTab->SelectedServer.ServerID);
+#ifdef TF_PLUGIN
+	Plugin::Connect(ServerBrowserTab::CurrentServerTab->SelectedServer.ServerID);
+#else
+	LaunchTab::LaunchNorthstar("+AutoJoinServer " + ServerBrowserTab::CurrentServerTab->SelectedServer.ServerID);
+#endif
+}
+
 void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 {
 	SelectedServer = e;
@@ -469,20 +528,20 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 
 	UIText* Descr = new UIText(0.6f, 1, e.Description, UI::Text);
 	Descr->Wrap = true;
-	Descr->WrapDistance = 0.4;
+	Descr->WrapDistance = 0.4f;
 	std::string PlayerCount = Format(GetTranslation("servers_match_playercount"), e.PlayerCount, e.MaxPlayerCount);
 
 	UIText* Title = new UIText(1.0f, 1, e.Name, UI::Text);
 	Title->Wrap = true;
-	Title->WrapDistance = 0.25;
+	Title->WrapDistance = 0.2f;
 
 	ServerDescriptionBox->AddChild(Title);
 	
-	ServerDescriptionBox->AddChild(new UIBackground(true, 0, 1, Vector2f(0.6, 0.005)));
+	AddSeperator(ServerDescriptionBox);
 
 	ServerDescriptionBox->AddChild(Descr);
 
-	ServerDescriptionBox->AddChild(new UIBackground(true, 0, 1, Vector2f(0.6, 0.005)));
+	AddSeperator(ServerDescriptionBox);
 
 	auto MapDescr = new UIBox(false, 0);
 	MapDescr->SetPadding(0);
@@ -501,25 +560,11 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 			->AddChild((new UIText(0.6f, 1, PlayerCount, UI::Text))
 				->SetPadding(0, 0, 0.01, 0.01))));
 
-	ServerDescriptionBox->AddChild(new UIBackground(true, 0, 1, Vector2f(0.6, 0.005)));
+	AddSeperator(ServerDescriptionBox);
+
 	ServerDescriptionText = new UIText(0.8f, 0, GetTranslation("servers_join"), UI::Text);
 	ServerDescriptionBox->AddChild((new UIBox(true, 0))
-		->AddChild((new UIButton(true, 0, Installer::GetThemeColor(), []() { new BackgroundTask(JoinCurrentServer,
-			[]() {
-				ServerBrowserTab::CurrentServerTab->DisplayServerDescription(ServerBrowserTab::CurrentServerTab->SelectedServer);
-				if (ServerBrowserTab::ShouldLaunchGame)
-				{ 
-					LOG_PRINTF("Joining server \"{}\" (id: {})",
-						ServerBrowserTab::CurrentServerTab->SelectedServer.Name,
-						ServerBrowserTab::CurrentServerTab->SelectedServer.ServerID);
-#ifdef TF_PLUGIN
-					Plugin::Connect(ServerBrowserTab::CurrentServerTab->SelectedServer.ServerID);
-#else
-					LaunchTab::LaunchNorthstar("+AutoJoinServer " + ServerBrowserTab::CurrentServerTab->SelectedServer.ServerID);
-#endif
-				}
-			});
-			}))
+		->AddChild((new UIButton(true, 0, Installer::GetThemeColor(), JoinCurrentServer))
 			->SetBorder(UIBox::BorderType::Rounded, 0.25)
 			->AddChild((new UIBackground(true, 0, 0, 0.055))
 				->SetUseTexture(true, Icon("itab_play").TextureID)
@@ -552,6 +597,14 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 		ServerDescriptionBox->AddChild((new UIText(0.6f, 1, ModName, UI::Text))
 			->SetPadding(0.0, 0.005, 0.01, 0.01));
 	}
+	ServerDescriptionBox->RedrawElement();
+}
+
+void ServerBrowserTab::AddSeperator(UIBox* Parent)
+{
+	Parent->AddChild((new UIBackground(true, 0, 1, Vector2f(2)))
+		->SetSizeMode(UIBox::SizeMode::PixelRelative)
+		->SetTryFill(true));
 }
 
 unsigned int ServerBrowserTab::GetMapTexture(std::string Map)
@@ -625,4 +678,21 @@ void ServerBrowserTab::LoadServers()
 		e.MaxPlayerCount = i.at("maxPlayers");
 		Servers.push_back(e);
 	}
+}
+
+Thunderstore::Package ServerBrowserTab::ServerEntry::ServerMod::GetTsPackage() const
+{
+	Thunderstore::Package m;
+
+	if (ModName.find(".") != std::string::npos)
+	{
+		m.Name = ModName.substr(ModName.find_first_of(".") + 1);
+		m.Namespace = ModName.substr(0, ModName.find_first_of("."));
+		m.Author = m.Namespace;
+	}
+	else
+	{
+		m.Name = ModName;
+	}
+	return m;
 }

@@ -5,6 +5,7 @@ in vec2 v_position;
 out vec4 f_color;
 
 uniform vec4 u_color = vec4(1);
+uniform vec4 u_borderColor = vec4(1);
 uniform int u_usetexture;
 uniform sampler2D u_texture;
 uniform vec3 u_offset; // Scroll bar: X = scrolled distance; Y = MaxDistance; Z MinDistance
@@ -26,14 +27,14 @@ void main()
 	vec4 drawnColor = u_color;
 	bool IsInEdge = false;
 	float opacity = u_opacity;
-	if(centeredTexCoords.x > scale.x - u_borderScale)
+	if(centeredTexCoords.x >= scale.x - u_borderScale)
 	{
 		IsInEdge = true;
-		if(u_borderType == 2) drawnColor = u_color * 0.75;
+		if(u_borderType == 2) drawnColor = u_borderColor;
 	}
-	if(centeredTexCoords.y > scale.y - u_borderScale)
+	if(centeredTexCoords.y >= scale.y - u_borderScale)
 	{
-		if(u_borderType == 2) drawnColor = u_color * 0.75;
+		if(u_borderType == 2) drawnColor = u_borderColor;
 		if (IsInEdge && u_borderType == 1)
 		{
 			opacity *= clamp(1.0 / pow((length((scale - u_borderScale) - centeredTexCoords) / u_borderScale), 1000 * u_borderScale), 0, 1);

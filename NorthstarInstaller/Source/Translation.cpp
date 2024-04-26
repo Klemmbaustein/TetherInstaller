@@ -5,6 +5,7 @@
 #include <cstdarg>
 #include "Log.h"
 #include "Installer.h"
+#include "UI/Sidebar.h"
 using namespace nlohmann;
 
 namespace Translation
@@ -76,7 +77,7 @@ void Translation::LoadTranslation(std::string Name)
 	{
 		Log::Print(e.what(), Log::Error);
 	}
-	for (const auto& i : Installer::Tabs)
+	for (const auto& i : Sidebar::Tabs)
 	{
 		if (i->TabTitle)
 		{

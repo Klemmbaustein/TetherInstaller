@@ -17,5 +17,7 @@ public:
 	virtual void Tick();
 	virtual ~UITab();
 
+	static void UpdateAll();
+
 	virtual void OnTranslationChanged();
 };

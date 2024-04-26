@@ -1,4 +1,6 @@
 #include "Download.h"
+#include "TitleBar.h"
+
 #include <KlemmUI/UI/UIBackground.h>
 #include <KlemmUI/UI/UIButton.h>
 #include <KlemmUI/UI/UIText.h>
@@ -69,10 +71,10 @@ void DownloadWindow::Generate()
 		DownloadsBox->AddChild(DownloadFinishedText);
 	}
 
-	Installer::GenerateWindowButtons();
+	TitleBar::GenerateWindowButtons();
 }
 
-void DownloadWindow::Update(float WindowBarSize)
+void DownloadWindow::Update()
 {
 	if (!DownloadBackground)
 	{
@@ -90,8 +92,6 @@ void DownloadWindow::Update(float WindowBarSize)
 				->SetMinSize(Vector2f(0.495, 0.15)));
 		SetWindowVisible(false);
 	}
-
-	
 
 	if (AllTasksSize != BackgroundTask::AllTasks.size() || (!BackgroundTask::AllTasks.empty() && BackgroundTask::AllTasks[0] != LatestBackgroundTask))
 	{
@@ -125,7 +125,7 @@ void DownloadWindow::Update(float WindowBarSize)
 		}
 		DissapearTimer = 0;
 	}
-	DownloadBackground->SetPosition(Vector2f(0.5, 1 - WindowBarSize - 0.25));
+	DownloadBackground->SetPosition(Vector2f(0.5, 1 - TitleBar::GetSize() - 0.25));
 
 	if (!DownloadBackground->IsVisible)
 	{

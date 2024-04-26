@@ -18,7 +18,9 @@
 #include "../BackgroundTask.h"
 #include "../WindowFunctions.h"
 #include "../UI/Icon.h"
+#include "../UI/TitleBar.h"
 #include "../Translation.h"
+#include "../AppUpdate.h"
 
 using namespace Translation;
 using namespace KlemmUI;
@@ -85,7 +87,7 @@ static void SaveSettings()
 {
 	std::ofstream out = std::ofstream("Data/var/appearance.txt");
 	out << Installer::GetThemeColor().X << " " << Installer::GetThemeColor().Y << " " << Installer::GetThemeColor().Z << std::endl;
-	out << (Installer::UseSystemTitleBar ? "system" : "custom");
+	out << (TitleBar::GetUseSystemTitleBar() ? "system" : "custom");
 	out.close();
 }
 
@@ -101,7 +103,7 @@ static void LoadSettings()
 	in.getline(Buffer, 2048);
 	Installer::SetThemeColor(Vector3f::FromString(std::string(Buffer)));
 	in.getline(Buffer, 2048);
-	Installer::UseSystemTitleBar = std::string("system") == Buffer;
+	TitleBar::SetUseSystemTitleBar(std::string("system") == Buffer);
 	Installer::UpdateWindowFlags();
 	in.close();
 }
@@ -158,7 +160,7 @@ void LocateTitanfall()
 	{
 		Game::SaveGameDir(NewPath);
 		Game::GamePath = Game::GetTitanfallLocation();
-		new BackgroundTask(Installer::CheckForUpdates);
+		new BackgroundTask(AppUpdate::CheckForUpdates);
 		ProfileTab::CurrentProfileTab->DetectProfiles();
 		if (ProfileTab::AllProfiles.size())
 		{
@@ -259,7 +261,7 @@ void SettingsTab::GenerateSettings()
 		AddSettingsButton("settings_recheck_updates", "Settings/Reload", []() {
 			new BackgroundTask([]()
 				{
-					Installer::CheckForUpdates();
+					AppUpdate::CheckForUpdates();
 					if (Game::RequiresUpdate)
 					{
 						WindowFunc::ShowPopup(GetTranslation("app_name"), GetTranslation("settings_update_required"));
@@ -362,10 +364,10 @@ void SettingsTab::GenerateSettings()
 		},
 		[](int Index)
 		{
-			Installer::UseSystemTitleBar = Index == 1;
+			TitleBar::SetUseSystemTitleBar(Index == 1);
 			Installer::UpdateWindowFlags();
 			SaveSettings();
-		}, Installer::UseSystemTitleBar, SettingsBox);
+		}, TitleBar::GetUseSystemTitleBar(), SettingsBox);
 
 	AddSettingsText("settings_appearance_color", "Settings/Color", SettingsBox);
 

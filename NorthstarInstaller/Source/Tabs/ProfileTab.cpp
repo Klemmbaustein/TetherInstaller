@@ -21,6 +21,7 @@
 #ifdef TF_PLUGIN
 #include "../TetherPlugin.h"
 #endif
+#include "../AppUpdate.h"
 
 using namespace Translation;
 using namespace KlemmUI;
@@ -108,6 +109,11 @@ ProfileTab::ProfileTab()
 	UpdateProfilesList();
 	DisplayProfileInfo();
 
+
+	if (std::filesystem::exists(CurrentProfile.Path + "/mods/autojoin"))
+	{
+		std::filesystem::remove_all(CurrentProfile.Path + "/mods/autojoin");
+	}
 }
 
 bool ProfileTab::IsFolderValidProfilePath(std::string FolderPath)
@@ -136,7 +142,7 @@ void ProfileTab::OnProfileSwitched()
 {
 	LOG_PRINTF("Switched profile to \"{}\"", CurrentProfile.DisplayName);
 	ModsTab::Reload();
-	new BackgroundTask(Installer::CheckForUpdates);
+	new BackgroundTask(AppUpdate::CheckForUpdates);
 	if (!BackgroundTask::IsFunctionRunningAsTask(ModsTab::CheckForModUpdates))
 	{
 		new BackgroundTask(ModsTab::CheckForModUpdates);

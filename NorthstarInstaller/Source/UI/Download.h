@@ -3,6 +3,6 @@
 namespace DownloadWindow
 {
 	extern bool IsDownloading;
-	void Update(float WindowBarSize);
+	void Update();
 	void SetWindowVisible(bool NewVisible);
 }

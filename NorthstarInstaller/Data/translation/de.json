@@ -2,7 +2,7 @@
   "name": "Deutsch",
   "translations": {
     // General translations
-    "app_name": "TetherInstaller",
+    "app_name": "Tether",
     // [Name] - [Tab] - Profile: [Profile name]
     "title_bar": "%s - %s - Profil: %s",
     // Search prompt displayed in the search bars in the mod and server browser.
@@ -53,6 +53,10 @@
     "servers_region": "Region",
     "servers_name": "Name",
     "servers_players": "Spieler",
+    "servers_dependencies_title": "Server benötigt Mods",
+    "servers_dependencies_text": "Diese Mods werden benötigt, um dem Server beizutreten:",
+    "servers_dependencies_install": "Installieren",
+    "servers_dependencies_cancel": "Abbrechen",
 
     // "Mods" tab strings
     "mod_pages": "Seiten: ",

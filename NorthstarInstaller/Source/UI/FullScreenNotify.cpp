@@ -31,10 +31,14 @@ FullScreenNotify::FullScreenNotify(std::string Title)
 				->SetPadding(0.01, 0.01, 0.01, 0)
 				->SetSizeMode(UIBox::SizeMode::AspectRelative))
 			->AddChild(new UIText(0.8f, 0, GetTranslation(Title), UI::Text)))
-		->AddChild((new UIBackground(true, 0, 0, Vector2f(0.6f, 0.005f)))
+		->AddChild((new UIBackground(true, 0, 0, 2))
+			->SetTryFill(true)
+			->SetSizeMode(UIBox::SizeMode::PixelRelative)
 			->SetPadding(0, 0, 0.01, 0.01))
 		->AddChild(ContentBox
 			->SetPadding(0)));
+
+	Window::GetActiveWindow()->UI.RedrawUI();
 }
 
 FullScreenNotify::~FullScreenNotify()
@@ -56,7 +60,10 @@ void FullScreenNotify::AddOptions(std::vector<NotifyOption> Options)
 	{
 		OptionsBox->AddChild((new UIButton(true, 0, 0.0f, [](int Index)
 			{
-				CurrentNotify->Options[Index].OnClicked();
+				if (CurrentNotify->Options[Index].OnClicked)
+				{
+					CurrentNotify->Options[Index].OnClicked();
+				}
 				delete CurrentNotify->BlockingBackground;
 			}, Index++))
 			->SetPadding(0.01, 0.01, 0.01, 0)

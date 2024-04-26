@@ -52,6 +52,9 @@
     <ClCompile Include="Source\Translation.cpp" />
     <ClCompile Include="Source\UI\FullScreenNotify.cpp" />
     <ClCompile Include="Source\TetherPlugin.cpp" />
+    <ClCompile Include="Source\UI\TitleBar.cpp" />
+    <ClCompile Include="Source\UI\Sidebar.cpp" />
+    <ClCompile Include="Source\AppUpdate.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -121,6 +124,9 @@
     <ClInclude Include="Source\Translation.h" />
     <ClInclude Include="Source\UI\FullScreenNotify.h" />
     <ClInclude Include="Source\TetherPlugin.h" />
+    <ClInclude Include="Source\UI\TitleBar.h" />
+    <ClInclude Include="Source\UI\Sidebar.h" />
+    <ClInclude Include="Source\AppUpdate.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />

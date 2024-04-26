@@ -11,11 +11,8 @@ namespace Installer
 
 	extern std::string CurrentPath;
 
-	extern size_t SelectedTab;
-	extern std::vector<UITab*> Tabs;
 	extern const std::string InstallerVersion;
 	extern const std::string UserAgent;
-	extern bool UseSystemTitleBar;
 
 	void UpdateWindowFlags();
 
@@ -24,16 +21,8 @@ namespace Installer
 
 	KlemmUI::UIButton* SetButtonColorIfSelected(KlemmUI::UIButton* Button, bool IsSelected);
 
-	void GenerateWindowButtons();
-
-	// Name of the github package this installer is from. If the newest package is not this, we should update.
-	extern const std::string GithubInstallerVersion;
-	void GenerateTabs();
-	void CheckForUpdates();
-	void UpdateInstaller();
+	// Name of the GitHub package this installer is from. If the newest package is not this, we should update.
+	extern const std::string GitHubInstallerVersion;
 
 	void SetInstallerBackgroundImage(std::string Image);
-
-	void CheckForInstallerUpdate();
-
 }
