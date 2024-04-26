@@ -1,4 +1,5 @@
 #pragma once
+#include <atomic>
 
 namespace AppUpdate
 {
@@ -8,4 +9,6 @@ namespace AppUpdate
 	void CheckForUpdates();
 	void CheckForInstallerUpdate();
 	void UpdateInstaller();
+
+	extern std::atomic<bool> RequiresUpdate;
 }

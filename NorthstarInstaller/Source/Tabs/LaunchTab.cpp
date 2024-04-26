@@ -138,13 +138,13 @@ void LaunchTab::LaunchNorthstar(std::string Args)
 	{
 		return;
 	}
-	if (!Game::GamePath.empty() && !Game::RequiresUpdate)
+	if (!Game::GamePath.empty() && !AppUpdate::RequiresUpdate)
 	{
 		Log::Print("Starting game...");
 
 		new BackgroundTask(NorthstarLaunchTask);
 	}
-	if (Game::RequiresUpdate && !Game::GamePath.empty())
+	if (AppUpdate::RequiresUpdate && !Game::GamePath.empty())
 	{
 		Game::UpdateGameAsync();
 	}
@@ -221,7 +221,7 @@ void LaunchTab::Tick()
 	{
 		LaunchText->SetText(GetTranslation("play_downloading_mod"));
 	}
-	else if (Game::RequiresUpdate)
+	else if (AppUpdate::RequiresUpdate)
 	{
 		LaunchText->SetText(GetTranslation("play_update_required"));
 	}

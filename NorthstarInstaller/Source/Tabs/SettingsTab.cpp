@@ -262,7 +262,7 @@ void SettingsTab::GenerateSettings()
 			new BackgroundTask([]()
 				{
 					AppUpdate::CheckForUpdates();
-					if (Game::RequiresUpdate)
+					if (AppUpdate::RequiresUpdate)
 					{
 						WindowFunc::ShowPopup(GetTranslation("app_name"), GetTranslation("settings_update_required"));
 					}

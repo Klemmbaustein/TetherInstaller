@@ -55,7 +55,7 @@ void AppUpdate::CheckForUpdates()
 	Log::Print("No update required");
 }
 
-static std::atomic<bool> RequiresUpdate = false;
+std::atomic<bool> AppUpdate::RequiresUpdate = false;
 
 void AppUpdate::CheckForInstallerUpdate()
 {

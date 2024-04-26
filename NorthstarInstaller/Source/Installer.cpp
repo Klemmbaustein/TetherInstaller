@@ -103,6 +103,7 @@ KlemmUI::UIButton* Installer::SetButtonColorIfSelected(KlemmUI::UIButton* Button
 		Button->SetHoveredColor(Vector3f::Lerp(1, InstallerThemeColor, 0.5f));
 		Button->SetPressedColor(InstallerThemeColor);
 	}
+	Button->RedrawElement();
 	return Button;
 }
 
@@ -247,10 +248,10 @@ int main(int argc, char** argv)
 		}
 #endif
 #if !DEBUG
-		if (RequiresUpdate)
+		if (AppUpdate::RequiresUpdate)
 		{
-			RequiresUpdate = false;
-			new BackgroundTask(UpdateInstaller);
+			AppUpdate::RequiresUpdate = false;
+			new BackgroundTask(AppUpdate::UpdateInstaller);
 		}
 #endif
 	}

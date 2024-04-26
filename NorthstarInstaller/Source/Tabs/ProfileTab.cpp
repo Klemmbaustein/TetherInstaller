@@ -275,7 +275,7 @@ void ProfileTab::DisplayProfileInfo()
 				{
 					new BackgroundTask([]()
 						{
-							if (Game::RequiresUpdate)
+							if (AppUpdate::RequiresUpdate)
 							{
 								Game::UpdateGame();
 							}

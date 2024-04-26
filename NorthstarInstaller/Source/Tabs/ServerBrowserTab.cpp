@@ -528,7 +528,7 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 
 	UIText* Descr = new UIText(0.6f, 1, e.Description, UI::Text);
 	Descr->Wrap = true;
-	Descr->WrapDistance = 0.4f;
+	Descr->WrapDistance = 0.35f;
 	std::string PlayerCount = Format(GetTranslation("servers_match_playercount"), e.PlayerCount, e.MaxPlayerCount);
 
 	UIText* Title = new UIText(1.0f, 1, e.Name, UI::Text);
