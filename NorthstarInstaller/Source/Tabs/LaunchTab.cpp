@@ -58,14 +58,13 @@ static void NorthstarLaunchTask()
 
 #if __linux__
 
+	// No idea if this actually works. It probably doesn't.
 	std::string Command = "steam://run/1237970/-northstar -profile=\\\""
 		+ ProfileTab::CurrentProfile.DisplayName
 		+ "\\\" "
 		+ NorthstarLaunchArgs
 		+ " "
 		+ Game::GetLaunchArgs();
-
-	// std::string Command = "https://northstar.tf/";
 
 	system(("xdg-open \"" + Command + "\"").c_str());
 #elif _WIN32

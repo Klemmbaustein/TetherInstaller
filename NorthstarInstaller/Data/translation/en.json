@@ -84,6 +84,7 @@
     "mod_dependency_install_cancel": "Cancel",
     "mod_dependency_looking_for_deps": "Looking for dependencies...",
     "mod_dependency_installing": "Installing dependency: %s",
+    "mod_incorrect_format": "Error while installig mod %s:\nThe mod appears to be improperly formatted. This is an issue with the mod itself.",
 
     // "Profile" tab strings
     "profile_current": "Current profile:",

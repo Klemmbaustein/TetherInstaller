@@ -85,6 +85,7 @@
     "mod_dependency_install_cancel": "Abbrechen",
     "mod_dependency_looking_for_deps": "Suche nach Abhängigkeiten...",
     "mod_dependency_installing": "Installiere Abhängigkeit: %s",
+    "mod_incorrect_format": "Fehler während der Installation der Mod %s:\nDie Mod scheint inkorrekt formatiert zu sein. Das ist ein Problem mit der Mod selbst.",
 
     // "Profile" tab strings
     "profile_current": "Ausgewähltes Profil:",

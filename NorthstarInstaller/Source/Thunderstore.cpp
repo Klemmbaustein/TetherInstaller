@@ -14,6 +14,8 @@
 #include "Tabs/ProfileTab.h"
 #include "Installer.h"
 #include "TetherPlugin.h"
+#include "Translation.h"
+using namespace Translation;
 
 constexpr const char* MOD_DESCRIPTOR_FILE_FORMAT_VERSION = "v4";
 
@@ -986,6 +988,13 @@ namespace Thunderstore::TSModFunc
 					| std::filesystem::copy_options::recursive);
 
 				SaveModInfo(m, {}, false);
+				IsInstallingMod = false;
+				return;
+			}
+
+			if (!std::filesystem::exists(Installer::CurrentPath + "Data/temp/mod/mods/"))
+			{
+				WindowFunc::ShowPopupError(Format(GetTranslation("mod_incorrect_format"), m.Name.c_str()));
 				IsInstallingMod = false;
 				return;
 			}
