@@ -40,9 +40,6 @@
     <ClCompile Include="Source\Tabs\ServerBrowserTab.cpp">
       <Filter>Source\Tabs</Filter>
     </ClCompile>
-    <ClCompile Include="Source\miniz\miniz.cpp">
-      <Filter>Dependencies</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Tabs\ProfileTab.cpp">
       <Filter>Source\Tabs</Filter>
     </ClCompile>
@@ -55,6 +52,7 @@
     <ClCompile Include="Source\UI\TitleBar.cpp" />
     <ClCompile Include="Source\UI\Sidebar.cpp" />
     <ClCompile Include="Source\AppUpdate.cpp" />
+    <ClCompile Include="..\Shared\miniz\miniz.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -110,9 +108,6 @@
     <ClInclude Include="Source\Tabs\ServerBrowserTab.h">
       <Filter>Source\Tabs</Filter>
     </ClInclude>
-    <ClInclude Include="Source\miniz\miniz.h">
-      <Filter>Dependencies</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Tabs\ProfileTab.h">
       <Filter>Source\Tabs</Filter>
     </ClInclude>
@@ -129,7 +124,6 @@
     <ClInclude Include="Source\AppUpdate.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\README.md" />
     <None Include="..\.gitignore" />
     <None Include="Data\autojoin\mod\scripts\vscripts\autoJoinServer.gnut">
       <Filter>autoJoinServer</Filter>
@@ -140,10 +134,9 @@
     <None Include="update.bat" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="installer.rc" />
+    <Text Include="..\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="..\LICENSE.txt" />
-    <Text Include="..\CMakeLists.txt" />
+    <ResourceCompile Include="installer.rc" />
   </ItemGroup>
 </Project>

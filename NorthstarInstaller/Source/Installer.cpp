@@ -122,7 +122,11 @@ int main(int argc, char** argv)
 	
 	if (!std::filesystem::exists("Data/shaders/postprocess.vert"))
 	{
+#if _WIN32
+		std::string ProgramLocation = WindowFunc::GetAppPath();
+#else
 		std::string ProgramLocation = argv[0];
+#endif
 		CurrentPath = (ProgramLocation.substr(0, ProgramLocation.find_last_of("/\\")));
 	}
 	else

@@ -626,7 +626,7 @@ void ServerBrowserTab::LoadServers()
 {
 	using namespace nlohmann;
 
-	if (!std::filesystem::exists("Data/temp"))
+	if (!std::filesystem::exists(Installer::CurrentPath + "Data/temp"))
 	{
 		return;
 	}

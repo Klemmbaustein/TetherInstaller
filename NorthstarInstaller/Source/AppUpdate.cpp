@@ -100,9 +100,9 @@ void AppUpdate::UpdateInstaller()
 		return;
 	}
 	Networking::DownloadLatestReleaseOf("Klemmbaustein/TetherInstaller", "Windows");
-	Networking::ExtractZip("Data/temp/net/latest.zip", "Data/temp/install");
+	Networking::ExtractZip(Installer::CurrentPath + "Data/temp/net/latest.zip", Installer::CurrentPath + "Data/temp/install");
 
-	system("start update.bat");
+	system(("cd " + Installer::CurrentPath + " && start update.bat").c_str());
 	exit(0);
 }
 

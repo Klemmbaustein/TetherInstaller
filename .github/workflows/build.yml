@@ -48,6 +48,15 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         path: ${{ github.workspace }}/Release
         name: Tether-Windows-Build-${{ github.run_number }}
+    - name: upload artifact
+      uses: actions/upload-artifact@v3
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        path: ${{ github.workspace }}/x64/Release/TetherSetup.exe
+        name: Tether-Setup-${{ github.run_number }}
+
   Build-Linux:
     runs-on: ubuntu-latest
 

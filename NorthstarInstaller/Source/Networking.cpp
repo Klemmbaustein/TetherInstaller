@@ -7,7 +7,7 @@
 #define CURL_STATICLIB 1
 #include <curl/curl.h>
 #include "nlohmann/json.hpp"
-#include "miniz/miniz.h"
+#include "miniz.h"
 
 #include <fstream>
 #include <filesystem>
@@ -65,14 +65,14 @@ namespace Networking
 
 	void CheckNetTempFolder()
 	{
-		if (!std::filesystem::exists(NetTempFolder))
+		if (!std::filesystem::exists(Installer::CurrentPath + NetTempFolder))
 		{
-			std::filesystem::create_directories(NetTempFolder);
+			std::filesystem::create_directories(Installer::CurrentPath + NetTempFolder);
 		}
 
-		if (std::filesystem::exists("Data/temp/invalidresponse.txt"))
+		if (std::filesystem::exists(Installer::CurrentPath + "Data/temp/invalidresponse.txt"))
 		{
-			std::filesystem::remove("Data/temp/invalidresponse.txt");
+			std::filesystem::remove(Installer::CurrentPath + "Data/temp/invalidresponse.txt");
 		}
 	}
 
@@ -188,11 +188,11 @@ namespace Networking
 
 		CheckNetTempFolder();
 
-		Download("https://api.github.com/repos/" + RepoName + "/releases/latest", NetTempFolder + "version.txt", "User-Agent: " + Installer::UserAgent);
+		Download("https://api.github.com/repos/" + RepoName + "/releases/latest", Installer::CurrentPath + NetTempFolder + "version.txt", "User-Agent: " + Installer::UserAgent);
 
 		try
 		{
-			std::ifstream in = std::ifstream(NetTempFolder + "version.txt");
+			std::ifstream in = std::ifstream(Installer::CurrentPath + NetTempFolder + "version.txt");
 			in.exceptions(std::ios::failbit | std::ios::badbit);
 			std::stringstream str; str << in.rdbuf();
 			auto response = json::parse(str.str());
@@ -210,7 +210,7 @@ namespace Networking
 			Log::Print(e.what(), Log::Error);
 
 			Log::Print("Writing response to Data/temp/invalidresponse.txt", Log::Error);
-			std::filesystem::copy(NetTempFolder + "version.txt", "Data/temp/invalidresponse.txt");
+			std::filesystem::copy(Installer::CurrentPath + NetTempFolder + "version.txt", "Data/temp/invalidresponse.txt");
 		}
 		return "";
 	}
@@ -220,11 +220,11 @@ namespace Networking
 		using namespace nlohmann;
 		CheckNetTempFolder();
 
-		Download("https://api.github.com/repos/" + RepoName + "/releases/latest", NetTempFolder + "version.txt", "User-Agent: " + Installer::UserAgent);
+		Download("https://api.github.com/repos/" + RepoName + "/releases/latest", Installer::CurrentPath + NetTempFolder + "version.txt", "User-Agent: " + Installer::UserAgent);
 
 		try
 		{
-			std::ifstream in = std::ifstream(NetTempFolder + "version.txt");
+			std::ifstream in = std::ifstream(Installer::CurrentPath + NetTempFolder + "version.txt");
 			std::stringstream str; str << in.rdbuf();
 			auto response = json::parse(str.str());
 
@@ -240,8 +240,8 @@ namespace Networking
 				url = url.substr(1, url.size() - 2);
 
 				Log::Print("Found latest release -> " + url);
-				Download(url, NetTempFolder + "latest.zip", "User-Agent: " + Installer::UserAgent, true);
-				return NetTempFolder + "latest.zip";
+				Download(url, Installer::CurrentPath + NetTempFolder + "latest.zip", "User-Agent: " + Installer::UserAgent, true);
+				return Installer::CurrentPath + NetTempFolder + "latest.zip";
 			}
 		}
 		catch (std::exception& e)
@@ -250,7 +250,7 @@ namespace Networking
 			Log::Print(e.what(), Log::Error);
 
 			Log::Print("Writing response to Data/temp/invalidresponse.txt", Log::Error);
-			std::filesystem::copy(NetTempFolder + "version.txt", "Data/temp/invalidresponse.txt");
+			std::filesystem::copy(Installer::CurrentPath + NetTempFolder + "version.txt", "Data/temp/invalidresponse.txt");
 		}
 		return "";
 	}
@@ -259,7 +259,7 @@ namespace Networking
 	{
 		Log::Print("Checking internet connection");
 		Log::Print("Initialised cURL");
-		std::filesystem::create_directories("Data/temp/net/");
+		CheckNetTempFolder();
 		curl_global_init(CURL_GLOBAL_ALL);
 
 #if _WIN32

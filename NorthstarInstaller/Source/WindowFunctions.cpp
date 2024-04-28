@@ -129,3 +129,12 @@ void WindowFunc::ShowPopupError(std::string Message)
 	Log::Print(Message, Log::Error);
 	tinyfd_messageBox("Tether", Message.c_str(), "ok", "error", 1);
 }
+
+#if _WIN32
+std::string WindowFunc::GetAppPath()
+{
+	char Buffer[MAX_PATH];
+	GetModuleFileNameA(NULL, Buffer, sizeof(Buffer));
+	return Buffer;
+}
+#endif
