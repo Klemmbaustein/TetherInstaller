@@ -38,6 +38,7 @@ if (DEFINED TETHER_CI)
 endif()
 
 target_include_directories(TetherInstaller PRIVATE "tinyfiledialogs/")
+target_include_directories(TetherInstaller PRIVATE "Shared/miniz")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-char8_t" )
 
