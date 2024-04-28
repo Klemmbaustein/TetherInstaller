@@ -27,9 +27,18 @@
     <ClInclude Include="Source\AppInstaller.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Install.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\AppInstaller.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Shared\miniz\miniz.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Install.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -39,14 +48,18 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Source\small.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="Source\AppInstaller.ico">
+    <Image Include="C:\Users\janpa\Downloads\Tether-Icon.png">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="AppInstaller.exe.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Release\TetherInstaller.zip" />
+    <None Include="CreateReleaseZip.ps1" />
+    <None Include="Source\content1.bin">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

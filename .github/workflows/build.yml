@@ -46,16 +46,22 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        path: ${{ github.workspace }}/Release
-        name: Tether-Windows-Build-${{ github.run_number }}
+        path: ${{ github.workspace }}/x64/Release/TetherSetup.exe
+        name: Tether-Setup-${{ github.run_number }}
+
+    - name: Remove Zip
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: |
+        rm Release/TetherInstaller.zip
+
     - name: upload artifact
       uses: actions/upload-artifact@v3
       env:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        path: ${{ github.workspace }}/x64/Release/TetherSetup.exe
-        name: Tether-Setup-${{ github.run_number }}
+        path: ${{ github.workspace }}/Release
+        name: Tether-Windows-Build-${{ github.run_number }}
 
   Build-Linux:
     runs-on: ubuntu-latest
@@ -128,7 +134,7 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: tether_linux.tar.gz
         asset_name: Tether-Linux-Build-${{ github.run_number }}.tar.gz
-        asset_content_type: application/zip
+        asset_content_type: application/gzip
 
     - name: upload windows artifact
       uses: actions/upload-release-asset@v1
@@ -139,3 +145,12 @@ jobs:
         asset_path: tether-win.zip
         asset_name: Tether-Windows-Build-${{ github.run_number }}.zip
         asset_content_type: application/zip
+    - name: upload windows installer
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: Release/Tether-Setup-63.exe
+        asset_name: Tether-Win-Setup.exe
+        asset_content_type: application/octet-stream

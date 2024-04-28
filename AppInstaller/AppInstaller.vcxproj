@@ -335,8 +335,6 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="C:\Users\janpa\Downloads\Tether-Icon.png" />
-    <Image Include="Source\AppInstaller.ico" />
-    <Image Include="Source\small.ico" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="AppInstaller.exe.manifest" />
