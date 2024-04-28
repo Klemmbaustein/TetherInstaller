@@ -12,6 +12,7 @@ file(
     "${SRC_DIR}/**.cpp"
 )
 list(APPEND SRCS "tinyfiledialogs/tinyfiledialogs.c")
+list(APPEND SRCS "Shared/miniz/miniz.cpp")
 
 add_subdirectory("KlemmUI/")
 add_subdirectory("json")
