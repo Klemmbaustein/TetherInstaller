@@ -151,6 +151,6 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: Release/Tether-Setup-63.exe
+        asset_path: Release/Tether-Setup-63
         asset_name: Tether-Win-Setup.exe
         asset_content_type: application/octet-stream
