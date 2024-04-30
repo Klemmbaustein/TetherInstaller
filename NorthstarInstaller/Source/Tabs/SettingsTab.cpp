@@ -85,7 +85,7 @@ static Vector3f RgbToColor(std::string Rgb)
 
 static void SaveSettings()
 {
-	std::ofstream out = std::ofstream("Data/var/appearance.txt");
+	std::ofstream out = std::ofstream(Installer::CurrentPath + "Data/var/appearance.txt");
 	out << Installer::GetThemeColor().X << " " << Installer::GetThemeColor().Y << " " << Installer::GetThemeColor().Z << std::endl;
 	out << (TitleBar::GetUseSystemTitleBar() ? "system" : "custom");
 	out.close();
@@ -150,7 +150,7 @@ static void DeleteAllMods()
 			Log::Print("Removing mod: " + m.path().filename().u8string(),  Log::Warning);
 		}
 	}
-	std::filesystem::remove_all("Data/var/modinfo");
+	std::filesystem::remove_all(Installer::CurrentPath + "Data/var/modinfo");
 }
 
 void LocateTitanfall()
@@ -325,8 +325,8 @@ void SettingsTab::GenerateSettings()
 
 		try
 		{
-			std::filesystem::copy(NewPicture, "Data/var/custom_background.png", std::filesystem::copy_options::overwrite_existing);
-			Installer::SetInstallerBackgroundImage("Data/var/custom_background.png");
+			std::filesystem::copy(NewPicture, Installer::CurrentPath + "Data/var/custom_background.png", std::filesystem::copy_options::overwrite_existing);
+			Installer::SetInstallerBackgroundImage(Installer::CurrentPath + "Data/var/custom_background.png");
 		}
 		catch (std::exception& e)
 		{
@@ -336,12 +336,12 @@ void SettingsTab::GenerateSettings()
 		}, SettingsBox);
 
 
-	if (std::filesystem::exists("Data/var/custom_background.png"))
+	if (std::filesystem::exists(Installer::CurrentPath + "Data/var/custom_background.png"))
 	{
 		SettingsBox->AddChild((new UIButton(true, 0, 0.75, []() 
 			{
-				std::filesystem::remove("Data/var/custom_background.png");
-				Installer::SetInstallerBackgroundImage("Data/Game.png");
+				std::filesystem::remove(Installer::CurrentPath + "Data/var/custom_background.png");
+				Installer::SetInstallerBackgroundImage(Installer::CurrentPath + "Data/Game.png");
 				CurrentSettingsTab->GenerateSettings();
 			}))
 			->SetMinSize(Vector2f(0.6, 0))
@@ -446,12 +446,12 @@ void SettingsTab::GenerateSettings()
 		AddSettingsButton("settings_reset_installer", "Settings/Reload", []() {
 			try
 			{
-				std::filesystem::remove_all("Data/temp");
+				std::filesystem::remove_all(Installer::CurrentPath + "Data/temp");
 				Log::Print("Deleted ./Data/temp/", Log::Warning);
 				std::filesystem::remove_all("./Data/var");
 				Log::Print("Deleted ./Data/var/", Log::Warning);
-				std::filesystem::create_directories("./Data/var");
-				std::filesystem::create_directories("./Data/temp");
+				std::filesystem::create_directories(Installer::CurrentPath + "./Data/var");
+				std::filesystem::create_directories(Installer::CurrentPath + "./Data/temp");
 			}
 			catch (std::exception& e)
 			{

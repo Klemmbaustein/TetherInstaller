@@ -63,9 +63,9 @@ std::string Game::GetTitanfallLocation()
 	return std::filesystem::current_path().u8string();
 #endif
 
-	if (std::filesystem::exists(GameDirTxtPath))
+	if (std::filesystem::exists(Installer::CurrentPath + GameDirTxtPath))
 	{
-		std::ifstream in = std::ifstream(GameDirTxtPath);
+		std::ifstream in = std::ifstream(Installer::CurrentPath + GameDirTxtPath);
 		std::stringstream insstream;
 		insstream << in.rdbuf();
 		in.close();
@@ -235,7 +235,7 @@ std::string Game::GetLaunchArgs()
 	{
 		return "-novid -multiple";
 	}
-	std::ifstream LaunchArgStream = std::ifstream("Data/var/launch_args.txt");
+	std::ifstream LaunchArgStream = std::ifstream(Installer::CurrentPath + "Data/var/launch_args.txt");
 	std::stringstream s;
 	s << LaunchArgStream.rdbuf();
 	LaunchArgStream.close();
@@ -244,7 +244,7 @@ std::string Game::GetLaunchArgs()
 
 void Game::SetLaunchArgs(std::string NewArgs)
 {
-	std::ofstream LaunchArgStream = std::ofstream("Data/var/launch_args.txt");
+	std::ofstream LaunchArgStream = std::ofstream(Installer::CurrentPath + "Data/var/launch_args.txt");
 	LaunchArgStream << NewArgs;
 	LaunchArgStream.close();
 }

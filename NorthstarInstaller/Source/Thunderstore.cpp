@@ -814,9 +814,12 @@ void Thunderstore::SetModEnabled(Package m, bool IsEnabled)
 			}
 		}
 
-		std::ofstream out = std::ofstream(EnabledModsJson);
-		out << EnabledMods.dump();
-		out.close();
+		if (!EnabledMods.empty())
+		{
+			std::ofstream out = std::ofstream(EnabledModsJson);
+			out << EnabledMods.dump();
+			out.close();
+		}
 	}
 
 }
@@ -841,16 +844,22 @@ bool Thunderstore::GetModEnabled(Package m)
 		std::stringstream str;
 		str << in.rdbuf();
 		in.close();
-		json EnabledMods = json::parse(str.str());
-
-		for (const auto& i : TargetMods)
+		try
 		{
-			if (EnabledMods.contains(i) && !EnabledMods.at(i))
+			json EnabledMods = json::parse(str.str());
+
+			for (const auto& i : TargetMods)
 			{
-				AllModsEnabled = false;
+				if (EnabledMods.contains(i) && !EnabledMods.at(i))
+				{
+					AllModsEnabled = false;
+				}
 			}
+			return AllModsEnabled;
 		}
-		return AllModsEnabled;
+		catch (json::exception)
+		{
+		}
 	}
 	return false;
 }

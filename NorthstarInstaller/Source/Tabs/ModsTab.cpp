@@ -594,9 +594,9 @@ void ModsTab::GenerateModImages()
 		{
 			unsigned int tex = Texture::LoadTexture(Thunderstore::FoundMods[i].Img);
 			ModTextures.push_back(tex);
-			ModImages[i]->SetUseTexture(true, tex);
-			ModImages[i]->SetColor(1);
-			ModImages[i]->DeleteChildren();
+			ModImages.at(i)->SetUseTexture(true, tex);
+			ModImages.at(i)->SetColor(1);
+			ModImages.at(i)->DeleteChildren();
 		}
 	}
 }
