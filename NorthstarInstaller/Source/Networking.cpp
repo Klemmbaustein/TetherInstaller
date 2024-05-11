@@ -106,7 +106,7 @@ namespace Networking
 	void Download(std::string Url, std::string To, std::string UserAgent, bool IsDownload)
 	{
 		std::ofstream OutFile = std::ofstream(To, std::ios::binary | std::ios::out);
-		DownloadInternal(Url, UserAgent, FileWrite, &OutFile, IsDownload);
+		DownloadInternal(Url, UserAgent, &FileWrite, &OutFile, IsDownload);
 		return;
 	}
 
@@ -114,7 +114,7 @@ namespace Networking
 	{
 		std::string OutString;
 
-		DownloadInternal(Url, UserAgent, StringWrite, &OutString, false);
+		DownloadInternal(Url, UserAgent, &StringWrite, &OutString, false);
 
 		return OutString;
 	}
