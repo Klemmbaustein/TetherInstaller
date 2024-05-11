@@ -46,13 +46,24 @@ namespace Networking
 
 	const std::string NetTempFolder = "Data/temp/net/";
 
-	static size_t write_data(void* ptr, size_t size, size_t nmemb, void* stream)
+	static size_t WriteData(void* ptr, size_t size, size_t nmemb, void* stream)
 	{
 		size_t written = fwrite(ptr, size, nmemb, (FILE*)stream);
 		return written;
 	}
 
-	int progress_func(void* ptr, curl_off_t TotalToDownload, curl_off_t NowDownloaded, curl_off_t TotalToUpload, curl_off_t NowUploaded)
+	static size_t StringWrite(uint8_t* ptr, size_t size, size_t nmemb, std::string* str)
+	{
+		size_t NumBytes = size * nmemb;
+		str->reserve(str->size() + NumBytes);
+		for (size_t i = 0; i < NumBytes; i++)
+		{
+			str->push_back(ptr[i]);
+		}
+		return size * NumBytes;
+	}
+
+	int ProgressFunction(void* ptr, curl_off_t TotalToDownload, curl_off_t NowDownloaded, curl_off_t TotalToUpload, curl_off_t NowUploaded)
 	{
 		if (TotalToDownload == 0)
 		{ 
@@ -62,102 +73,50 @@ namespace Networking
 		return 0;
 	}
 
-
-	void CheckNetTempFolder()
+	static void DownloadInternal(std::string Url, std::string UserAgent, void* WriteFunction, void* WriteData, bool Download)
 	{
-		if (!std::filesystem::exists(Installer::CurrentPath + NetTempFolder))
+		CURL* CurlHandle = curl_easy_init();
+		curl_slist* headers = NULL;
+		headers = curl_slist_append(headers, ("User-Agent: " + UserAgent).c_str());
+		curl_easy_setopt(CurlHandle, CURLOPT_HTTPHEADER, headers);
+
+		curl_easy_setopt(CurlHandle, CURLOPT_WRITEDATA, WriteData);
+		curl_easy_setopt(CurlHandle, CURLOPT_FOLLOWLOCATION, true);
+
+		curl_easy_setopt(CurlHandle, CURLOPT_URL, Url.c_str());
+		curl_easy_setopt(CurlHandle, CURLOPT_WRITEFUNCTION, WriteFunction);
+		curl_easy_setopt(CurlHandle, CURLOPT_NOPROGRESS, !Download);
+
+		if (Download)
 		{
-			std::filesystem::create_directories(Installer::CurrentPath + NetTempFolder);
+			curl_easy_setopt(CurlHandle, CURLOPT_XFERINFOFUNCTION, ProgressFunction);
 		}
 
-		if (std::filesystem::exists(Installer::CurrentPath + "Data/temp/invalidresponse.txt"))
-		{
-			std::filesystem::remove(Installer::CurrentPath + "Data/temp/invalidresponse.txt");
-		}
+		CURLcode res = curl_easy_perform(CurlHandle);
+
+		curl_easy_cleanup(CurlHandle);
 	}
 
-
-	void Download(std::string url, std::string target, std::string Header, bool IsDownload)
+	static size_t FileWrite(uint8_t* ptr, size_t size, size_t nmemb, std::ofstream* stream)
 	{
-#if DEV_NET_DEBUGGING
-		Log::Print("Requesting url " + url);
-#endif
+		stream->write((char*)ptr, size * nmemb);
+		return size * nmemb;
+	}
 
-		std::string target_cp = target;
-
-		CURL* curl_handle;
-		FILE* pagefile;
-
-		/* init the curl session */
-		curl_handle = curl_easy_init();
-
-		if (!Header.empty())
-		{
-			struct curl_slist* headers = NULL; // init to NULL is important 
-			headers = curl_slist_append(headers, Header.c_str());
-
-			curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, headers);
-		}
-
-		/* set URL to get here */
-		curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str());
-
-		/* Switch on full protocol/debug output while testing */
-		// curl_easy_setopt(curl_handle, CURLOPT_VERBOSE, 1L);
-
-		/* disable progress meter, set to 0L to enable and disable debug output */
-		curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1L);
-
-		/* send all data to this function  */
-		curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_data);
-		curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
-
-		if (IsDownload)
-		{
-			// Internal CURL progressmeter must be disabled if we provide our own callback
-			curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 0L);
-			// Install the callback function
-			curl_easy_setopt(curl_handle, CURLOPT_XFERINFOFUNCTION, progress_func);
-		}
-
-		/* open the file */
-		if (target_cp.find_last_of("/\\") != std::string::npos)
-		{
-			std::string Path = target_cp.substr(0, target_cp.find_last_of("/\\"));
-			try
-			{
-				std::filesystem::create_directories(Path);
-			}
-			catch (std::exception& e)
-			{
-				WindowFunc::ShowPopupError(e.what());
-				return;
-			}
-		}
-
-		pagefile = fopen(target_cp.c_str(), "wb");
-		if (pagefile) 
-		{
-
-			/* write the page body to this file handle */
-			curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, pagefile);
-
-			CURLcode res;
-			res = curl_easy_perform(curl_handle);
-
-			/* close the header file */
-			fclose(pagefile);
-		}
-		else
-		{
-			Log::Print("pagefile could not be created: " + std::string(target_cp), Log::Error);
-			return;
-		}
-
-		/* cleanup curl stuff */
-		curl_easy_cleanup(curl_handle);
-
+	void Download(std::string Url, std::string To, std::string UserAgent, bool IsDownload)
+	{
+		std::ofstream OutFile = std::ofstream(To, std::ios::binary | std::ios::out);
+		DownloadInternal(Url, UserAgent, FileWrite, &OutFile, IsDownload);
 		return;
+	}
+
+	std::string DownloadString(std::string Url, std::string UserAgent)
+	{
+		std::string OutString;
+
+		DownloadInternal(Url, UserAgent, StringWrite, &OutString, false);
+
+		return OutString;
 	}
 
 	bool IsProcessRunning(std::string Name)
@@ -186,16 +145,9 @@ namespace Networking
 	{
 		using namespace nlohmann;
 
-		CheckNetTempFolder();
-
-		Download("https://api.github.com/repos/" + RepoName + "/releases/latest", Installer::CurrentPath + NetTempFolder + "version.txt", "User-Agent: " + Installer::UserAgent);
-
 		try
 		{
-			std::ifstream in = std::ifstream(Installer::CurrentPath + NetTempFolder + "version.txt");
-			in.exceptions(std::ios::failbit | std::ios::badbit);
-			std::stringstream str; str << in.rdbuf();
-			auto response = json::parse(str.str());
+			auto response = json::parse(DownloadString("https://api.github.com/repos/" + RepoName + "/releases/latest", Installer::UserAgent));
 
 			std::string latestname = response.at("name").dump();
 
@@ -208,9 +160,6 @@ namespace Networking
 		{
 			Log::Print("Github response has an invalid layout.", Log::Error);
 			Log::Print(e.what(), Log::Error);
-
-			Log::Print("Writing response to Data/temp/invalidresponse.txt", Log::Error);
-			std::filesystem::copy(Installer::CurrentPath + NetTempFolder + "version.txt", "Data/temp/invalidresponse.txt");
 		}
 		return "";
 	}
@@ -218,15 +167,9 @@ namespace Networking
 	std::string DownloadLatestReleaseOf(std::string RepoName, std::string NecessaryAssetName)
 	{
 		using namespace nlohmann;
-		CheckNetTempFolder();
-
-		Download("https://api.github.com/repos/" + RepoName + "/releases/latest", Installer::CurrentPath + NetTempFolder + "version.txt", "User-Agent: " + Installer::UserAgent);
-
 		try
 		{
-			std::ifstream in = std::ifstream(Installer::CurrentPath + NetTempFolder + "version.txt");
-			std::stringstream str; str << in.rdbuf();
-			auto response = json::parse(str.str());
+			auto response = json::parse(DownloadString("https://api.github.com/repos/" + RepoName + "/releases/latest", Installer::UserAgent));
 
 			for (auto& elem : response["assets"])
 			{
@@ -248,9 +191,6 @@ namespace Networking
 		{
 			Log::Print("Github response has an invalid layout. - https://api.github.com/repos/" + RepoName + "/releases/latest", Log::Error);
 			Log::Print(e.what(), Log::Error);
-
-			Log::Print("Writing response to Data/temp/invalidresponse.txt", Log::Error);
-			std::filesystem::copy(Installer::CurrentPath + NetTempFolder + "version.txt", "Data/temp/invalidresponse.txt");
 		}
 		return "";
 	}
@@ -259,7 +199,6 @@ namespace Networking
 	{
 		Log::Print("Checking internet connection");
 		Log::Print("Initialised cURL");
-		CheckNetTempFolder();
 		curl_global_init(CURL_GLOBAL_ALL);
 
 #if _WIN32

@@ -11,7 +11,7 @@ void UITab::OnClicked()
 
 UITab::UITab()
 {
-	Background = new UIBox(false, Vector2f(-1, -1));
+	Background = new UIBox(true, Vector2f(-1, -1));
 	Background->SetVerticalAlign(UIBox::Align::Reverse);
 	Background->SetMinSize(Vector2f(2, 1.8));
 	Background->SetMaxSize(Vector2f(2, 1.8));
@@ -28,14 +28,14 @@ UITab::~UITab()
 
 void UITab::UpdateAll()
 {
-	for (auto i : Sidebar::Tabs)
+	for (auto i : SidebarClass::Tabs)
 	{
 		i->Background->SetPosition(Vector2f(
-			-1 + Sidebar::GetSize(),
+			-1 + SidebarClass::GetSize(),
 			-1));
 
 		Vector2f BackgroundSize = Vector2f(2) - Vector2f(
-			Sidebar::GetSize(),
+			SidebarClass::GetSize(),
 			TitleBar::GetSize());
 
 		i->Background->SetMinSize(BackgroundSize);

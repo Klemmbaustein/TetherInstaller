@@ -1,0 +1,48 @@
+
+element TitleBarElement
+{
+	var Title;
+
+	child UIBackground
+	{
+		minSize = (1.5, 0);
+		verticalAlign = default;
+
+		child UIText titleText
+		{
+			text = Title;
+			size = 15px;
+			leftPadding = 80px;
+			rightPadding = 5px;
+			upPadding = 8px;
+			downPadding = 5px;
+		}
+		color = 0.1;
+		tryFill = true;
+	}
+	child UIBackground
+	{
+		minSize = (0.5, 0);
+
+		child UIBox buttonBox
+		{
+			horizontalAlign = reverse;
+		}
+		color = 0.1;
+		horizontalAlign = reverse;
+	}
+}
+
+element TitleBarButton
+{
+	var ButtonColor;
+	child UIButton button
+	{
+		color = 0.1;
+		child UIBackground icon
+		{
+			size = 20px;
+			padding = 10px;
+		}
+	}
+}

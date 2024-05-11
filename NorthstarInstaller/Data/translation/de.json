@@ -75,9 +75,9 @@
     "mod_deprecation_warning": "Diese Mod ist veraltet\nVeraltete Mods sind nicht mehr unterstützt und können Probleme haben.",
     "mod_is_enabled": "Diese Mod ist Aktiviert",
     "mod_is_disabled": "Diese Mod ist Deaktiviert",
-    "mod_release_canidate_message": "Dies ist ein Northstar Release-Kanidat.\nRelease-Kanidaten sind Versionen von Northstar, welche fast bereit für den Release sind.\nFalls sie Probleme entdecken, erstellen sie entweder ein Github-Issue.",
+    "mod_release_candidate_message": "Dies ist ein Northstar Release-Kanidat.\nRelease-Kanidaten sind Versionen von Northstar, welche fast bereit für den Release sind.\nFalls sie Probleme entdecken, erstellen sie entweder ein Github-Issue.",
     "mod_vanillaplus_message": "Vanilla+ ermöglicht das Spielen auf Vanilla-Server mit Northstar.\nWenn diese Mod installier wird, wird dieses Profil zu einem Vanilla+-Profil.\nDas kann nicht auf dem R2Northstar-Profil gemacht werden.",
-    "mod_release_canidate_open_discord": "Discord-Kanal öffnen",
+    "mod_release_candidate_open_discord": "Discord-Kanal öffnen",
     "mod_dependency_notify_title": "Abhängigkeiten",
     "mod_dependency_notify_text": "Die Mod \"%s\" hängt von diesen Mods ab:",
     "mod_dependency_install_all": "Alle installieren",
@@ -143,7 +143,7 @@
 
     "plugin_status_format": "Spiele auf Map: '%s'. Modus: '%s'. Server '%s'",
     "plugin_no_server": "Kein Server",
-    "plugin_mod_not_avaliable": "Diese Mod kann nicht installiert werden, während Tether als plugin läuft.",
+    "plugin_mod_not_available": "Diese Mod kann nicht installiert werden, während Tether als plugin läuft.",
 
     "mod_categories": {
       "latest": "Am neusten",

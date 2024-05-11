@@ -55,7 +55,7 @@
     "servers_dependencies_title": "Server requires mods",
     "servers_dependencies_text": "Found these mods as dependencies for this server:",
     "servers_dependencies_install": "Install",
-    "servers_dependencies_cancel":  "Cancel",
+    "servers_dependencies_cancel": "Cancel",
 
     // "Mods" tab strings
     "mod_pages": "Pages: ",
@@ -74,9 +74,9 @@
     "mod_deprecation_warning": "This mod is deprecated\nDeprecated mods are no longer supported and might have issues.",
     "mod_is_enabled": "This mod is enabled",
     "mod_is_disabled": "This mod is disabled",
-    "mod_release_canidate_message": "This is a Northstar release canidate.\nRelease canidates are versions of Northstar that are almost ready to release. If you notice any issues with it, please report them to github or the Northstar discord server.",
+    "mod_release_candidate_message": "This is a Northstar release canidate.\nRelease canidates are versions of Northstar that are almost ready to release. If you notice any issues with it, please report them to github or the Northstar discord server.",
     "mod_vanillaplus_message": "Vanilla+ enables you to use Northstar mods on vanilla servers.\nInstalling this mod will turn this profile into a Vanilla+ profile. This cannot be done on the default R2Northstar profile.",
-    "mod_release_canidate_open_discord": "Open discord channel",
+    "mod_release_candidate_open_discord": "Open discord channel",
     "mod_dependency_notify_title": "Dependencies",
     "mod_dependency_notify_text": "The mod \"%s\" depends on these mods:",
     "mod_dependency_install_all": "Install all",
@@ -142,7 +142,7 @@
 
     "plugin_status_format": "Playing on the map: '%s'. Mode: '%s'. Server '%s'",
     "plugin_no_server": "No server",
-    "plugin_mod_not_avaliable": "Cannot install this mod when using Tether as a plugin.",
+    "plugin_mod_not_available": "Cannot install this mod when using Tether as a plugin.",
 
     "mod_categories": {
       "latest": "Latest",

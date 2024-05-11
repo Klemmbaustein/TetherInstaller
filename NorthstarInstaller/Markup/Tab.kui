@@ -1,0 +1,33 @@
+
+element TabElement
+{
+	var TabName;
+
+	tryFill = true;
+	child UIBackground tabBackground
+	{
+		orientation = vertical;
+		color = 0;
+		opacity = 0.7;
+		minSize = (1.0, 0);
+		tryFill = true;
+	
+		child UIBackground
+		{
+			tryFill = true;
+			minSize = 1px;
+		}
+	
+		child UIText title
+		{
+			text = TabName;
+			size = 20px;
+			padding = 5px;
+		}
+		
+		child UIBox contentBox
+		{
+			orientation = vertical;
+		}
+	}
+}

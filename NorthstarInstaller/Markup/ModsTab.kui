@@ -1,0 +1,119 @@
+
+element ModEntry
+{
+	var Name;
+	var Color = (1, 1, 1);
+
+	child UIButton entryButton
+	{
+		orientation = vertical;
+		color = Color;
+		child UIBackground
+		{
+			color = 0.1;
+			child UIBackground entryImage
+			{
+				size = 140px;
+				allAlign = centered;
+			}
+		}
+		child UIText entryText
+		{
+			text = Name;
+			size = 10px;
+			wrap = 260px;
+			color = 0;
+			padding = 2px;
+		}
+		size = (140, 190)px;
+		padding = 5px;
+		borderType = rounded;
+		borderSize = 5px;
+	}
+}
+
+element ModCategoryButton
+{
+	var Name;
+
+	child UIButton button
+	{
+		padding = 2px;
+		borderType = rounded;
+		borderSize = 4px;
+
+		child UIText
+		{
+			text = Name;
+			size = 13px;
+			padding = 4px;
+			color = 0;
+		}
+	}
+}
+
+element ModPageHeader
+{
+	var Name;
+	var Description;
+
+	orientation = vertical;
+	tryFill = true;
+
+	child ImageButton backButton
+	{
+		Image = "Back.png";
+		Text = "Back";
+	}
+	child UIBackground
+	{
+		minSize = 2px;
+		tryFill = true;
+		color = 1;
+		padding = 5px;
+	}
+
+	child UIBox
+	{
+		leftPadding = 0.1;
+		orientation = horizontal;
+
+		child UIBackground modImage
+		{
+			size = 150px;
+			padding = 5px;
+		}
+
+		child UIBox
+		{
+			orientation = vertical;
+
+			child UIText
+			{
+				size = 20px;
+				text = Name;
+				padding = 5px;
+			}
+			child UIText
+			{
+				size = 14px;
+				text = Description;
+				padding = 5px;
+			}
+			
+			child UIBox actionsBox
+			{
+				padding = 5px;
+			}
+		}
+	}
+
+	child UIBackground
+	{
+		minSize = 2px;
+		tryFill = true;
+		color = 1;
+		padding = 5px;
+	}
+
+}

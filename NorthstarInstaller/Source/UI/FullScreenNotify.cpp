@@ -1,9 +1,9 @@
 #include "FullScreenNotify.h"
+#include <KlemmUI/Window.h>
 
 #include <KlemmUI/UI/UIButton.h>
 
 #include "UIDef.h"
-#include "Icon.h"
 
 #include "../Translation.h"
 
@@ -27,7 +27,7 @@ FullScreenNotify::FullScreenNotify(std::string Title)
 			->SetPadding(0)
 			->SetVerticalAlign(UIBox::Align::Centered)
 			->AddChild((new UIBackground(true, 0, 0, 0.06f))
-				->SetUseTexture(true, Icon("Settings/About").TextureID)
+				->SetUseTexture(true, "Settings/About.png")
 				->SetPadding(0.01, 0.01, 0.01, 0)
 				->SetSizeMode(UIBox::SizeMode::AspectRelative))
 			->AddChild(new UIText(0.8f, 0, GetTranslation(Title), UI::Text)))
@@ -71,7 +71,7 @@ void FullScreenNotify::AddOptions(std::vector<NotifyOption> Options)
 			->SetPaddingSizeMode(UIBox::SizeMode::AspectRelative)
 			->SetVerticalAlign(UIBox::Align::Centered)
 			->AddChild((new UIBackground(true, 0, 1, 0.05f))
-				->SetUseTexture(true, Icon(i.Icon).TextureID)
+				->SetUseTexture(true, i.Icon + ".png")
 				->SetSizeMode(UIBox::SizeMode::AspectRelative)
 				->SetPaddingSizeMode(UIBox::SizeMode::AspectRelative))
 			->AddChild((new UIText(0.6f, 1, GetTranslation(i.Name), UI::Text))

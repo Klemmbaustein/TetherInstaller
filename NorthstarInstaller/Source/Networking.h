@@ -12,7 +12,8 @@ namespace Networking
 	// Puts the response into Data/temp/net/latest.zip
 	std::string DownloadLatestReleaseOf(std::string RepoNam, std::string NecessaryAssetNamee = "");
 
-	void Download(std::string url, std::string target, std::string Header, bool IsDownload = false);
+	void Download(std::string url, std::string target, std::string UserAgent, bool IsDownload = false);
+	std::string DownloadString(std::string Url, std::string UserAgent);
 
 	bool IsProcessRunning(std::string Name);
 

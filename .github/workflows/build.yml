@@ -79,6 +79,9 @@ jobs:
           sudo apt-get install libsdl2-dev
     - name: build
       run: |
+          cd KlemmUI
+          bash setup.sh
+          cd ..
           cmake -S . -B Build/ -DTETHER_CI=${{ github.run_number }}
           cd Build/
           cmake --build .

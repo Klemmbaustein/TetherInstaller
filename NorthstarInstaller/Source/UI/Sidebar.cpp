@@ -1,5 +1,4 @@
 #include "Sidebar.h"
-#include "Icon.h"
 
 #include "../Tabs/LaunchTab.h"
 #include "../Tabs/SettingsTab.h"
@@ -11,47 +10,42 @@
 #include "../Installer.h"
 #include "../Log.h"
 
+#include "../Markup/Sidebar.hpp"
+#include "../Markup/SideBarButton.hpp"
+#include "../Markup/SideBarTooltip.hpp"
+
 using namespace KlemmUI;
 
-UIBackground* Sidebar::SidebarBackground = nullptr;
-std::vector<UITab*> Sidebar::Tabs;
-std::vector<KlemmUI::UIButton*> Sidebar::TabButtons;
-size_t Sidebar::SelectedTab = 0;
-size_t Sidebar::HoveredTab = 0;
+SideBar* SidebarClass::SidebarBackground = nullptr;
+std::vector<UITab*> SidebarClass::Tabs;
+std::vector<KlemmUI::UIBox*> SidebarClass::TabButtons;
+size_t SidebarClass::SelectedTab = 0;
+size_t SidebarClass::HoveredTab = 0;
 
-UIBackground* Sidebar::HoveredTabName = nullptr;
+UIBox* SidebarClass::HoveredTabName = nullptr;
 
-void Sidebar::GenerateTabName(size_t TabIndex)
+void SidebarClass::GenerateTabName(size_t TabIndex)
 {
 	if (HoveredTabName)
 	{
 		delete HoveredTabName;
 		HoveredTabName = nullptr;
 	}
-	if (TabIndex == SIZE_MAX)
+
+	if (TabIndex > Tabs.size())
 	{
 		return;
 	}
+	auto Tooltip = new SideBarTooltip();
 
-	HoveredTabName = new UIBackground(false,
-		Vector2f(SidebarBackground->GetPosition().X + SidebarBackground->GetUsedSize().X, TabButtons[TabIndex]->GetPosition().Y),
-		0,
-		Vector2f(0, TabButtons[TabIndex]->GetUsedSize().Y));
+	Tooltip->SetTitle(Translation::GetTranslation("tab_" + Tabs[TabIndex]->Name));
+	Tooltip->SetDescription(Translation::GetTranslation("tab_" + Tabs[TabIndex]->Name + "_description"));
+	Tooltip->SetPosition(TabButtons[TabIndex]->GetPosition() + Vector2f(TabButtons[TabIndex]->GetUsedSize().X, 0));
 
-	HoveredTabName
-		->SetOpacity(0.75)
-		->SetBorder(UIBox::BorderType::Rounded, 0.25)
-		->AddChild((new UIText(16, 1, Translation::GetTranslation("tab_" + Tabs[TabIndex]->Name), UI::Text))
-			->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
-			->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)
-			->SetPadding(5, 0, 5, 15))
-		->AddChild((new UIText(12, 0.8, Translation::GetTranslation("tab_" + Tabs[TabIndex]->Name + "_description"), UI::Text))
-			->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
-			->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)
-			->SetPadding(0, 5, 5, 15));
+	HoveredTabName = Tooltip;
 }
 
-void Sidebar::GenerateTabs()
+void SidebarClass::GenerateTabs()
 {
 	if (!SidebarBackground)
 	{
@@ -60,35 +54,30 @@ void Sidebar::GenerateTabs()
 
 	TabButtons.clear();
 
-	SidebarBackground->DeleteChildren();
+	SidebarBackground->background->DeleteChildren();
 	for (size_t i = 0; i < Tabs.size(); i++)
 	{
 		Tabs[i]->Background->IsVisible = SelectedTab == i;
 
-		auto Button = new UIButton(true, 0, 1, [](int Index)
+		auto Button = new SideBarButton();
+		
+		Button->button->OnClickedFunctionIndex = [](int Index)
 			{
 				Tabs.at(Index)->OnClicked();
 				SelectedTab = Index;
 				GenerateTabs();
-			}, (int)i);
-		Button->SetHorizontalAlign(UIBox::Align::Centered);
-		SidebarBackground->AddChild(Button
-			->SetSizeMode(UIBox::SizeMode::PixelRelative)
-			->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)
-			->SetBorder(UIBox::BorderType::Rounded, 0.3)
-			->SetPadding(6, 0, 6, 6)
-			->AddChild((new UIBackground(true, 0, 0, 54))
-				->SetUseTexture(true, Icon("itab_" + Tabs[i]->Name).TextureID)
-				->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)
-				->SetPadding(2)
-				->SetSizeMode(UIBox::SizeMode::PixelRelative)));
-		TabButtons.push_back(Installer::SetButtonColorIfSelected(Button, i == SelectedTab));
+			};
+		Button->button->ButtonIndex = (int)i;
+		Button->buttonIcon->SetUseTexture(true, Installer::MainWindow->UI.LoadReferenceTexture("itab_" + Tabs[i]->Name + ".png"));
+
+
+		SidebarBackground->background->AddChild(Button);
+		Installer::SetButtonColorIfSelected(Button->button, i == SelectedTab);
+		TabButtons.push_back(Button);
 	}
-	SidebarBackground->UpdateElement();
-	SidebarBackground->RedrawElement();
 }
 
-void Sidebar::Load()
+void SidebarClass::Load()
 {
 
 	Log::Print("--- Loading tabs ---");
@@ -103,18 +92,16 @@ void Sidebar::Load()
 		new SettingsTab(),
 	};
 
-	SidebarBackground = new UIBackground(false, Vector2f(-1, -1), 0, Vector2f(0, 2));
-	SidebarBackground
-		->SetOpacity(0.75);
+	SidebarBackground = new SideBar();
 	GenerateTabs();
 }
 
-void Sidebar::Update()
+void SidebarClass::Update()
 {
 	bool AnyButtonHovered = false;
 	for (size_t i = 0; i < TabButtons.size(); i++)
 	{
-		if (TabButtons[i]->GetIsHovered())
+		if (TabButtons[i]->IsBeingHovered())
 		{
 			AnyButtonHovered = true;
 			if (HoveredTab != i)
@@ -131,7 +118,7 @@ void Sidebar::Update()
 	}
 }
 
-float Sidebar::GetSize()
+float SidebarClass::GetSize()
 {
 	return SidebarBackground->GetUsedSize().X;
 }

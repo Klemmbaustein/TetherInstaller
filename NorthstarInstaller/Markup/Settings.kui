@@ -1,0 +1,43 @@
+
+element SettingsSection
+{
+	var Title;
+	var Icon;
+
+	orientation = vertical;
+
+	tryFill = true;
+
+	child UIBox
+	{
+		padding = 5px;
+		verticalAlign = centered;
+
+		child UIBackground
+		{
+			image = Icon;
+			size = 35px;
+			padding = 5px;
+		}
+
+		child UIText
+		{
+			size = 20px;
+			padding = 5px;
+			text = Title;
+		}
+	}
+
+	child UIBackground
+	{
+		minSize = 1px;
+		padding = 5px;
+		tryFill = true;
+	}
+
+	child UIBox contentBox
+	{
+		orientation = vertical;
+		leftPadding = 50px;
+	}
+}

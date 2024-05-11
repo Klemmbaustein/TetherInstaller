@@ -43,7 +43,6 @@
     <ClCompile Include="Source\Tabs\ProfileTab.cpp">
       <Filter>Source\Tabs</Filter>
     </ClCompile>
-    <ClCompile Include="Source\UI\Icon.cpp" />
     <ClCompile Include="..\tinyfiledialogs\tinyfiledialogs.c" />
     <ClCompile Include="Source\UI\Download.cpp" />
     <ClCompile Include="Source\Translation.cpp" />
@@ -114,7 +113,6 @@
     <ClInclude Include="Source\Linux_PE.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="Source\UI\Icon.h" />
     <ClInclude Include="Source\UI\Download.h" />
     <ClInclude Include="Source\Translation.h" />
     <ClInclude Include="Source\UI\FullScreenNotify.h" />
@@ -132,6 +130,13 @@
       <Filter>autoJoinServer</Filter>
     </None>
     <None Include="update.bat" />
+    <None Include="Markup\Sidebar.kui" />
+    <None Include="Markup\TitleBar.kui" />
+    <None Include="Markup\ModsTab.kui" />
+    <None Include="Markup\Tab.kui" />
+    <None Include="Markup\Common.kui" />
+    <None Include="Markup\Settings.kui" />
+    <None Include="Markup\ServerTab.kui" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\CMakeLists.txt" />

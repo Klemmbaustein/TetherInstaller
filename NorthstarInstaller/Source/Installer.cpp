@@ -1,6 +1,7 @@
 #include <KlemmUI/Application.h>
 #include <KlemmUI/UI/UIBackground.h>
 #include <KlemmUI/Rendering/Texture.h>
+#include <KlemmUI/Markup/Markup.h>
 
 #include <fstream>
 
@@ -80,7 +81,7 @@ void Installer::SetThemeColor(Vector3f NewColor)
 {
 	InstallerThemeColor = NewColor;
 
-	Sidebar::GenerateTabs();
+	SidebarClass::GenerateTabs();
 	MainWindow->BorderColor = NewColor;
 }
 
@@ -141,6 +142,7 @@ int main(int argc, char** argv)
 
 	Window AppWindow = Window("TetherInstaller", Window::WindowFlag::Resizable | Window::WindowFlag::Borderless);
 	AppWindow.SetMinSize(Vector2ui(640, 480));
+	AppWindow.UI.SetTexturePath("Data/icons");
 
 	MainWindow = &AppWindow;
 
@@ -157,6 +159,7 @@ int main(int argc, char** argv)
 		});
 	Log::Print("Created app window");
 	UI::LoadFonts();
+	AppWindow.Markup.SetDefaultFont(UI::Text);
 
 	Log::Print("Cleaning up temp directory");
 	{
@@ -205,7 +208,7 @@ int main(int argc, char** argv)
 	std::filesystem::create_directories(Installer::CurrentPath + "Data/var");
 #endif
 
-	Sidebar::Load();
+	SidebarClass::Load();
 	AppUpdate::Check();
 
 	Log::Print("Successfully started launcher");
@@ -222,7 +225,7 @@ int main(int argc, char** argv)
 		BackgroundTask::UpdateTaskStatus();
 
 		TitleBar::Update();
-		Sidebar::Update();
+		SidebarClass::Update();
 
 		DownloadWindow::Update();
 

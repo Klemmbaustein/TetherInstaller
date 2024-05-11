@@ -7,7 +7,6 @@
 
 class SettingsTab : public UITab
 {
-	KlemmUI::UIBackground* SettingsBackground = nullptr;
 	KlemmUI::UIScrollBox* SettingsBox = nullptr;
 public:
 	KlemmUI::UITextField* LaunchArgsText = nullptr;

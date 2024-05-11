@@ -61,15 +61,18 @@
     <LibraryPath>$(SolutionDir)curl\Build\lib\Release;$(SolutionDir)KlemmUI\lib\Release;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)Release\</OutDir>
     <TargetName>TetherInstaller</TargetName>
+    <CustomBuildBeforeTargets>PreBuildEvent</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Plugin|x64'">
     <IncludePath>$(SolutionDir)Shared\miniz;$(ProjectDir)..\tinyfiledialogs;$(ProjectDir)..\json\single_include;$(ProjectDir)..\KlemmUI\Dependencies\SDL\include;$(ProjectDir)..\KlemmUI\Include;$(ProjectDir)..\curl\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)..\curl\Build\lib\Release;$(ProjectDir)..\KlemmUI\lib\Release;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)Build\Klemmbaustein-Tether-0.0.1\plugins\bin\</OutDir>
+    <CustomBuildBeforeTargets>PreBuildEvent</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev|x64'">
     <IncludePath>$(SolutionDir)Shared\miniz;$(SolutionDir)tinyfiledialogs;$(SolutionDir)json\single_include;$(SolutionDir)KlemmUI\Include;$(SolutionDir)curl\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)curl\Build\lib\Release;$(SolutionDir)KlemmUI\lib\Release;$(LibraryPath)</LibraryPath>
+    <CustomBuildBeforeTargets>PreBuildEvent</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg">
     <VcpkgEnableManifest>false</VcpkgEnableManifest>
@@ -118,6 +121,10 @@
       <Command>
       </Command>
     </PostBuildEvent>
+    <CustomBuildStep>
+      <Command>$(ProjectDir)\..\KlemmUI\Markup\MarkupHeaderTool\KlemmUIHT.exe -i $(ProjectDir)Markup -o $(ProjectDir)Source\Markup\</Command>
+      <Outputs>Markup/</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Plugin|x64'">
     <ClCompile>
@@ -148,6 +155,10 @@
     <PostBuildEvent>
       <Command>cd $(SolutionDir) &amp;&amp; pwsh .\CreatePackage.ps1 $(TitanfallDir) $(ProfileName)</Command>
     </PostBuildEvent>
+    <CustomBuildStep>
+      <Command>$(ProjectDir)\..\KlemmUI\Markup\MarkupHeaderTool\KlemmUIHT.exe -i $(ProjectDir)Markup -o $(ProjectDir)Source\Markup\</Command>
+      <Outputs>Markup/</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dev|x64'">
     <ClCompile>
@@ -173,6 +184,10 @@
     <PreBuildEvent>
       <Command>xcopy "$(ProjectDir)../KlemmUI/Shaders" "$(ProjectDir)Data\shaders" /e /i /h /y</Command>
     </PreBuildEvent>
+    <CustomBuildStep>
+      <Command>$(ProjectDir)\..\KlemmUI\Markup\MarkupHeaderTool\KlemmUIHT.exe -i $(ProjectDir)Markup -o $(ProjectDir)Source\Markup\</Command>
+      <Outputs>Markup/</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\Shared\miniz\miniz.cpp" />
@@ -197,10 +212,12 @@
     <ClCompile Include="Source\UI\Sidebar.cpp" />
     <ClCompile Include="Source\UI\TitleBar.cpp" />
     <ClCompile Include="Source\UI\UIDef.cpp" />
-    <ClCompile Include="Source\UI\Icon.cpp" />
     <ClCompile Include="Source\WindowFunctions.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Markup\ServerTab.kui">
+      <FileType>Document</FileType>
+    </None>
     <ClInclude Include="Source\AppUpdate.h" />
     <ClInclude Include="Source\TetherPlugin.h" />
     <ClInclude Include="Source\Translation.h" />
@@ -222,13 +239,18 @@
     <ClInclude Include="Source\UI\Sidebar.h" />
     <ClInclude Include="Source\UI\TitleBar.h" />
     <ClInclude Include="Source\UI\UIDef.h" />
-    <ClInclude Include="Source\UI\Icon.h" />
     <ClInclude Include="Source\WindowFunctions.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore" />
     <None Include="Data\autojoin\mod.json" />
     <None Include="Data\autojoin\mod\scripts\vscripts\autoJoinServer.gnut" />
+    <None Include="Markup\Common.kui" />
+    <None Include="Markup\ModsTab.kui" />
+    <None Include="Markup\Settings.kui" />
+    <None Include="Markup\Sidebar.kui" />
+    <None Include="Markup\Tab.kui" />
+    <None Include="Markup\TitleBar.kui" />
     <None Include="update.bat" />
   </ItemGroup>
   <ItemGroup>

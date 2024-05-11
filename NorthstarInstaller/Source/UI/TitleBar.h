@@ -3,10 +3,11 @@
 #include <KlemmUI/UI/UIButton.h>
 #include <KlemmUI/UI/UIText.h>
 
+class TitleBarElement;
+
 class TitleBar
 {
-	static KlemmUI::UIBackground* WindowButtonBox;
-	static KlemmUI::UIText* AppTitle;
+	static TitleBarElement* WindowBox;
 	static std::vector<unsigned int> WindowButtonsIcons;
 	static bool UseSystemTitleBar;
 	static std::string TitleText;

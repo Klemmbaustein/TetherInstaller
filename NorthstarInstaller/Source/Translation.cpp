@@ -77,7 +77,7 @@ void Translation::LoadTranslation(std::string Name)
 	{
 		Log::Print(e.what(), Log::Error);
 	}
-	for (const auto& i : Sidebar::Tabs)
+	for (const auto& i : SidebarClass::Tabs)
 	{
 		if (i->TabTitle)
 		{

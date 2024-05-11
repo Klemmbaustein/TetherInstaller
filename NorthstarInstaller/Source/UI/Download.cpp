@@ -35,7 +35,7 @@ namespace DownloadWindow
 
 	std::vector<DownloadInfo> CurrentDownloads;
 
-	float DissapearTimer = 0;
+	float DisappearTimer = 0;
 }
 
 void DownloadWindow::Generate()
@@ -55,6 +55,7 @@ void DownloadWindow::Generate()
 			NewDownload.NameText = new UIText(0.6f, 0, "", UI::Text);
 			NewDownload.ProgressBar = new UIBackground(true, 0, Vector3f(0.3, 0.5, 1), Vector2f(i->Progress / 2.5, 0.05));
 			DownloadsBox->AddChild((new UIBackground(true, 0, 1, Vector2f(1.0 / 2.5, 0)))
+				->SetPadding(0.01f)
 				->AddChild(NewDownload.ProgressBar
 					->SetVerticalAlign(UIBox::Align::Centered)
 					->SetPadding(0)
@@ -68,7 +69,8 @@ void DownloadWindow::Generate()
 	if (!IsDownloading)
 	{
 		DownloadFinishedText = new UIText(0.8f, 1, GetTranslation("download_no_downloads"), UI::Text);
-		DownloadsBox->AddChild(DownloadFinishedText);
+		DownloadsBox->AddChild(DownloadFinishedText
+			->SetPadding(0.01f));
 	}
 
 	TitleBar::GenerateWindowButtons();
@@ -86,7 +88,8 @@ void DownloadWindow::Update()
 			->SetBorder(UIBox::BorderType::DarkenedEdge, 0.3)
 			->AddChild((new UIBackground(true, 0, 1, Vector2f(0.5, 0.005)))
 				->SetPadding(0))
-			->AddChild(TitleText)
+			->AddChild(TitleText
+				->SetPadding(0.01f))
 			->AddChild(DownloadsBox
 				->SetPadding(0)
 				->SetMinSize(Vector2f(0.495, 0.15)));
@@ -123,7 +126,7 @@ void DownloadWindow::Update()
 
 			i.NameText->SetText(DisplayedName);
 		}
-		DissapearTimer = 0;
+		DisappearTimer = 0;
 	}
 	DownloadBackground->SetPosition(Vector2f(0.5, 1 - TitleBar::GetSize() - 0.25));
 
@@ -132,9 +135,9 @@ void DownloadWindow::Update()
 		return;
 	}
 
-	if (DissapearTimer >= 1.5)
+	if (DisappearTimer >= 1.5)
 	{
-		float Opacity = 1 - (DissapearTimer - 1.5f) * 2;
+		float Opacity = 1 - (DisappearTimer - 1.5f) * 2;
 		DownloadBackground->SetOpacity(Opacity);
 		DownloadFinishedText->SetOpacity(Opacity);
 		TitleText->SetOpacity(Opacity);
@@ -145,13 +148,13 @@ void DownloadWindow::Update()
 		TitleText->SetOpacity(1);
 	}
 
-	if (DissapearTimer >= 2)
+	if (DisappearTimer >= 2)
 	{
 		SetWindowVisible(false);
 		return;
 	}
 
-	DissapearTimer += Installer::MainWindow->GetDeltaTime();
+	DisappearTimer += Installer::MainWindow->GetDeltaTime();
 
 }
 

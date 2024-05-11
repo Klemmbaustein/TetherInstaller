@@ -8,7 +8,6 @@
 #include <fstream>
 #include <filesystem>
 
-#include "../UI/Icon.h"
 #include "../UI/UIDef.h"
 #include "../Game.h"
 #include "../Log.h"
@@ -17,11 +16,12 @@
 #include "../Thunderstore.h"
 #include "../WindowFunctions.h"
 #include "../Translation.h"
+#include "../AppUpdate.h"
+#include "../Markup/TabElement.hpp"
 
 #ifdef TF_PLUGIN
 #include "../TetherPlugin.h"
 #endif
-#include "../AppUpdate.h"
 
 using namespace Translation;
 using namespace KlemmUI;
@@ -65,28 +65,23 @@ ProfileTab::ProfileTab()
 	Background->SetHorizontalAlign(UIBox::Align::Centered);
 	Background->SetHorizontal(true);
 
-	ProfileBackground = new UIBackground(false, 0, 0, Vector2f(1.5, 1.85));
-	Background->AddChild(ProfileBackground
-		->SetOpacity(0.65)
-		->AddChild((new UIBackground(true, 0, 1, Vector2f(1.5, 0.005)))
-			->SetPadding(0))
-		->SetPadding(0));
-
-	TabTitle = new UIText(1.4f, 1, "Profiles", UI::Text);
-
-	ProfileBackground->AddChild(TabTitle);
+	auto TabElem = new TabElement();
+	TabElem->SetTabName(GetTranslation("tab_profiles"));
+	Background->AddChild(TabElem);
 
 	ProfileList = new UIScrollBox(false, 0, true);
 
 	ProfileInfoBox = new UIBox(false, 0);
 
-	ProfileBackground->AddChild((new UIBox(true, 0))
+	TabElem->contentBox->AddChild((new UIBox(true, 0))
 		->AddChild(ProfileList
+			->SetPadding(5)
+			->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)
 			->SetMinSize(Vector2f(0.85, 1.55)))
 		->AddChild(ProfileInfoBox
 			->SetMinSize(Vector2f(0, 1.55))));
 	ProfileCreationBox = new UIBackground(false, 0, 0);
-	ProfileBackground->AddChild(ProfileCreationBox);
+	TabElem->contentBox->AddChild(ProfileCreationBox);
 		
 	GenerateProfileCreationBox();
 
@@ -184,8 +179,6 @@ void ProfileTab::DetectProfiles()
 
 void ProfileTab::Tick()
 {
-	ProfileBackground->SetMinSize(Vector2f(0, Background->GetUsedSize().Y));
-	ProfileBackground->SetMaxSize(Vector2f(2, Background->GetUsedSize().Y));
 }
 
 void ProfileTab::DisplayProfileInfo()
@@ -193,7 +186,7 @@ void ProfileTab::DisplayProfileInfo()
 	ProfileInfoBox->DeleteChildren();
 
 	ProfileInfoBox->AddChild((new UIText(0.7f, 1, GetTranslation("profile_current"), UI::Text))
-		->SetPadding(0, 0.01, 0.01, 0));
+		->SetPadding(0, 0.01, 0, 0));
 
 	ProfileInfoBox->AddChild((new UIBackground(true, 0, 1, Vector2f(0.575, 0.005)))
 		->SetPadding(0.0, 0, 0, 0));
@@ -290,7 +283,7 @@ void ProfileTab::DisplayProfileInfo()
 				}))
 				->SetPadding(0.1, 0, 0.01, 0.01)
 				->AddChild((new UIBackground(true, 0, 0, 0.045))
-					->SetUseTexture(true, Icon("Settings/Reload").TextureID)
+					->SetUseTexture(true, "Settings/Reload.png")
 					->SetPadding(0.01, 0.01, 0.01, 0)
 					->SetSizeMode(UIBox::SizeMode::AspectRelative))
 				->SetBorder(UIBox::BorderType::Rounded, 0.5)
@@ -320,7 +313,7 @@ void ProfileTab::DisplayProfileInfo()
 			->SetPadding(0.1f, 0, 0.01f, 0.01f)
 			->SetBorder(UIBox::BorderType::Rounded, 0.5f)
 			->AddChild((new UIBackground(true, 0, 0, 0.045f))
-				->SetUseTexture(true, Icon("Delete").TextureID)
+				->SetUseTexture(true, "Delete.png")
 				->SetPadding(0.01f, 0.01f, 0.01f, 0)
 				->SetSizeMode(UIBox::SizeMode::AspectRelative))
 			->AddChild((new UIText(0.5f, 0, GetTranslation("profile_delete"), UI::Text))
@@ -342,10 +335,15 @@ void ProfileTab::UpdateProfilesList()
 					OnProfileSwitched();
 				},
 				i))
+				->SetBorderSizeMode(UIBox::SizeMode::PixelRelative)
 				->SetMinSize(Vector2f(0.8, 0))
-				->SetPadding(0.005)
-				->SetBorder(UIBox::BorderType::Rounded, 0.3f)
-				->AddChild(new UIText(0.6f, 0, AllProfiles[i].DisplayName, UI::MonoText))),
+				->SetPadding(2)
+				->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)
+				->SetBorder(UIBox::BorderType::Rounded, 5)
+				->AddChild((new UIText(12, 0, AllProfiles[i].DisplayName, UI::Text))
+					->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
+					->SetPadding(5)
+					->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative))),
 			CurrentProfile.Path == AllProfiles[i].Path));
 	}
 }
@@ -363,26 +361,35 @@ void ProfileTab::GenerateProfileCreationBox()
 
 	ProfileCreationBox->DeleteChildren();
 	ProfileCreationBox->SetOpacity(0.5)
-		->AddChild(new UIText(0.8f, 1.0f, GetTranslation("profile_create_new"), UI::Text))
+		->AddChild((new UIText(13, 1.0f, GetTranslation("profile_create_new"), UI::Text))
+			->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
+			->SetPadding(5)
+			->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative))
 		->AddChild((new UIBox(true, 0))
 			->SetVerticalAlign(UIBox::Align::Centered)
 			->AddChild(NewProfileTextField
-				->SetTextSize(0.6f)
+				->SetTextSize(12)
+				->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
 				->SetHintText(GetTranslation("profile_create_name"))
 				->SetPadding(0.01f, 0.01f, 0.01f, 0.01f)
-				->SetMinSize(Vector2f(0.5f, 0.055f)))
+				->SetMinSize(Vector2f(0.5f, 0)))
 			->AddChild((new UIButton(true, 0, Installer::GetThemeColor(), []()
 				{
 					CurrentProfileTab->CreateNewProfile(CurrentProfileTab->NewProfileTextField->GetText());
 				}))
-				->AddChild((new UIBackground(true, 0, 0, 0.06))
-					->SetUseTexture(true, Icon("Add").TextureID)
-					->SetPadding(0.01f, 0.01f, 0.01f, 0)
-					->SetSizeMode(UIBox::SizeMode::AspectRelative))
-				->SetMinSize(Vector2f(0, 0.055f))
+				->SetPadding(5)
+				->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)
+				->SetVerticalAlign(UIBox::Align::Centered)
+				->AddChild((new UIBackground(true, 0, 0, 25))
+					->SetUseTexture(true, "Add.png")
+					->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)
+					->SetPadding(5)
+					->SetSizeMode(UIBox::SizeMode::PixelRelative))
 				->SetBorder(UIBox::BorderType::Rounded, 0.5f)
-				->AddChild((new UIText(0.6f, 0, GetTranslation("profile_create"), UI::Text))
-					->SetPadding(0.02))));
+				->AddChild((new UIText(12, 0, GetTranslation("profile_create"), UI::Text))
+					->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
+					->SetPadding(5)
+					->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative))));
 }
 
 void ProfileTab::CreateNewProfile(std::string Name)

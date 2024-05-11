@@ -1,0 +1,30 @@
+
+element ImageButton
+{
+	var Image = "Back.png";
+	var Text = "";
+
+	child UIButton button
+	{
+		padding = 10px;
+		verticalAlign = centered;
+		borderType = rounded;
+		borderSize = 5px;
+
+		child UIBackground
+		{
+			image = Image;
+			size = 20px;
+			color = 0;
+			padding = 5px;
+		}
+
+		child UIText text
+		{
+			padding = 5px;
+			color = 0;
+			size = 13px;
+			text = Text;
+		}
+	}
+}

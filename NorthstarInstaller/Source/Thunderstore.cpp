@@ -366,7 +366,6 @@ namespace Thunderstore::TSDownloadThunderstoreInfo
 		IsDownloading = true;
 		BackgroundTask::SetStatus("Loading Thunderstore");
 		BackgroundTask::SetProgress(0.1);
-		Networking::Download("https://thunderstore.io/c/northstar/api/v1/package/", Installer::CurrentPath + "Data/temp/net/tspage.txt", "");
 
 		BackgroundTask::SetProgress(0.3);
 
@@ -374,9 +373,7 @@ namespace Thunderstore::TSDownloadThunderstoreInfo
 
 		try
 		{
-			std::ifstream in = std::ifstream(Installer::CurrentPath + "Data/temp/net/tspage.txt");
-			std::stringstream str; str << in.rdbuf();
-			auto response = json::parse(str.str());
+			auto response = json::parse(Networking::DownloadString("https://thunderstore.io/c/northstar/api/v1/package/", Installer::UserAgent));
 
 			std::vector<Package> NewFoundMods;
 			size_t Start = ModsTab::ModsPerPage * (Page);
@@ -558,12 +555,9 @@ std::vector<Thunderstore::Package> Thunderstore::Package::GetDependencies()
 	using namespace nlohmann;
 	std::vector<Package> OutPackages;
 
-	Networking::Download("https://thunderstore.io/c/northstar/api/v1/package/", Installer::CurrentPath + "Data/temp/net/tspage.txt", "");
 	try
 	{
-		std::ifstream in = std::ifstream(Installer::CurrentPath + "Data/temp/net/tspage.txt");
-		std::stringstream str; str << in.rdbuf();
-		auto response = json::parse(str.str());
+		auto response = json::parse(Networking::DownloadString("https://thunderstore.io/c/northstar/api/v1/package/", Installer::UserAgent));
 		for (const auto& dep : Dependencies)
 		{
 			for (const auto& i : response)
@@ -587,7 +581,6 @@ std::vector<Thunderstore::Package> Thunderstore::Package::GetDependencies()
 				break;
 			}
 		}
-		in.close();
 	}
 	catch (std::exception& e)
 	{
@@ -627,12 +620,9 @@ namespace Thunderstore::TSGetModInfoFunc
 		}
 		BackgroundTask::SetStatus("Loading Thunderstore mod");
 
-		Networking::Download("https://thunderstore.io/c/northstar/api/v1/package/" + m.UUID, Installer::CurrentPath + "Data/temp/net/mod.txt", "");
 		try
 		{
-			std::ifstream in = std::ifstream(Installer::CurrentPath + "Data/temp/net/mod.txt");
-			std::stringstream str; str << in.rdbuf();
-			auto response = json::parse(str.str());
+			auto response = json::parse(Networking::DownloadString("https://thunderstore.io/c/northstar/api/v1/package/" + m.UUID, Installer::UserAgent));
 			auto& version = response.at("versions")[0];
 			m.Description = version.at("description");
 			m.DownloadUrl = version.at("download_url");
@@ -665,14 +655,11 @@ namespace Thunderstore::TSGetModInfoFunc
 			// If any of this fails, (as it probably will), it shouldn't matter that much.
 			try
 			{
-				Networking::Download("https://thunderstore.io/api/experimental/frontend/c/northstar/p/" 
+				response = json::parse(Networking::DownloadString("https://thunderstore.io/api/experimental/frontend/c/northstar/p/"
 					+ m.Namespace
 					+ "/"
-					+ m.Name 
-					+ "/", Installer::CurrentPath + "Data/temp/net/expmod.txt", "");
-				std::ifstream in = std::ifstream(Installer::CurrentPath + "Data/temp/net/expmod.txt");
-				std::stringstream str; str << in.rdbuf();
-				response = json::parse(str.str());
+					+ m.Name
+					+ "/", Installer::UserAgent));
 				m.Description = response.at("markdown");
 			}
 			catch (std::exception& e)
@@ -684,13 +671,6 @@ namespace Thunderstore::TSGetModInfoFunc
 		{
 			Log::Print("Thunderstore response has an invalid layout.", Log::Error);
 			Log::Print(e.what(), Log::Error);
-			if (std::filesystem::exists(Installer::CurrentPath + "Data/temp/invalidresponse.txt"))
-			{
-				std::filesystem::remove(Installer::CurrentPath + "Data/temp/invalidresponse.txt");
-			}
-			Log::Print("address: https://thunderstore.io/c/northstar/api/v1/package/" + m.UUID, Log::Error);
-			Log::Print("Writing response to Data/temp/invalidresponse.txt", Log::Error);
-			std::filesystem::copy(Installer::CurrentPath + "Data/temp/net/mod.txt", Installer::CurrentPath + "Data/temp/invalidresponse.txt");
 		}
 
 		SelectedMod = m;

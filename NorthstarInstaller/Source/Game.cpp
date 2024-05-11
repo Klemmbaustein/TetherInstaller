@@ -23,7 +23,7 @@ std::set<std::string> Game::CoreModNames =
 	"Northstar.CustomServers",
 	"Northstar.Custom",
 	"Northstar.Client",
-	"Northstar.Coop", // soooooon
+	"Northstar.Coop",
 };
 
 std::string CommonTitanfallLocations[] =

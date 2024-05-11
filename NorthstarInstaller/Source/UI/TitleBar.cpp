@@ -1,6 +1,7 @@
 #include "TitleBar.h"
 #include "UIDef.h"
 #include "Sidebar.h"
+#include <iostream>
 
 #include <KlemmUI/Rendering/Texture.h>
 
@@ -9,27 +10,19 @@
 
 #include "../Tabs/ProfileTab.h"
 
+#include "../Markup/TitleBarElement.hpp"
+
 using namespace Translation;
 using namespace KlemmUI;
 
-UIBackground* TitleBar::WindowButtonBox = nullptr;
-KlemmUI::UIText* TitleBar::AppTitle = nullptr;
+TitleBarElement* TitleBar::WindowBox = nullptr;
 bool TitleBar::UseSystemTitleBar = false;
 std::vector<unsigned int> TitleBar::WindowButtonsIcons;
 std::string TitleBar::TitleText;
 
 void TitleBar::Load()
 {
-	WindowButtonBox = new UIBackground(true, 0, 0.1);
-	
-	WindowButtonBox
-		->SetPadding(0)
-		->SetHorizontalAlign(UIBox::Align::Reverse)
-		->SetMinSize(Vector2f(2, 0.0));
-	(new UIBox(false, Vector2f(-1, 0.7)))
-		->SetMinSize(Vector2f(2, 0.3))
-		->AddChild(WindowButtonBox);
-
+	WindowBox = new TitleBarElement();
 
 	WindowButtonsIcons =
 	{
@@ -40,20 +33,11 @@ void TitleBar::Load()
 	};
 
 	GenerateWindowButtons();
-
-	AppTitle = new UIText(14, 1, "", UI::Text);
-	AppTitle->SetTextSizeMode(UIBox::SizeMode::PixelRelative);
-	AppTitle->SetPosition(2);
 }
 
 float TitleBar::GetSize()
 {
-	return WindowButtonBox->GetUsedSize().Y;
-}
-
-void TitleBar::SetTitle(std::string NewTitle)
-{
-	AppTitle->SetText(NewTitle);
+	return WindowBox->GetUsedSize().Y - UIBox::PixelSizeToScreenSize(1, Installer::MainWindow).Y;
 }
 
 void TitleBar::Update()
@@ -72,10 +56,10 @@ void TitleBar::Update()
 
 	std::string Title = Format(GetTranslation("title_bar"),
 		AppNameString.c_str(),
-		GetTranslation("tab_" + Sidebar::Tabs[Sidebar::SelectedTab]->Name).c_str(),
+		GetTranslation("tab_" + SidebarClass::Tabs[SidebarClass::SelectedTab]->Name).c_str(),
 		ProfileName.c_str());
 
-	AppTitle->IsVisible = !UseSystemTitleBar;
+	WindowBox->IsVisible = !UseSystemTitleBar;
 	
 	if (UseSystemTitleBar && TitleText != Title)
 	{
@@ -84,10 +68,9 @@ void TitleBar::Update()
 	}
 	else if (!UseSystemTitleBar)
 	{
-		SetTitle(Title);
+		WindowBox->SetTitle(Title);
 	}
-
-	AppTitle->SetPosition(WindowButtonBox->GetPosition() + Vector2f(Sidebar::GetSize(), 0) + Vector2f(UIBox::PixelSizeToScreenSize(3, Window::GetActiveWindow())));
+	WindowBox->SetPosition(Vector2f(-1, 1) - Vector2f(0.0f, WindowBox->GetUsedSize().Y));
 }
 
 bool TitleBar::SetUseSystemTitleBar(bool NewVal)
@@ -102,12 +85,12 @@ bool TitleBar::GetUseSystemTitleBar()
 
 bool TitleBar::IsHovered()
 {
-	return WindowButtonBox->IsBeingHovered();
+	return WindowBox->IsBeingHovered();
 }
 
 void TitleBar::GenerateWindowButtons()
 {
-	WindowButtonBox->DeleteChildren();
+	WindowBox->buttonBox->DeleteChildren();
 	if (UseSystemTitleBar)
 	{
 		return;
@@ -129,7 +112,7 @@ void TitleBar::GenerateWindowButtons()
 		{
 			HoveredColor = Vector3f(0.5, 0, 0);
 		}
-		WindowButtonBox->AddChild((new UIButton(true, 0, 0.1f, [](int Index) {
+		WindowBox->buttonBox->AddChild((new UIButton(true, 0, 0.1f, [](int Index) {
 			switch (Index)
 			{
 			case 0:

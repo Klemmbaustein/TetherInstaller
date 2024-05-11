@@ -7,7 +7,6 @@
 
 class ProfileTab : public UITab
 {
-	KlemmUI::UIBackground* ProfileBackground;
 	KlemmUI::UIScrollBox* ProfileList;
 	KlemmUI::UIBox* ProfileInfoBox;
 	KlemmUI::UITextField* NewProfileTextField;

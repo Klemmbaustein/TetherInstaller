@@ -1,0 +1,66 @@
+
+element SideBar
+{
+	position = -1;
+	child UIBackground background
+	{
+		minSize = (0, 2);
+		color = 0;
+		opacity = 0.75;
+		orientation = vertical;
+	}
+}
+
+element SideBarButton
+{
+	child UIButton button
+	{
+		color = (1, 1, 1);
+		upPadding = 5px;
+		leftPadding = 5px;
+		rightPadding = 5px;
+		downPadding = 0px;
+
+		borderType = rounded;
+		borderSize = 5px;
+
+		child UIBackground buttonIcon
+		{
+			color = (0, 0, 0);
+			size = 60px;
+		}
+	}
+}
+
+element SideBarTooltip
+{
+	var Title;
+	var Description;
+	child UIBackground
+	{
+		orientation = vertical;
+		minSize = (0, 60)px;
+		color = 0;
+		opacity = 0.75;
+		child UIText
+		{
+			size = 15px;
+			text = Title;
+			leftPadding = 5px;
+			rightPadding = 15px;
+			upPadding = 5px;
+			downPadding = 2px;
+		}
+		child UIText
+		{
+			size = 13px;
+			text = Description;
+			color = 0.8;
+			leftPadding = 5px;
+			rightPadding = 15px;
+			upPadding = 0px;
+			downPadding = 2px;
+		}
+
+	}
+}

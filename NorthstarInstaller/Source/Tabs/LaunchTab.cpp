@@ -163,17 +163,24 @@ LaunchTab::LaunchTab()
 	TextBox->SetHorizontalAlign(UIBox::Align::Centered);
 
 	LaunchButton = new UIButton(true, 0, 1, LaunchNorthstar);
-	LaunchText = new UIText(1.4f, 0, "", UI::Text);
+	LaunchText = new UIText(25, 0, "", UI::Text);
+
+	LaunchText
+		->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
+		->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)
+		->SetPadding(10);
 
 	Background->AddChild(TextBox
-		->SetMinSize(Vector2f(2, 0.2))
+		->SetMinSize(Vector2f(2, 0))
 		->SetPadding(0)
 		->SetVerticalAlign(UIBox::Align::Centered)
 		->SetHorizontalAlign(UIBox::Align::Centered)
 #ifndef TF_PLUGIN
 		->AddChild(LaunchButton
-			->SetPadding(0.03)
-			->SetBorder(UIBox::BorderType::Rounded, 0.5)
+			->SetBorderSizeMode(UIBox::SizeMode::PixelRelative)
+			->SetPadding(15)
+			->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)
+			->SetBorder(UIBox::BorderType::Rounded, 10)
 #endif
 			->AddChild(LaunchText))
 #ifndef TF_PLUGIN

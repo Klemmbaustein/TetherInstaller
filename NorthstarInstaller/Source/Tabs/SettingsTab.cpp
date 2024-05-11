@@ -17,10 +17,12 @@
 #include "../Installer.h"
 #include "../BackgroundTask.h"
 #include "../WindowFunctions.h"
-#include "../UI/Icon.h"
 #include "../UI/TitleBar.h"
 #include "../Translation.h"
 #include "../AppUpdate.h"
+
+#include "../Markup/SettingsSection.hpp"
+#include "../Markup/TabElement.hpp"
 
 using namespace Translation;
 using namespace KlemmUI;
@@ -115,21 +117,18 @@ SettingsTab::SettingsTab()
 	Name = "settings";
 	Log::Print("Loading settings tab...");
 
-	Background->SetHorizontalAlign(UIBox::Align::Centered);
-	Background->SetHorizontal(true);
+	Background
+		->SetHorizontalAlign(UIBox::Align::Centered)
+		->SetHorizontal(true);
+	auto TabElem = new TabElement();
+	TabElem->SetTabName(GetTranslation("tab_settings"));
+	Background->AddChild(TabElem);
 
-	SettingsBackground = new UIBackground(false, 0, 0, Vector2f(1, 1.85));
-	Background->AddChild(SettingsBackground
-		->SetOpacity(0.65)
-		->AddChild((new UIBackground(true, 0, 1, Vector2f(1, 0.005)))
-			->SetPadding(0))
-		->SetPadding(0));
-	TabTitle = new UIText(1.4f, 1, GetTranslation("tab_settings"), UI::Text);
-	SettingsBackground->AddChild(TabTitle);
+	TabTitle = TabElem->title;
 	SettingsBox = new UIScrollBox(false, 0, true);
-	SettingsBox->SetMinSize(Vector2f(0, 1.78));
+	SettingsBox->SetMinSize(Vector2f(1.0f, 1.78));
 	SettingsBox->SetMaxSize(Vector2f(2, 1.78));
-	SettingsBackground->AddChild(SettingsBox);
+	TabElem->contentBox->AddChild(SettingsBox);
 	LoadSettings();
 	
 	GenerateSettings();
@@ -137,7 +136,6 @@ SettingsTab::SettingsTab()
 
 void SettingsTab::Tick()
 {
-	SettingsBackground->SetMinSize(Vector2f(1, Background->GetUsedSize().Y));
 }
 
 static void DeleteAllMods()
@@ -147,7 +145,7 @@ static void DeleteAllMods()
 		if (Game::CoreModNames.find(m.path().filename().u8string()) == Game::CoreModNames.end() && std::filesystem::is_directory(m))
 		{
 			std::filesystem::remove_all(m);
-			Log::Print("Removing mod: " + m.path().filename().u8string(),  Log::Warning);
+			Log::Print("Removing mod: " + m.path().filename().u8string(), Log::Warning);
 		}
 	}
 	std::filesystem::remove_all(Installer::CurrentPath + "Data/var/modinfo");
@@ -176,54 +174,45 @@ void LocateTitanfall()
 
 constexpr uint16_t MAX_GAMEPATH_SIZE = 30;
 
-void AddCategoryHeader(std::string Text, std::string IconName, UIBox* Parent)
-{
-	Parent->AddChild((new UIBox(true, 0))
-		->SetVerticalAlign(UIBox::Align::Default)
-		->AddChild((new UIBackground(true, 0, 1, 0.075))
-			->SetUseTexture(true, Icon(IconName).TextureID)
-			->SetPadding(0.01, 0.005, 0, 0)
-			->SetSizeMode(UIBox::SizeMode::AspectRelative))
-		->AddChild((new UIText(1.0f, 1, GetTranslation(Text), UI::Text))
-		->SetPadding(0.05, 0.005, 0.01, 0.01)));
-	Parent->AddChild((new UIBackground(true, 0, 1, Vector2f(0.98, 0.005)))
-		->SetPadding(0.0, 0.02, 0, 0));
-}
 
 void AddSettingsButton(std::string Text, std::string IconName, void(*OnClicked)(), UIBox* Parent)
 {
 	Parent->AddChild((new UIButton(true, 0, 1, OnClicked))
-		->SetPadding(0.01, 0.01, 0.06, 0)
-		->SetVerticalAlign(UIBox::Align::Reverse)
+		->SetPadding(5, 5, 5, 0)
+		->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)
+		->SetVerticalAlign(UIBox::Align::Centered)
 		->SetBorder(UIBox::BorderType::Rounded, 0.25)
-		->SetMinSize(Vector2f(0.6, 0))
-		->AddChild((new UIBackground(true, 0, 0, 0.05))
-			->SetUseTexture(true, Icon(IconName).TextureID)
-			->SetPadding(0.01, 0.01, 0.01, 0)
-			->SetSizeMode(UIBox::SizeMode::AspectRelative))
-		->AddChild((new UIText(0.7f, 0, GetTranslation(Text), UI::Text))
-			->SetPadding(0.01, 0.01, 0.01, 0.01)));
+		->SetMinSize(Vector2f(0.8f, 0))
+		->AddChild((new UIBackground(true, 0, 0, 20))
+			->SetUseTexture(true, IconName)
+			->SetSizeMode(UIBox::SizeMode::PixelRelative)
+			->SetPadding(5, 5, 5, 0)
+			->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative))
+		->AddChild((new UIText(12, 0, GetTranslation(Text), UI::Text))
+			->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
+			->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)
+			->SetPadding(5, 5, 5, 0)));
 }
 
 void AddSettingsText(std::string Text, std::string IconName, UIBox* Parent)
 {
-
 	Parent->AddChild((new UIBox(true, 0))
-		->SetPadding(0.05, 0.01, 0.06, 0.01)
-		->AddChild((new UIBackground(true, 0, 1, 0.05))
-			->SetUseTexture(true, Icon(IconName).TextureID)
-			->SetPadding(0.01, 0.01, 0, 0)
-			->SetSizeMode(UIBox::SizeMode::AspectRelative))
-		->AddChild((new UIText(0.8f, 1, GetTranslation(Text), UI::Text))
-			->SetPadding(0.01)));
+		->SetPadding(0.05f, 0.01f, 0.01f, 0.01f)
+		->AddChild((new UIBackground(true, 0, 1, 25))
+			->SetUseTexture(true, IconName)
+			->SetPadding(0, 0, 0, 0.01f)
+			->SetSizeMode(UIBox::SizeMode::PixelRelative))
+		->AddChild((new UIText(15, 1, GetTranslation(Text), UI::Text))
+			->SetTextSizeMode(UIBox::SizeMode::PixelRelative)));
 }
 
 void AddSettingsDropdown(std::vector<UIDropdown::Option> Options, void(*OnClicked)(int SelectedIndex), size_t DefaultOption, UIBox* Parent)
 {
-	auto TitleBarDropdown = new UIDropdown(0, 0.6, 1, 0, Options, OnClicked, UI::Text);
+	auto TitleBarDropdown = new UIDropdown(0, 0.8, 1, 0, Options, OnClicked, UI::Text);
 	Parent->AddChild(TitleBarDropdown
-		->SetTextSize(0.6f, 0.005)
-		->SetPadding(0.01, 0.01, 0.06, 0.01));
+		->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
+		->SetTextSize(11, 0.005)
+		->SetPadding(0.01f, 0.01f, 0.01f, 0.01f));
 	TitleBarDropdown->SelectOption(DefaultOption, false);
 }
 
@@ -237,8 +226,12 @@ void SettingsTab::GenerateSettings()
 		ShortGamePath = ShortGamePath.substr(0, MAX_GAMEPATH_SIZE - 3) + "...";
 	}
 
-	AddCategoryHeader("settings_category_general", "itab_settings", SettingsBox);
-	AddSettingsButton("settings_locate_game", "Settings/Folder", LocateTitanfall, SettingsBox);
+	auto GeneralSection = new SettingsSection();
+	GeneralSection->SetTitle(GetTranslation("settings_category_general"));
+	GeneralSection->SetIcon("itab_settings.png");
+	SettingsBox->AddChild(GeneralSection);
+
+	AddSettingsButton("settings_locate_game", "Settings/Folder.png", LocateTitanfall, GeneralSection->contentBox);
 
 	bool PathValid = true;
 	std::string PathString = Format(GetTranslation("settings_game_path"), ShortGamePath.c_str());
@@ -248,17 +241,19 @@ void SettingsTab::GenerateSettings()
 		PathValid = false;
 	}
 
-	SettingsBox->AddChild((new UIBox(true, 0))
-		->SetPadding(0.01, 0.05, 0.09, 0)
-		->AddChild((new UIBackground(true, 0, PathValid ? Vector3f(0, 1, 0.5) : Vector3f(1, 0.5, 0), 0.05))
-			->SetUseTexture(true, PathValid ? Icon("Enabled").TextureID : Icon("Settings/Warning").TextureID)
-			->SetSizeMode(UIBox::SizeMode::AspectRelative)
-			->SetPadding(0.01, 0.01, 0, 0))
-		->AddChild((new UIText(0.7f, 0.9, PathString, UI::Text))));
+	GeneralSection->contentBox->AddChild((new UIBox(true, 0))
+		->SetPadding(0.01f, 0.01f, 0.03f, 0.0f)
+		->SetVerticalAlign(UIBox::Align::Centered)
+		->AddChild((new UIBackground(true, 0, PathValid ? Vector3f(0, 1, 0.5f) : Vector3f(1, 0.5f, 0), 22))
+			->SetUseTexture(true, PathValid ? "Enabled.png" : "Settings/Warning.png")
+			->SetSizeMode(UIBox::SizeMode::PixelRelative)
+			->SetPadding(0.01, 0.01, 0.01, 0.01))
+		->AddChild((new UIText(12, 0.9, PathString, UI::Text))
+			->SetTextSizeMode(UIBox::SizeMode::PixelRelative)));
 
 	if (Game::IsValidTitanfallLocation(Game::GamePath))
 	{
-		AddSettingsButton("settings_recheck_updates", "Settings/Reload", []() {
+		AddSettingsButton("settings_recheck_updates", "Settings/Reload.png", []() {
 			new BackgroundTask([]()
 				{
 					AppUpdate::CheckForUpdates();
@@ -271,36 +266,37 @@ void SettingsTab::GenerateSettings()
 						WindowFunc::ShowPopup(GetTranslation("app_name"), GetTranslation("settings_update_not_required"));
 					}
 				});
-				}, SettingsBox);
+				}, GeneralSection->contentBox);
 
 
-		AddSettingsButton("settings_reinstall_northstar", "Download", Game::UpdateGameAsync, SettingsBox);
+		AddSettingsButton("settings_reinstall_northstar", "Download.png", Game::UpdateGameAsync, GeneralSection->contentBox);
 
-		AddSettingsText("settings_launch_arg", "Settings/Arguments", SettingsBox);
+		AddSettingsText("settings_launch_arg", "Settings/Arguments.png", GeneralSection->contentBox);
 
 		LaunchArgsText = new UITextField(0, 1, UI::MonoText, []() {Game::SetLaunchArgs(CurrentSettingsTab->LaunchArgsText->GetText()); });
-		SettingsBox->AddChild(LaunchArgsText
+		GeneralSection->contentBox->AddChild(LaunchArgsText
 			->SetTextColor(0)
-			->SetTextSize(0.6f)
+			->SetTextSize(11)
+			->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
 			->SetText(Game::GetLaunchArgs())
-			->SetPadding(0.01, 0.01, 0.06, 0.01)
-			->SetMinSize(Vector2f(0.6, 0.05)));
+			->SetPadding(0.01f, 0.01f, 0.01f, 0.01f)
+			->SetMinSize(Vector2f(0.8f, 0)));
 	}
 
 
-	AddSettingsText("settings_language", "Settings/Language", SettingsBox);
+	AddSettingsText("settings_language", "Settings/Language.png", GeneralSection->contentBox);
 
-	std::string SelectedLangauge = LoadedTranslation;
+	std::string SelectedLanguage = LoadedTranslation;
 
-	auto PossibleLangauges = GetAvailableTranslations();
+	auto PossibleLanguages = GetAvailableTranslations();
 
 	size_t Selected = 0;
 
 	LanguageOptions.clear();
-	for (size_t i = 0; i < PossibleLangauges.size(); i++)
+	for (size_t i = 0; i < PossibleLanguages.size(); i++)
 	{
-		LanguageOptions.push_back(UIDropdown::Option(PossibleLangauges[i]));
-		if (PossibleLangauges[i] == SelectedLangauge)
+		LanguageOptions.push_back(UIDropdown::Option(PossibleLanguages[i]));
+		if (PossibleLanguages[i] == SelectedLanguage)
 		{
 			Selected = i;
 		}
@@ -312,11 +308,14 @@ void SettingsTab::GenerateSettings()
 			Translation::LoadTranslation(CurrentSettingsTab->LanguageOptions[Index].Name);
 			CurrentSettingsTab->GenerateSettings();
 		},
-		Selected, SettingsBox);
+		Selected, GeneralSection->contentBox);
 
-	AddCategoryHeader("settings_category_appearance", "Settings/App", SettingsBox);
+	auto AppearanceSection = new SettingsSection();
+	AppearanceSection->SetTitle(GetTranslation("settings_category_appearance"));
+	AppearanceSection->SetIcon("Settings/App.png");
+	SettingsBox->AddChild(AppearanceSection);
 
-	AddSettingsButton("settings_appearance_background", "Settings/Image", []() {
+	AddSettingsButton("settings_appearance_background", "Settings/Image.png", []() {
 		std::string NewPicture = WindowFunc::ShowSelectFileDialog(false);
 		if (!std::filesystem::exists(NewPicture))
 		{
@@ -333,12 +332,12 @@ void SettingsTab::GenerateSettings()
 			Log::Print(e.what(), Log::Error);
 		}
 		CurrentSettingsTab->GenerateSettings();
-		}, SettingsBox);
+		}, AppearanceSection->contentBox);
 
 
 	if (std::filesystem::exists(Installer::CurrentPath + "Data/var/custom_background.png"))
 	{
-		SettingsBox->AddChild((new UIButton(true, 0, 0.75, []() 
+		AppearanceSection->contentBox->AddChild((new UIButton(true, 0, 0.75, []()
 			{
 				std::filesystem::remove(Installer::CurrentPath + "Data/var/custom_background.png");
 				Installer::SetInstallerBackgroundImage(Installer::CurrentPath + "Data/Game.png");
@@ -348,14 +347,14 @@ void SettingsTab::GenerateSettings()
 			->SetPadding(0, 0.05, 0.06, 0)
 			->SetBorder(UIBox::BorderType::Rounded, 0.25)
 			->AddChild((new UIBackground(true, 0, 0, 0.04))
-				->SetUseTexture(true, Icon("Revert").TextureID)
+				->SetUseTexture(true, "Revert.png")
 				->SetSizeMode(UIBox::SizeMode::AspectRelative)
 				->SetPadding(0.01, 0.01, 0.01, 0.01))
 			->AddChild((new UIText(0.6f, 0, GetTranslation("settings_appearance_background_revert"), UI::Text))));
 	}
 
 
-	AddSettingsText("settings_title_bar", "Settings/App", SettingsBox);
+	AddSettingsText("settings_title_bar", "Settings/App.png", AppearanceSection->contentBox);
 
 	AddSettingsDropdown(
 		{
@@ -367,9 +366,9 @@ void SettingsTab::GenerateSettings()
 			TitleBar::SetUseSystemTitleBar(Index == 1);
 			Installer::UpdateWindowFlags();
 			SaveSettings();
-		}, TitleBar::GetUseSystemTitleBar(), SettingsBox);
+		}, TitleBar::GetUseSystemTitleBar(), AppearanceSection->contentBox);
 
-	AddSettingsText("settings_appearance_color", "Settings/Color", SettingsBox);
+	AddSettingsText("settings_appearance_color", "Settings/Color.png", AppearanceSection->contentBox);
 
 	ColorText = new UITextField(0, 1, UI::MonoText, []() 
 		{ 
@@ -384,19 +383,22 @@ void SettingsTab::GenerateSettings()
 			CurrentSettingsTab->ColorText->SetText(ColorToRgb(Color));
 		});
 
-	SettingsBox->AddChild(ColorText
-		->SetTextColor(0)
-		->SetTextSize(0.6f)
+	AppearanceSection->contentBox->AddChild(ColorText
 		->SetText(ColorToRgb(Installer::GetThemeColor()))
-		->SetPadding(0.01, 0.01, 0.06, 0.01)
-		->SetMinSize(Vector2f(0.6, 0.05)));
-
+		->SetTextColor(0)
+		->SetTextSize(11)
+		->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
+		->SetPadding(0.01f, 0.01f, 0.01f, 0.01f)
+		->SetMinSize(Vector2f(0.8f, 0)));
 
 	if (Game::IsValidTitanfallLocation(Game::GamePath))
 	{
-		AddCategoryHeader("settings_category_logs", "Settings/Logs", SettingsBox);
+		auto LogsSection = new SettingsSection();
+		LogsSection->SetTitle(GetTranslation("settings_category_appearance"));
+		LogsSection->SetIcon("Settings/App.png");
+		SettingsBox->AddChild(LogsSection);
 
-		AddSettingsButton("settings_open_log_directory", "Settings/Folder", []()
+		AddSettingsButton("settings_open_log_directory", "Settings/Folder.png", []()
 			{
 				if (!std::filesystem::exists(ProfileTab::CurrentProfile.Path + "/logs"))
 				{
@@ -408,9 +410,9 @@ void SettingsTab::GenerateSettings()
 #else
 				system(("xdg-open \"" + ProfileTab::CurrentProfile.Path + "/logs\"").c_str());
 #endif
-			}, SettingsBox);
+			}, LogsSection->contentBox);
 
-		AddSettingsButton("settings_open_latest_log", "Settings/Logs", []()
+		AddSettingsButton("settings_open_latest_log", "Settings/Logs.png", []()
 			{
 				if (!std::filesystem::exists(ProfileTab::CurrentProfile.Path + "/logs"))
 				{
@@ -437,13 +439,16 @@ void SettingsTab::GenerateSettings()
 #else
 				system(("xdg-open \"\" \"" + LatestLog.path().u8string() + "\"").c_str());
 #endif
-			}, SettingsBox);
+			}, LogsSection->contentBox);
 
+		auto DangerSection = new SettingsSection();
+		DangerSection->SetTitle(GetTranslation("settings_category_danger"));
+		DangerSection->SetIcon("Settings/Warning.png");
+		SettingsBox->AddChild(DangerSection);
 
-		AddCategoryHeader("settings_category_danger", "Settings/Warning", SettingsBox);
-		AddSettingsButton("settings_delete_all_mods", "Delete", DeleteAllMods, SettingsBox);
+		AddSettingsButton("settings_delete_all_mods", "Delete.png", DeleteAllMods, DangerSection->contentBox);
 
-		AddSettingsButton("settings_reset_installer", "Settings/Reload", []() {
+		AddSettingsButton("settings_reset_installer", "Settings/Reload.png", []() {
 			try
 			{
 				std::filesystem::remove_all(Installer::CurrentPath + "Data/temp");
@@ -457,7 +462,7 @@ void SettingsTab::GenerateSettings()
 			{
 				Log::Print(e.what());
 			}
-			}, SettingsBox);
+			}, DangerSection->contentBox);
 	}
 
 #if _WIN32
@@ -467,15 +472,22 @@ void SettingsTab::GenerateSettings()
 #else
 	constexpr const char* OS = "Unknown";
 #endif
+	auto AboutSection = new SettingsSection();
+	AboutSection->SetTitle(GetTranslation("settings_category_about"));
+	AboutSection->SetIcon("Settings/About.png");
+	SettingsBox->AddChild(AboutSection);
 
-	AddCategoryHeader("settings_category_about", "Settings/About", SettingsBox);
-	SettingsBox->AddChild((new UIText(0.7f, 1, GetTranslation("settings_about_ns_version") + ": " + Game::GetCurrentVersion(), UI::Text))
-		->SetPadding(0.01, 0.01, 0.06, 0.01));
-	SettingsBox->AddChild((new UIText(0.7f, 1, GetTranslation("settings_about_version")
+	AboutSection->contentBox->AddChild((new UIText(12, 1, GetTranslation("settings_about_ns_version") + ": " + Game::GetCurrentVersion(), UI::Text))
+		->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
+		->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)
+		->SetPadding(5));
+	AboutSection->contentBox->AddChild((new UIText(12, 1, GetTranslation("settings_about_version")
 		+ ": Tether "
 		+ Installer::InstallerVersion 
 		+ " ("
 		+ std::string(OS) 
 		+ ")", UI::Text))
-		->SetPadding(0.01, 0.01, 0.06, 0.01));
+		->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
+		->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)
+		->SetPadding(5));
 }

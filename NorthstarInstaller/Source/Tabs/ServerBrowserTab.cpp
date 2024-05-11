@@ -12,7 +12,6 @@
 
 #include "nlohmann/json.hpp"
 
-#include "../UI/Icon.h"
 #include "../Networking.h"
 #include "../Installer.h"
 #include "../Log.h"
@@ -21,6 +20,8 @@
 #include "../Game.h"
 #include "../Translation.h"
 #include "../UI/FullScreenNotify.h"
+#include "../Markup/TabElement.hpp"
+#include "../Markup/ImageButton.hpp"
 
 #ifdef TF_PLUGIN
 #include "../TetherPlugin.h"
@@ -61,12 +62,9 @@ bool InstallRequiredModsForServer(ServerBrowserTab::ServerEntry e)
 
 	BackgroundTask::SetStatus("dl_" + GetTranslation("download_server_mods"));
 
-	Networking::Download(
+	json Response = json::parse(Networking::DownloadString(
 		"https://thunderstore.io/c/northstar/api/v1/package/",
-		Installer::CurrentPath + "Data/temp/net/allmods.json",
-		"User-Agent: " + Installer::UserAgent);
-
-	json Response = json::parse(GetFile(Installer::CurrentPath + "Data/temp/net/allmods.json"));
+		Installer::UserAgent));
 
 	std::vector<ServerBrowserTab::ServerEntry::ServerMod> FailedMods;
 
@@ -176,31 +174,26 @@ ServerBrowserTab::ServerBrowserTab()
 	Name = "servers";
 	Log::Print("Loading server browser tab...");
 
+	auto TabElem = new TabElement();
+	TabElem->SetTabName(GetTranslation("tab_profiles"));
+	Background->AddChild(TabElem);
+
 	Background->SetHorizontalAlign(UIBox::Align::Centered);
 	Background->SetHorizontal(true);
-
-	ServerBackground = new UIBackground(false, 0, 0, Vector2f(1.5, 1.85));
-	Background->AddChild(ServerBackground
-		->SetOpacity(0.65)
-		->SetMaxSize(Vector2f(1.5, 1.85))
-		->AddChild((new UIBackground(true, 0, 1, Vector2f(1.5, 0.005)))
-			->SetPadding(0))
-		->SetPadding(0));
-	ServerBackground->SetVerticalAlign(UIBox::Align::Reverse);
-	TabTitle = new UIText(1.2f, 1, GetTranslation("tab_servers"), UI::Text);
-	ServerBackground->AddChild(TabTitle);
 	
-	ReloadText = new UIText(0.6f, 0, GetTranslation("servers_refresh"), UI::Text);
-
-	ServerBackground->AddChild((new UIBox(true, 0))
-		->AddChild(PlayerCountText->SetPadding(0.02, 0.02, 0.01, 0.02))
-		->AddChild((new UIButton(true, 0, 1, RefreshServerBrowser))
-			->SetBorder(UIBox::BorderType::Rounded, 0.25)
-			->AddChild((new UIBackground(true, 0, 0, 0.04))
-				->SetUseTexture(true, Icon("Settings/Reload").TextureID)
-				->SetPadding(0.01, 0.01, 0.01, 0)
-				->SetSizeMode(UIBox::SizeMode::AspectRelative))
-			->AddChild(ReloadText)));
+	auto ReloadButton = new ImageButton();
+	ReloadButton->SetImage("Settings/Reload.png");
+	ReloadButton->SetText(GetTranslation("servers_refresh"));
+	ReloadButton->button->OnClickedFunction = RefreshServerBrowser;
+	ReloadText = ReloadButton->text;
+	TabElem->contentBox
+		->AddChild((new UIBox(true))
+			->SetVerticalAlign(UIBox::Align::Centered)
+			->AddChild(PlayerCountText
+				->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
+				->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)
+				->SetPadding(5))
+			->AddChild(ReloadButton));
 
 	ServerSearchBox = new UITextField(0, 0, UI::Text, []() {
 		if (CurrentServerTab->SearchText != CurrentServerTab->ServerSearchBox->GetText())
@@ -211,7 +204,7 @@ ServerBrowserTab::ServerBrowserTab()
 	ServerSearchBox->SetTextSize(0.6);
 	ServerSearchBox->SetMinSize(Vector2f(0.8, 0.02));
 	ServerSearchBox->SetHintText(GetTranslation("search"));
-	ServerBackground->AddChild(ServerSearchBox);
+	TabElem->contentBox->AddChild(ServerSearchBox);
 
 	std::string ServerHeaderText = GetTranslation("servers_region");
 	ServerHeaderText.resize(11, ' ');
@@ -227,12 +220,12 @@ ServerBrowserTab::ServerBrowserTab()
 	ServerBox = new UIScrollBox(false, 0, true);
 	ServerBox->SetVerticalAlign(UIBox::Align::Reverse);
 
-	AddSeperator(ServerBackground);
+	AddSeperator(TabElem->contentBox);
 
-	ServerBackground->AddChild(ServerHeader
-		->SetPadding(0.05, 0, 0.02, 0.02));
+	TabElem->contentBox->AddChild(ServerHeader
+		->SetPadding(0.05, 0, 0.01f, 0.02));
 
-	ServerBackground->AddChild((new UIBox(true, 0))
+	TabElem->contentBox->AddChild((new UIBox(true, 0))
 		->SetPadding(0)
 		->AddChild(ServerBox
 			->SetMaxSize(Vector2f(0.825, 1.5))
@@ -401,7 +394,8 @@ void JoinCurrentServer()
 	auto JoinServerNotify = new FullScreenNotify(GetTranslation("Joining server"));
 
 	JoinServerNotify->ContentBox
-		->AddChild(new UIText(0.6f, 0, GetTranslation("servers_dependencies_text"), UI::Text));
+		->AddChild((new UIText(0.6f, 0, GetTranslation("servers_dependencies_text"), UI::Text))
+			->SetPadding(0.01f));
 
 	for (const auto& Dep : RequiredMods)
 	{
@@ -420,7 +414,8 @@ void JoinCurrentServer()
 		}
 
 		JoinServerNotify->ContentBox
-			->AddChild(new UIText(0.6f, 0, str, UI::Text));
+			->AddChild((new UIText(0.6f, 0, str, UI::Text))
+				->SetPadding(0.01f));
 	}
 
 	JoinServerNotify->AddOptions({
@@ -450,9 +445,6 @@ void JoinCurrentServer()
 
 void ServerBrowserTab::Tick()
 {
-	ServerBackground->SetMinSize(Vector2f(1.2, Background->GetUsedSize().Y));
-	ServerBackground->SetMaxSize(Vector2f(2, Background->GetUsedSize().Y));
-
 	if (!ServerDescriptionText)
 		return;
 
@@ -520,19 +512,19 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 	}
 
 	UIText* Descr = new UIText(0.6f, 1, e.Description, UI::Text);
-	Descr->Wrap = true;
-	Descr->WrapDistance = 0.35f;
 	std::string PlayerCount = Format(GetTranslation("servers_match_playercount"), e.PlayerCount, e.MaxPlayerCount);
 
 	UIText* Title = new UIText(1.0f, 1, e.Name, UI::Text);
-	Title->Wrap = true;
-	Title->WrapDistance = 0.2f;
 
-	ServerDescriptionBox->AddChild(Title);
+	ServerDescriptionBox->AddChild(Title
+		->SetWrapEnabled(true, 1, UIBox::SizeMode::ScreenRelative)
+		->SetPadding(0.01f));
 	
 	AddSeperator(ServerDescriptionBox);
 
-	ServerDescriptionBox->AddChild(Descr);
+	ServerDescriptionBox->AddChild(Descr
+		->SetWrapEnabled(true, 1, UIBox::SizeMode::ScreenRelative)
+		->SetPadding(0.02f));
 
 	AddSeperator(ServerDescriptionBox);
 
@@ -540,14 +532,16 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 	MapDescr->SetPadding(0);
 	MapDescr->SetMinSize(9 * 0.025);
 
-	ServerDescriptionBox->AddChild((new UIText(1.0f, 1, GetTranslation("servers_playing_on"), UI::Text)));
+	ServerDescriptionBox->AddChild((new UIText(1.0f, 1, GetTranslation("servers_playing_on"), UI::Text))
+		->SetPadding(0.01f));
 	ServerDescriptionBox->AddChild((new UIBox(true, 0))
 		->AddChild((new UIBackground(true, 0, 1, Vector2f(16, 9) * 0.025))
 			->SetUseTexture(true, GetMapTexture(e.Map))
+			->SetPadding(0.02f)
 			->SetSizeMode(UIBox::SizeMode::AspectRelative))
 		->AddChild(MapDescr
 			->AddChild((new UIText(1.0f, 1, e.MapName, UI::Text))
-				->SetPadding(0, 0, 0.01, 0.01))
+				->SetPadding(0.02f, 0, 0.01, 0.01))
 			->AddChild((new UIText(0.6f, 1, e.GameModeName, UI::Text))
 				->SetPadding(0, 0, 0.01, 0.01))
 			->AddChild((new UIText(0.6f, 1, PlayerCount, UI::Text))
@@ -559,13 +553,16 @@ void ServerBrowserTab::DisplayServerDescription(ServerEntry e)
 	ServerDescriptionBox->AddChild((new UIBox(true, 0))
 		->AddChild((new UIButton(true, 0, Installer::GetThemeColor(), JoinCurrentServer))
 			->SetBorder(UIBox::BorderType::Rounded, 0.25)
+			->SetPadding(0.02f)
 			->AddChild((new UIBackground(true, 0, 0, 0.055))
-				->SetUseTexture(true, Icon("itab_play").TextureID)
+				->SetUseTexture(true, "itab_play.png")
 				->SetPadding(0.01, 0.01, 0.01, 0)
 				->SetSizeMode(UIBox::SizeMode::AspectRelative))
-			->AddChild(ServerDescriptionText)));
+			->AddChild(ServerDescriptionText
+				->SetPadding(0.01f))));
 
-	ServerDescriptionBox->AddChild(new UIText(1.0f, 1, GetTranslation("servers_mods"), UI::Text));
+	ServerDescriptionBox->AddChild((new UIText(1.0f, 1, GetTranslation("servers_mods"), UI::Text))
+		->SetPadding(0.01f));
 	for (const auto& i : e.RequiredMods)
 	{
 		Thunderstore::Package m;
@@ -632,8 +629,7 @@ void ServerBrowserTab::LoadServers()
 	}
 
 	BackgroundTask::SetStatus("Loading servers");
-	Networking::Download("https://northstar.tf/client/servers", Installer::CurrentPath + "Data/temp/net/servers.json", "User-Agent: " + Installer::UserAgent);
-	json ServerResponse = json::parse(GetFile(Installer::CurrentPath + "Data/temp/net/servers.json"));
+	json ServerResponse = json::parse(Networking::DownloadString("https://northstar.tf/client/servers", Installer::UserAgent));
 
 	Servers.clear();
 	for (const auto& i : ServerResponse)

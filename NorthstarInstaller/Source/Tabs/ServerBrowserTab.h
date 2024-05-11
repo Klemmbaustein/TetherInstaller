@@ -12,7 +12,6 @@
 
 class ServerBrowserTab : public UITab
 {
-	KlemmUI::UIBackground* ServerBackground = nullptr;
 	KlemmUI::UIScrollBox* ServerBox = nullptr;
 	KlemmUI::UIBox* ServerListBox = nullptr;
 	KlemmUI::UIBox* ServerDescriptionBox = new KlemmUI::UIBox(false, 0);
@@ -55,7 +54,7 @@ public:
 
 	static void AddSeperator(KlemmUI::UIBox* Parent);
 
-	KlemmUI::UIText* PlayerCountText = new KlemmUI::UIText(0.6, 1, "Players in game: ??", UI::Text);
+	KlemmUI::UIText* PlayerCountText = new KlemmUI::UIText(12, 1, "Players in game: ??", UI::Text);
 	static std::vector<ServerEntry> Servers;
 	static ServerBrowserTab* CurrentServerTab;
 	ServerBrowserTab();
