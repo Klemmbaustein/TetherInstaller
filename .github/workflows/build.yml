@@ -82,6 +82,7 @@ jobs:
           cd KlemmUI
           bash setup.sh
           cd ..
+          ./KlemmUI/Markup/MarkupHeaderTool/Build/KlemmUIHT -i Markup -o Source/Markup
           cmake -S . -B Build/ -DTETHER_CI=${{ github.run_number }}
           cd Build/
           cmake --build .

@@ -24,7 +24,6 @@
 #include "../Markup/ModEntry.hpp"
 #include "../Markup/TabElement.hpp"
 #include "../Markup/ModPageHeader.hpp"
-#include "../Markup/UISeparator.hpp"
 using namespace Translation;
 using namespace KlemmUI;
 
@@ -188,7 +187,6 @@ void ModsTab::GenerateModInfo()
 	ModsScrollBox->SetDisplayScrollBar(true);
 	ModsScrollBox->DeleteChildren();
 
-	ModsScrollBox->AddChild(new UISeparator());
 	ModsScrollBox->UpdateElement();
 
 	auto Header = new ModPageHeader();
