@@ -10,7 +10,7 @@
 #include "../Installer.h"
 #include "../Log.h"
 
-#include "../Markup/Sidebar.hpp"
+#include "../Markup/SideBar.hpp"
 #include "../Markup/SideBarButton.hpp"
 #include "../Markup/SideBarTooltip.hpp"
 
