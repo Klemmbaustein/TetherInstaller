@@ -107,6 +107,7 @@ namespace Networking
 	{
 		std::ofstream OutFile = std::ofstream(To, std::ios::binary | std::ios::out);
 		DownloadInternal(Url, UserAgent, (void*)&FileWrite, &OutFile, IsDownload);
+		OutFile.close();
 		return;
 	}
 
