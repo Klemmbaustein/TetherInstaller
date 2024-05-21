@@ -142,7 +142,7 @@ int main(int argc, char** argv)
 
 	Window AppWindow = Window("TetherInstaller", Window::WindowFlag::Resizable | Window::WindowFlag::Borderless);
 	AppWindow.SetMinSize(Vector2ui(640, 480));
-	AppWindow.UI.SetTexturePath("Data/icons");
+	AppWindow.UI.SetTexturePath(CurrentPath + "Data/icons");
 
 	MainWindow = &AppWindow;
 
