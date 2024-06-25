@@ -14,16 +14,16 @@ public:
 	{
 	{
 	button = new KlemmUI::UIButton(true, 0, 1, nullptr);
-	button->SetColor(Vector3f(0.1));
-	button->SetHoveredColor(Vector3f(0.1) * 0.75f);
-	button->SetPressedColor(Vector3f(0.1) * 0.5f);
+	button->SetColor(Vector3f(float(0.1)));
+	button->SetHoveredColor(Vector3f(float(0.1)) * 0.75f);
+	button->SetPressedColor(Vector3f(float(0.1)) * 0.5f);
 	this->AddChild(button);
 	{
 	icon = new KlemmUI::UIBackground(true, 0, 1);
-	icon->SetMinSize(Vector2f(20));
-	icon->SetMaxSize(Vector2f(20));
+	icon->SetMinSize(Vector2f(float(20)));
+	icon->SetMaxSize(Vector2f(float(20)));
 	icon->SetSizeMode(KlemmUI::UIBox::SizeMode::PixelRelative);
-	icon->SetPadding((float)10);
+	icon->SetPadding((float)float(10));
 	icon->SetPaddingSizeMode(KlemmUI::UIBox::SizeMode::PixelRelative);
 	button->AddChild(icon);
 	}

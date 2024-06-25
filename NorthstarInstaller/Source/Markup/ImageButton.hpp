@@ -18,30 +18,30 @@ public:
 	{
 	button = new KlemmUI::UIButton(true, 0, 1, nullptr);
 	button->BoxBorder = KlemmUI::UIBox::BorderType::Rounded;
-	button->BorderRadius = 5;
+	button->BorderRadius = float(5);
 	button->BorderSizeMode = KlemmUI::UIBox::SizeMode::PixelRelative;
 	button->SetVerticalAlign(KlemmUI::UIBox::Align::Centered);
-	button->SetPadding((float)10);
+	button->SetPadding((float)float(10));
 	button->SetPaddingSizeMode(KlemmUI::UIBox::SizeMode::PixelRelative);
 	this->AddChild(button);
 	{
 	auto* e_2 = new KlemmUI::UIBackground(true, 0, 1);
-	e_2->SetColor(Vector3f(0));
+	e_2->SetColor(Vector3f(float(0)));
 	e_2->SetUseTexture(true, Image);
-	e_2->SetMinSize(Vector2f(20));
-	e_2->SetMaxSize(Vector2f(20));
+	e_2->SetMinSize(Vector2f(float(20)));
+	e_2->SetMaxSize(Vector2f(float(20)));
 	e_2->SetSizeMode(KlemmUI::UIBox::SizeMode::PixelRelative);
-	e_2->SetPadding((float)5);
+	e_2->SetPadding((float)float(5));
 	e_2->SetPaddingSizeMode(KlemmUI::UIBox::SizeMode::PixelRelative);
 	button->AddChild(e_2);
 	unnamed_0 = e_2;
 	text = new KlemmUI::UIText(1, 1, "", nullptr);
 	text->SetText(Text);
-	text->SetColor(Vector3f(0));
-	text->SetTextSize(13);
+	text->SetColor(Vector3f(float(0)));
+	text->SetTextSize(float(13));
 	text->SetTextSizeMode(KlemmUI::UIBox::SizeMode::PixelRelative);
 	text->SetFont(KlemmUI::MarkupLanguageManager::GetActive()->GetFont(""));
-	text->SetPadding((float)5);
+	text->SetPadding((float)float(5));
 	text->SetPaddingSizeMode(KlemmUI::UIBox::SizeMode::PixelRelative);
 	button->AddChild(text);
 	}

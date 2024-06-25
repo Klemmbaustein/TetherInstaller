@@ -137,13 +137,13 @@ void LaunchTab::LaunchNorthstar(std::string Args)
 	{
 		return;
 	}
-	if (!Game::GamePath.empty() && !AppUpdate::RequiresUpdate)
+	if (!Game::GamePath.empty() && !Game::RequiresUpdate)
 	{
 		Log::Print("Starting game...");
 
 		new BackgroundTask(NorthstarLaunchTask);
 	}
-	if (AppUpdate::RequiresUpdate && !Game::GamePath.empty())
+	if (Game::RequiresUpdate && !Game::GamePath.empty())
 	{
 		Game::UpdateGameAsync();
 	}
@@ -162,7 +162,9 @@ LaunchTab::LaunchTab()
 	auto TextBox = (new UIBackground(true, 0, 0, 0))->SetOpacity(0.7);
 	TextBox->SetHorizontalAlign(UIBox::Align::Centered);
 
-	LaunchButton = new UIButton(true, 0, 1, LaunchNorthstar);
+	LaunchButton = new UIButton(true, 0, 1, []() {
+		LaunchNorthstar();
+		});
 	LaunchText = new UIText(25, 0, "", UI::Text);
 
 	LaunchText
@@ -227,7 +229,7 @@ void LaunchTab::Tick()
 	{
 		LaunchText->SetText(GetTranslation("play_downloading_mod"));
 	}
-	else if (AppUpdate::RequiresUpdate)
+	else if (Game::RequiresUpdate)
 	{
 		LaunchText->SetText(GetTranslation("play_update_required"));
 	}

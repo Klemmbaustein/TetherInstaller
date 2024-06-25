@@ -6,7 +6,7 @@
 #include "KlemmUI/UI/UIText.h"
 class ModEntry : public KlemmUI::UIBox
 {
-	Vector3f Color = Vector3f(1,1,1);
+	Vector3f Color = Vector3f(float(1), float(1), float(1));
 	std::string Name;
 
 public:
@@ -21,23 +21,23 @@ public:
 	entryButton->SetHoveredColor(Vector3f(Color) * 0.75f);
 	entryButton->SetPressedColor(Vector3f(Color) * 0.5f);
 	entryButton->BoxBorder = KlemmUI::UIBox::BorderType::Rounded;
-	entryButton->BorderRadius = 5;
+	entryButton->BorderRadius = float(5);
 	entryButton->BorderSizeMode = KlemmUI::UIBox::SizeMode::PixelRelative;
-	entryButton->SetMinSize(Vector2f(140,190));
-	entryButton->SetMaxSize(Vector2f(140,190));
+	entryButton->SetMinSize(Vector2f(float(140), float(190)));
+	entryButton->SetMaxSize(Vector2f(float(140), float(190)));
 	entryButton->SetSizeMode(KlemmUI::UIBox::SizeMode::PixelRelative);
-	entryButton->SetPadding((float)5);
+	entryButton->SetPadding((float)float(5));
 	entryButton->SetPaddingSizeMode(KlemmUI::UIBox::SizeMode::PixelRelative);
 	entryButton->SetHorizontal(false);
 	this->AddChild(entryButton);
 	{
 	auto* e_2 = new KlemmUI::UIBackground(true, 0, 1);
-	e_2->SetColor(Vector3f(0.1));
+	e_2->SetColor(Vector3f(float(0.1)));
 	entryButton->AddChild(e_2);
 	{
 	entryImage = new KlemmUI::UIBackground(true, 0, 1);
-	entryImage->SetMinSize(Vector2f(140));
-	entryImage->SetMaxSize(Vector2f(140));
+	entryImage->SetMinSize(Vector2f(float(140)));
+	entryImage->SetMaxSize(Vector2f(float(140)));
 	entryImage->SetSizeMode(KlemmUI::UIBox::SizeMode::PixelRelative);
 	entryImage->SetVerticalAlign(KlemmUI::UIBox::Align::Centered);
 	entryImage->SetHorizontalAlign(KlemmUI::UIBox::Align::Centered);
@@ -45,14 +45,14 @@ public:
 	}
 	entryText = new KlemmUI::UIText(1, 1, "", nullptr);
 	entryText->SetText(Name);
-	entryText->SetColor(Vector3f(0));
-	entryText->SetTextSize(10);
+	entryText->SetColor(Vector3f(float(0)));
+	entryText->SetTextSize(float(10));
 	entryText->SetTextSizeMode(KlemmUI::UIBox::SizeMode::PixelRelative);
 	entryText->SetFont(KlemmUI::MarkupLanguageManager::GetActive()->GetFont(""));
-	entryText->WrapDistance = 260;
+	entryText->WrapDistance = float(260);
 	entryText->Wrap = true;
 	entryText->WrapSizeMode = KlemmUI::UIBox::SizeMode::PixelRelative;
-	entryText->SetPadding((float)2);
+	entryText->SetPadding((float)float(2));
 	entryText->SetPaddingSizeMode(KlemmUI::UIBox::SizeMode::PixelRelative);
 	entryButton->AddChild(entryText);
 	}

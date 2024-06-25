@@ -19,38 +19,38 @@ public:
 	{
 	auto* e_1 = new KlemmUI::UIBox(true);
 	e_1->SetVerticalAlign(KlemmUI::UIBox::Align::Centered);
-	e_1->SetPadding((float)5);
+	e_1->SetPadding((float)float(5));
 	e_1->SetPaddingSizeMode(KlemmUI::UIBox::SizeMode::PixelRelative);
 	this->AddChild(e_1);
 	{
 	auto* e_2 = new KlemmUI::UIBackground(true, 0, 1);
 	e_2->SetUseTexture(true, Icon);
-	e_2->SetMinSize(Vector2f(35));
-	e_2->SetMaxSize(Vector2f(35));
+	e_2->SetMinSize(Vector2f(float(35)));
+	e_2->SetMaxSize(Vector2f(float(35)));
 	e_2->SetSizeMode(KlemmUI::UIBox::SizeMode::PixelRelative);
-	e_2->SetPadding((float)5);
+	e_2->SetPadding((float)float(5));
 	e_2->SetPaddingSizeMode(KlemmUI::UIBox::SizeMode::PixelRelative);
 	e_1->AddChild(e_2);
 	unnamed_0 = e_2;
 	auto* e_3 = new KlemmUI::UIText(1, 1, "", nullptr);
 	e_3->SetText(Title);
-	e_3->SetTextSize(20);
+	e_3->SetTextSize(float(20));
 	e_3->SetTextSizeMode(KlemmUI::UIBox::SizeMode::PixelRelative);
 	e_3->SetFont(KlemmUI::MarkupLanguageManager::GetActive()->GetFont(""));
-	e_3->SetPadding((float)5);
+	e_3->SetPadding((float)float(5));
 	e_3->SetPaddingSizeMode(KlemmUI::UIBox::SizeMode::PixelRelative);
 	e_1->AddChild(e_3);
 	unnamed_1 = e_3;
 	}
 	auto* e_4 = new KlemmUI::UIBackground(true, 0, 1);
-	e_4->SetMinSize(Vector2f(1));
+	e_4->SetMinSize(Vector2f(float(1)));
 	e_4->SetSizeMode(KlemmUI::UIBox::SizeMode::PixelRelative);
-	e_4->SetPadding((float)5);
+	e_4->SetPadding((float)float(5));
 	e_4->SetPaddingSizeMode(KlemmUI::UIBox::SizeMode::PixelRelative);
 	e_4->SetTryFill((bool)true);
 	this->AddChild(e_4);
 	contentBox = new KlemmUI::UIBox(true);
-	contentBox->SetLeftPadding((float)50);
+	contentBox->SetLeftPadding((float)float(50));
 	contentBox->SetPaddingSizeMode(KlemmUI::UIBox::SizeMode::PixelRelative);
 	contentBox->SetHorizontal(false);
 	this->AddChild(contentBox);

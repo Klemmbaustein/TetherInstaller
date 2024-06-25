@@ -369,7 +369,8 @@ void ServerBrowserTab::DisplayServers()
 
 	if (ServerBrowserButtons.empty())
 	{
-		ServerListBox->AddChild(new UIText(0.6f, 1, GetTranslation("servers_no_servers_found"), UI::Text));
+		ServerListBox->AddChild((new UIText(0.6f, 1, GetTranslation("servers_no_servers_found"), UI::Text))
+			->SetPadding(0.01f));
 	}
 
 	PlayerCountText->SetText(Format(GetTranslation("servers_total_playercount"), (int)TotalPlayers));

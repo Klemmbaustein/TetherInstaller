@@ -9,12 +9,12 @@ public:
 	KlemmUI::UIBackground* background;
 	SideBar() : UIBox(true)
 	{
-	this->SetPosition(Vector2f(-1));
+	this->SetPosition(Vector2f(float(-1)));
 	{
 	background = new KlemmUI::UIBackground(true, 0, 1);
-	background->SetColor(Vector3f(0));
-	background->SetOpacity(0.75);
-	background->SetMinSize(Vector2f(0,2));
+	background->SetColor(Vector3f(float(0)));
+	background->SetOpacity(float(0.75));
+	background->SetMinSize(Vector2f(float(0), float(2)));
 	background->SetHorizontal(false);
 	this->AddChild(background);
 	}

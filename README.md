@@ -31,14 +31,13 @@ If you want to contribute to the installer, you will need to download and compil
 First, clone the repository with submodules. 
 `git clone --recurse-submodules https://github.com/Klemmbaustein/TetherInstaller.git`
 
-### Windows MSVC:
+### Windows:
 
 1. Run `Setup.ps1` with the visual studio developer powershell.
 2. Build the solution.
 
-### Linux GNU Makefile:
+### Linux:
 
-1. Install cURL on your system.
-2. Follow [The steps detailed here](https://github.com/Klemmbaustein/KlemmUI#readme)			
-   to install the KlemmUI library on your system.
-3. Run `make` in the `NorthstarInstaller` directory.
+1. Install cURL developement files on your system.
+2. Run `cmake -S . -b build/`.
+3. Run `cmake --build build/ -j 8`
