@@ -632,7 +632,7 @@ ModsTab::ModsTab()
 
 	TabElem->contentBox->AddChild(CategoryBox);
 
-	ModsScrollBox->SetMinSize(Vector2f(1.35f, 1.77f));
+	ModsScrollBox->SetMinSize(Vector2f(1.40f, 1.77f));
 	ModsScrollBox->SetMaxSize(Vector2f(2, 1.77f));
 	ShowLoadingText();
 	TabElem->contentBox->AddChild(ModsScrollBox);

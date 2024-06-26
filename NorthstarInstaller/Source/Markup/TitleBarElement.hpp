@@ -16,7 +16,7 @@ public:
 	auto* e_1 = new KlemmUI::UIBackground(true, 0, 1);
 	e_1->SetColor(Vector3f(float(0.1)));
 	e_1->SetMinSize(Vector2f(float(1.5), float(0)));
-	e_1->SetVerticalAlign(KlemmUI::UIBox::Align::Default);
+	e_1->SetVerticalAlign(KlemmUI::UIBox::Align::Centered);
 	e_1->SetTryFill((bool)true);
 	this->AddChild(e_1);
 	{

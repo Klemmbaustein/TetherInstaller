@@ -6,7 +6,7 @@ element TitleBarElement
 	child UIBackground
 	{
 		minSize = (1.5, 0);
-		verticalAlign = default;
+		verticalAlign = centered;
 
 		child UIText titleText
 		{

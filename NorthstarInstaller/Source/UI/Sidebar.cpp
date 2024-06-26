@@ -101,7 +101,7 @@ void SidebarClass::Update()
 	bool AnyButtonHovered = false;
 	for (size_t i = 0; i < TabButtons.size(); i++)
 	{
-		if (TabButtons[i]->IsBeingHovered())
+		if (TabButtons[i]->GetChildren()[0]->IsBeingHovered())
 		{
 			AnyButtonHovered = true;
 			if (HoveredTab != i)
